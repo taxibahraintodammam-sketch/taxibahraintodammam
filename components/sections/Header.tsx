@@ -40,9 +40,10 @@ export function Header({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
         <div className="hidden items-center gap-3 lg:flex">
           <a
             href={telHref()}
-            className="text-sm font-medium text-white/85 hover:text-brass-lit"
+            className="flex h-11 items-center gap-2 rounded-input border border-white/20 px-4 text-sm font-medium text-white/85 hover:border-brass-lit hover:text-brass-lit"
             data-analytics="call_click"
           >
+            <PhoneIcon />
             {BUSINESS.phoneDisplay}
           </a>
           <a
@@ -65,5 +66,18 @@ export function Header({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
         />
       </div>
     </header>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 5c0-.6.4-1 1-1h3l2 5-2 1a9 9 0 0 0 5 5l1-2 5 2v3c0 .6-.4 1-1 1A15 15 0 0 1 4 5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
