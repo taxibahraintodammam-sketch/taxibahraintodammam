@@ -31,6 +31,13 @@ const COPY: Record<
       "We run a licensed taxi and chauffeur service focused entirely on the Bahrain–Saudi Arabia corridor via the King Fahd Causeway — one route family, done properly, rather than a general taxi company that happens to also cross the border.",
     sections: [
       {
+        heading: "Meet the Founder",
+        paragraphs: [
+          "Taxi Bahrain to Dammam was founded by Fahad, who spent 15 years working in the transportation industry before building this operator around the Bahrain–Saudi Arabia corridor specifically.",
+          "That background — knowing how the King Fahd Causeway crossing actually runs, day to day, in both directions — is why the service is built around fixed fares, licensed drivers, and one corridor done properly, rather than a general taxi operation that also happens to cross the border.",
+        ],
+      },
+      {
         heading: "Licensing and Compliance",
         paragraphs: [
           "We operate as a licensed cross-border transport provider, with vehicles insured and documented for travel between Bahrain and Saudi Arabia. Licensing and insurance paperwork for the vehicle itself is handled entirely by us at every immigration post — it is never something a passenger needs to arrange.",
@@ -67,6 +74,13 @@ const COPY: Record<
     intro:
       "نُشغّل خدمة تاكسي وشوفير مرخّصة تركّز بالكامل على ممر البحرين–السعودية عبر جسر الملك فهد — عائلة خطوط واحدة، مُنفَّذة باحتراف، بدلًا من شركة تاكسي عامة تصادف أنها تعبر الحدود أيضًا.",
     sections: [
+      {
+        heading: "تعرف على المؤسس",
+        paragraphs: [
+          "تأسست شركة تاكسي البحرين إلى الدمام على يد فهد، الذي أمضى 15 عامًا في العمل بقطاع النقل قبل أن يبني هذه الشركة حول ممر البحرين–السعودية تحديدًا.",
+          "هذه الخبرة — معرفة كيف يسير عبور جسر الملك فهد فعليًا، يومًا بعد يوم وفي الاتجاهين — هي سبب بناء الخدمة حول أسعار ثابتة وسائقين مرخّصين وممر واحد يُنفَّذ باحتراف، بدلًا من شركة تاكسي عامة تصادف أنها تعبر الحدود أيضًا.",
+        ],
+      },
       {
         heading: "الترخيص والامتثال",
         paragraphs: [

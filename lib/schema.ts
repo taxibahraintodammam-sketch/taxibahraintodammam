@@ -59,6 +59,10 @@ export function localBusinessSchema() {
       { "@type": "City", name: "Qatif" },
     ],
     hasMap: `https://www.google.com/maps/search/?api=1&query=King+Fahd+Causeway`,
+    founder: {
+      "@type": "Person",
+      name: BUSINESS.founderName,
+    },
     ...(BUSINESS.sameAs.length > 0 ? { sameAs: BUSINESS.sameAs } : {}),
   };
 }

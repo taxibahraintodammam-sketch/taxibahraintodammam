@@ -9,18 +9,20 @@ export const SITE_URL = "https://taxibahraintodammam.com";
 export const BUSINESS = {
   legalName: "Taxi Bahrain to Dammam", // FILL_ME: confirm registered trade name
   brandName: "Taxi Bahrain to Dammam",
-  phoneDisplay: "+973 XXXX XXXX", // FILL_ME: real Bahrain phone number
-  phoneE164: "+973XXXXXXXX", // FILL_ME: E.164 format for tel: links
-  whatsappE164: "973XXXXXXXX", // FILL_ME: WhatsApp number, no leading + for wa.me links
+  founderName: "Fahad",
+  founderExperienceYears: 15,
+  phoneDisplay: "+973 3501 4335",
+  phoneE164: "+97335014335",
+  whatsappE164: "97335014335",
   email: "booking@taxibahraintodammam.com", // FILL_ME: confirm live inbox
   licenceNumber: "FILL_ME — Bahrain/Saudi transport licence number", // FILL_ME
   foundedYear: 2018, // FILL_ME: confirm year operations began
-  addressLine: "FILL_ME — street address, Manama, Kingdom of Bahrain",
+  addressLine: "FILL_ME — building/road/block number, Manama, Kingdom of Bahrain",
   addressLocality: "Manama",
   addressCountry: "BH",
   geo: {
-    lat: 26.0667, // FILL_ME: confirm exact dispatch/office coordinates
-    lng: 50.5577,
+    lat: 26.4437565,
+    lng: 50.6530925,
   },
   hours: "24 hours a day, 7 days a week",
   sameAs: [
