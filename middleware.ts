@@ -19,9 +19,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // /admin and /api live outside app/[locale]/** (they're the booking
+  // backend, not the public bilingual marketing site) and must never be
+  // rewritten onto the /en/... segment.
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/admin") ||
     /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();
