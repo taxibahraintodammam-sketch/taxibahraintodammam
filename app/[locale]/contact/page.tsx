@@ -168,7 +168,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                   {areas.map((area) => (
                     <li
                       key={area}
-                      className="rounded-input border border-ink/10 bg-sand/60 px-3 py-1.5 text-sm text-ink"
+                      className="rounded-input border border-ink/10 bg-ink/5 px-3 py-1.5 text-sm text-ink"
                     >
                       {area}
                     </li>

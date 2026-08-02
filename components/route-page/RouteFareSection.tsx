@@ -43,7 +43,7 @@ export function RouteFareSection({
             </thead>
             <tbody>
               {fares.map((fare, index) => (
-                <tr key={fare.vehicle} className={index % 2 === 1 ? "bg-sand/60" : undefined}>
+                <tr key={fare.vehicle} className={index % 2 === 1 ? "bg-ink/5" : undefined}>
                   <td className="px-4 py-3 font-medium text-ink">{vehicleLabel[fare.vehicle]}</td>
                   <td className="px-4 py-3 text-slate">{vehicleCapacity[fare.vehicle]}</td>
                   <td className="px-4 py-3 font-[family-name:var(--font-display)] font-bold text-ink">

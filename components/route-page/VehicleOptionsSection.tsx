@@ -32,7 +32,7 @@ export function VehicleOptionsSection({
             <Link
               key={vehicle.slug}
               href={withSlash(`${fleetPath}/${vehicle.slug}`)}
-              className="flex flex-col rounded-card border border-ink/10 bg-sand/40 p-5 hover:border-brass"
+              className="flex flex-col rounded-card border border-ink/10 bg-ink/5 p-5 hover:border-brass"
             >
               <span className="text-sm font-semibold text-ink">{vehicle.name}</span>
               <span className="mt-1 text-xs text-slate">{vehicle.tagline}</span>
