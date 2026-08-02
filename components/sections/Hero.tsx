@@ -56,22 +56,28 @@ export function Hero({ locale = "en" }: { locale?: Locale }) {
             {copy.heading}
           </h1>
           <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{copy.body}</p>
-          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
-            <div>
-              <dt className="eyebrow text-white/50">{copy.distance}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-white">
+          <dl className="mt-8 grid grid-cols-3 gap-3 border-t border-white/10 pt-6 sm:gap-6">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
+                {copy.distance}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
                 {copy.distanceValue}
               </dd>
             </div>
-            <div>
-              <dt className="eyebrow text-white/50">{copy.doorToDoor}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-white">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
+                {copy.doorToDoor}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
                 {copy.doorToDoorValue}
               </dd>
             </div>
-            <div>
-              <dt className="eyebrow text-white/50">{copy.causeway}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-white">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
+                {copy.causeway}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
                 {copy.causewayValue}
               </dd>
             </div>
