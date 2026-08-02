@@ -95,7 +95,7 @@ export function CausewayStrip({
           />
           <div
             className="causeway-trail absolute top-[19px] left-[10%] h-[7px] w-[7px] rounded-full bg-brass-lit lg:top-[24px]"
-            style={{ boxShadow: "0 0 14px 3px rgba(255,107,129,0.65)" }}
+            style={{ boxShadow: "0 0 14px 3px rgba(232,199,101,0.65)" }}
             aria-hidden="true"
           />
 
