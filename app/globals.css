@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #0b1b2b;
-  --ink-soft: #16324a;
-  --sand: #f6f2ea;
-  --brass: #c9a227;
-  --brass-lit: #e8c765;
-  --sea: #0b6b74;
+  --ink: #0d0d0d;
+  --ink-soft: #1a1a1e;
+  --sand: #f5f6fa;
+  --brass: #fb4156;
+  --brass-lit: #ff6b81;
+  --sea: #0655ff;
   --white: #ffffff;
-  --slate: #5a6b7b;
+  --slate: #606060;
   --success: #1e7f4f;
   --danger: #b3261e;
 
@@ -27,15 +27,16 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
 
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
+  --font-display: var(--font-jakarta);
+  --font-body: var(--font-jakarta);
   --font-mono: var(--font-mono);
   --font-arabic: var(--font-arabic);
 
-  --radius-input: 4px;
-  --radius-card: 12px;
+  --radius-input: 10px;
+  --radius-card: 22px;
+  --radius-pill: 9999px;
 
-  --shadow-elevation: 0 1px 2px rgba(11, 27, 43, 0.06), 0 8px 24px rgba(11, 27, 43, 0.06);
+  --shadow-elevation: 0 2px 8px rgba(13, 13, 13, 0.04), 0 16px 40px rgba(13, 13, 13, 0.1);
 }
 
 @layer base {
@@ -72,11 +73,16 @@
   }
 
   .eyebrow {
-    font-family: var(--font-mono), ui-monospace, monospace;
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 500;
+    letter-spacing: 0.04em;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   :lang(ar) .eyebrow {

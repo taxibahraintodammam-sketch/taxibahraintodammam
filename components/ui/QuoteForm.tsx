@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { Circle, MapPin, CalendarDays, Users, Car, Search } from "lucide-react";
 import { BUSINESS } from "@/content/business";
 
 const FROM_TO_OPTIONS = [
@@ -25,8 +26,7 @@ const VEHICLE_OPTIONS = [
   "30-Seat Coaster Bus",
 ];
 
-export function QuoteForm() {
-  const formId = useId();
+function useQuoteFormState() {
   const [from, setFrom] = useState(FROM_TO_OPTIONS[0]);
   const [to, setTo] = useState(FROM_TO_OPTIONS[1]);
   const [dateTime, setDateTime] = useState("");
@@ -46,6 +46,103 @@ export function QuoteForm() {
     const message = lines.join("\n");
     const url = `https://wa.me/${BUSINESS.whatsappE164}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  return { from, setFrom, to, setTo, dateTime, setDateTime, passengers, setPassengers, vehicle, setVehicle, handleSubmit };
+}
+
+export function QuoteForm({ variant = "card" }: { variant?: "card" | "pill" }) {
+  const formId = useId();
+  const { from, setFrom, to, setTo, dateTime, setDateTime, passengers, setPassengers, vehicle, setVehicle, handleSubmit } =
+    useQuoteFormState();
+
+  if (variant === "pill") {
+    return (
+      <form
+        onSubmit={handleSubmit}
+        aria-label="Get a fare quote on WhatsApp"
+        className="flex flex-col divide-y divide-ink/10 overflow-hidden rounded-[28px] bg-white shadow-elevation md:h-[76px] md:flex-row md:divide-x md:divide-y-0 md:rounded-pill"
+      >
+        <PillField icon={Circle} label="From" htmlFor={`${formId}-from`}>
+          <select
+            id={`${formId}-from`}
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="w-full truncate bg-transparent text-sm font-bold text-ink outline-none"
+          >
+            {FROM_TO_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </PillField>
+
+        <PillField icon={MapPin} label="To" htmlFor={`${formId}-to`}>
+          <select
+            id={`${formId}-to`}
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="w-full truncate bg-transparent text-sm font-bold text-ink outline-none"
+          >
+            {FROM_TO_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </PillField>
+
+        <PillField icon={CalendarDays} label="Pickup" htmlFor={`${formId}-datetime`}>
+          <input
+            id={`${formId}-datetime`}
+            type="datetime-local"
+            value={dateTime}
+            onChange={(e) => setDateTime(e.target.value)}
+            className="w-full bg-transparent text-sm font-bold text-ink outline-none [color-scheme:light]"
+          />
+        </PillField>
+
+        <PillField icon={Users} label="Passengers" htmlFor={`${formId}-passengers`} shrink>
+          <select
+            id={`${formId}-passengers`}
+            value={passengers}
+            onChange={(e) => setPassengers(e.target.value)}
+            className="w-full bg-transparent text-sm font-bold text-ink outline-none"
+          >
+            {["1", "2", "3", "4", "5", "6", "7+"].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </PillField>
+
+        <PillField icon={Car} label="Vehicle" htmlFor={`${formId}-vehicle`}>
+          <select
+            id={`${formId}-vehicle`}
+            value={vehicle}
+            onChange={(e) => setVehicle(e.target.value)}
+            className="w-full truncate bg-transparent text-sm font-bold text-ink outline-none"
+          >
+            {VEHICLE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </PillField>
+
+        <button
+          type="submit"
+          className="flex shrink-0 items-center justify-center gap-2 bg-brass px-8 py-4 text-sm font-bold text-ink transition-colors hover:bg-brass-lit md:py-0"
+          data-analytics="whatsapp_click"
+        >
+          <Search className="h-4 w-4" />
+          Get my fare
+        </button>
+      </form>
+    );
   }
 
   return (
@@ -147,5 +244,31 @@ export function QuoteForm() {
         Get my fare on WhatsApp
       </button>
     </form>
+  );
+}
+
+function PillField({
+  icon: Icon,
+  label,
+  htmlFor,
+  shrink,
+  children,
+}: {
+  icon: typeof Circle;
+  label: string;
+  htmlFor: string;
+  shrink?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`flex min-w-0 items-center gap-2.5 px-5 py-3 md:py-0 ${shrink ? "md:w-[132px] md:shrink-0" : "flex-1"}`}>
+      <Icon className="h-4 w-4 shrink-0 text-slate" aria-hidden="true" />
+      <div className="min-w-0 flex-1">
+        <label htmlFor={htmlFor} className="block text-[10px] font-bold uppercase tracking-wide text-slate">
+          {label}
+        </label>
+        {children}
+      </div>
+    </div>
   );
 }

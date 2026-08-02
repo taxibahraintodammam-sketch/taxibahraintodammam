@@ -95,7 +95,7 @@ export function CausewayStrip({
           />
           <div
             className="causeway-trail absolute top-[19px] left-[10%] h-[7px] w-[7px] rounded-full bg-brass-lit lg:top-[24px]"
-            style={{ boxShadow: "0 0 14px 3px rgba(232,199,101,0.65)" }}
+            style={{ boxShadow: "0 0 14px 3px rgba(255,107,129,0.65)" }}
             aria-hidden="true"
           />
 
@@ -106,7 +106,7 @@ export function CausewayStrip({
                   className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-brass-lit bg-ink"
                   aria-hidden="true"
                 >
-                  <span className="eyebrow text-brass-lit">0{index + 1}</span>
+                  <span className="text-[11px] font-bold text-brass-lit">0{index + 1}</span>
                 </span>
                 <span className="mt-3 text-[11px] font-semibold leading-tight text-white sm:text-sm">
                   {node.label}

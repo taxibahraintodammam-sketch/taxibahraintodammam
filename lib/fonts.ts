@@ -1,21 +1,14 @@
-import { Sora, Inter, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Plus_Jakarta_Sans, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
 
 /**
  * next/font/google downloads and self-hosts these at build time — there is
  * no runtime request to fonts.googleapis.com and no <link> tag to Google.
  */
 
-export const sora = Sora({
-  variable: "--font-display",
+export const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
-  weight: ["600", "700"],
-  display: "swap",
-});
-
-export const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -33,4 +26,4 @@ export const plexArabic = IBM_Plex_Sans_Arabic({
   display: "swap",
 });
 
-export const FONT_VARIABLES = `${sora.variable} ${inter.variable} ${plexMono.variable} ${plexArabic.variable}`;
+export const FONT_VARIABLES = `${plusJakarta.variable} ${plexMono.variable} ${plexArabic.variable}`;

@@ -1,4 +1,7 @@
 import { QuoteForm } from "@/components/ui/QuoteForm";
+import { HeroSlider } from "@/components/sections/HeroSlider";
+import { HERO_SLIDES } from "@/content/hero-slides";
+import { HERO_SLIDES_AR } from "@/content/hero-slides.ar";
 import type { Locale } from "@/lib/locale";
 
 const COPY: Record<
@@ -41,12 +44,15 @@ const COPY: Record<
 
 export function Hero({ locale = "en" }: { locale?: Locale }) {
   const copy = COPY[locale];
+  const slides = locale === "ar" ? HERO_SLIDES_AR : HERO_SLIDES;
   return (
-    <section className="bg-ink pb-16 pt-10 lg:pb-20 lg:pt-16">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:gap-16 lg:px-10">
-        <div className="flex flex-col justify-center">
+    <section className="relative overflow-hidden bg-ink pb-20 pt-16 lg:pb-28 lg:pt-24">
+      <HeroSlider slides={slides} />
+
+      <div className="relative mx-auto max-w-[1200px] px-5 lg:px-10">
+        <div className="max-w-2xl">
           <p className="eyebrow text-brass-lit">{copy.eyebrow}</p>
-          <h1 className="mt-3 text-[2rem] font-bold leading-tight text-white lg:text-[3.5rem]">
+          <h1 className="mt-3 text-[2.25rem] font-bold leading-tight text-white lg:text-[3.75rem]">
             {copy.heading}
           </h1>
           <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{copy.body}</p>
@@ -71,10 +77,10 @@ export function Hero({ locale = "en" }: { locale?: Locale }) {
             </div>
           </dl>
         </div>
+      </div>
 
-        <div className="flex items-center">
-          <QuoteForm />
-        </div>
+      <div className="relative mx-auto mt-10 max-w-[1200px] px-5 lg:mt-14 lg:px-10">
+        <QuoteForm variant="pill" />
       </div>
     </section>
   );
