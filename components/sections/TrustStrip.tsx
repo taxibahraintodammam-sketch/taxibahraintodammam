@@ -8,6 +8,7 @@ const ITEMS: Record<Locale, string[]> = {
     "English & Arabic speaking drivers",
     "Flight tracking on airport transfers",
     "Door-to-door, no city-to-city changeovers",
+    "No deposit — cancel free before dispatch",
   ],
   ar: [
     "شركة نقل مرخّصة عابرة للحدود",
@@ -16,6 +17,7 @@ const ITEMS: Record<Locale, string[]> = {
     "سائقون يتحدثون العربية والإنجليزية",
     "تتبع الرحلة الجوية في نقل المطار",
     "من الباب إلى الباب، دون تبديل بين المدن",
+    "بدون دفعة مقدمة — إلغاء مجاني قبل تحرك السائق",
   ],
 };
 
@@ -24,7 +26,7 @@ export function TrustStrip({ locale = "en" }: { locale?: Locale }) {
   return (
     <section aria-label="Why book with us" className="border-b border-ink/10 bg-white">
       <div className="mx-auto max-w-[1200px] px-5 py-8 lg:px-10">
-        <ul className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
           {items.map((item) => (
             <li key={item} className="flex items-start gap-2 text-sm text-ink/80">
               <svg
