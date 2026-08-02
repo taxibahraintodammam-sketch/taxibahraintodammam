@@ -58,7 +58,7 @@ export function MobileNav({
       {open && (
         <div
           id={panelId}
-          className="fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto border-t border-ink/10 bg-white px-5 py-6"
+          className="fixed inset-x-0 top-[72px] bottom-[var(--sticky-bar-height)] z-40 overflow-y-auto border-t border-ink/10 bg-white px-5 py-6"
         >
           <nav aria-label="Mobile">
             <ul className="flex flex-col gap-1">
