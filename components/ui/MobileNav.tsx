@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import type { NavLink } from "@/content/nav";
 import { withSlash } from "@/lib/url";
@@ -19,7 +20,10 @@ export function MobileNav({
   bookNowHref: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const panelId = useId();
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -55,35 +59,38 @@ export function MobileNav({
         )}
       </button>
 
-      {open && (
-        <div
-          id={panelId}
-          className="fixed inset-x-0 top-[72px] bottom-[var(--sticky-bar-height)] z-40 overflow-y-auto border-t border-ink/10 bg-white px-5 py-6"
-        >
-          <nav aria-label="Mobile">
-            <ul className="flex flex-col gap-1">
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={withSlash(link.href)}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-input px-3 py-3 text-lg text-ink/85 hover:bg-ink/5"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <Link
-            href={withSlash(bookNowHref)}
-            onClick={() => setOpen(false)}
-            className="mt-6 flex h-12 items-center justify-center rounded-input bg-brass px-6 font-medium text-ink"
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            id={panelId}
+            className="fixed inset-x-0 top-[72px] bottom-[var(--sticky-bar-height)] z-40 overflow-y-auto border-t border-ink/10 bg-white px-5 py-6"
           >
-            {bookNowLabel}
-          </Link>
-        </div>
-      )}
+            <nav aria-label="Mobile">
+              <ul className="flex flex-col gap-1">
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={withSlash(link.href)}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-input px-3 py-3 text-lg text-ink/85 hover:bg-ink/5"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <Link
+              href={withSlash(bookNowHref)}
+              onClick={() => setOpen(false)}
+              className="mt-6 flex h-12 items-center justify-center rounded-input bg-brass px-6 font-medium text-ink"
+            >
+              {bookNowLabel}
+            </Link>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
