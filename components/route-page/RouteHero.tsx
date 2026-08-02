@@ -31,22 +31,28 @@ export function RouteHero({
             {fillTemplate(dict.taxiFromTo, { from: route.from, to: route.to })}
           </h1>
           <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{route.intro[0]}</p>
-          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-ink/10 pt-6">
-            <div>
-              <dt className="eyebrow text-slate">{dict.distanceLabel}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-ink">
+          <dl className="mt-8 grid grid-cols-3 gap-3 border-t border-ink/10 pt-6 sm:gap-6">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-slate">
+                {dict.distanceLabel}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-ink sm:text-xl">
                 ~{route.distanceKm} km
               </dd>
             </div>
-            <div>
-              <dt className="eyebrow text-slate">{dict.doorToDoorLabel}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-ink">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-slate">
+                {dict.doorToDoorLabel}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-ink sm:text-xl">
                 {route.durationLabel}
               </dd>
             </div>
-            <div>
-              <dt className="eyebrow text-slate">{dict.borderLabel}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-ink">
+            <div className="min-w-0">
+              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-slate">
+                {dict.borderLabel}
+              </dt>
+              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-ink sm:text-xl">
                 {route.borderLabel}
               </dd>
             </div>

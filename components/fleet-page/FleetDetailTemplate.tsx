@@ -52,14 +52,18 @@ export function FleetDetailTemplate({
               {vehicle.name}
             </h1>
             <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{vehicle.intro[0]}</p>
-            <dl className="mt-8 grid grid-cols-2 gap-4 border-t border-ink/10 pt-6">
-              <div>
-                <dt className="eyebrow text-slate">{dict.passengersLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-ink">{vehicle.passengers}</dd>
+            <dl className="mt-8 grid grid-cols-2 gap-3 border-t border-ink/10 pt-6 sm:gap-6">
+              <div className="min-w-0">
+                <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-slate">
+                  {dict.passengersLabel}
+                </dt>
+                <dd className="mt-1 truncate text-lg font-bold text-ink">{vehicle.passengers}</dd>
               </div>
-              <div>
-                <dt className="eyebrow text-slate">{dict.luggageLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-ink">{vehicle.luggage}</dd>
+              <div className="min-w-0">
+                <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-slate">
+                  {dict.luggageLabel}
+                </dt>
+                <dd className="mt-1 truncate text-lg font-bold text-ink">{vehicle.luggage}</dd>
               </div>
             </dl>
           </div>
