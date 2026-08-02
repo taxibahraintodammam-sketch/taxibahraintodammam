@@ -44,22 +44,22 @@ export function FleetDetailTemplate({
 
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink pb-16 pt-8 lg:pb-20 lg:pt-12">
+      <section className="border-b border-ink/10 bg-white pb-16 pt-8 lg:pb-20 lg:pt-12">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:gap-16 lg:px-10">
           <div className="flex flex-col justify-center">
-            <p className="eyebrow text-brass-lit">{dict.fleetEyebrow}</p>
-            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-white lg:text-[2.75rem]">
+            <p className="eyebrow text-brass">{dict.fleetEyebrow}</p>
+            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
               {vehicle.name}
             </h1>
-            <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{vehicle.intro[0]}</p>
-            <dl className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{vehicle.intro[0]}</p>
+            <dl className="mt-8 grid grid-cols-2 gap-4 border-t border-ink/10 pt-6">
               <div>
-                <dt className="eyebrow text-white/50">{dict.passengersLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-white">{vehicle.passengers}</dd>
+                <dt className="eyebrow text-slate">{dict.passengersLabel}</dt>
+                <dd className="mt-1 text-lg font-bold text-ink">{vehicle.passengers}</dd>
               </div>
               <div>
-                <dt className="eyebrow text-white/50">{dict.luggageLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-white">{vehicle.luggage}</dd>
+                <dt className="eyebrow text-slate">{dict.luggageLabel}</dt>
+                <dd className="mt-1 text-lg font-bold text-ink">{vehicle.luggage}</dd>
               </div>
             </dl>
           </div>

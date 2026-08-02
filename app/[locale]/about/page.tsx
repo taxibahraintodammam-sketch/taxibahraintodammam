@@ -165,13 +165,13 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <SchemaScript data={breadcrumbSchema(breadcrumbItems)} />
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink py-14 lg:py-20">
+      <section className="border-b border-ink/10 bg-white py-14 lg:py-20">
         <div className="mx-auto max-w-[820px] px-5 lg:px-10">
-          <p className="eyebrow text-brass-lit">{copy.eyebrow}</p>
-          <h1 className="mt-3 text-[2rem] font-bold leading-tight text-white lg:text-[2.75rem]">
+          <p className="eyebrow text-brass">{copy.eyebrow}</p>
+          <h1 className="mt-3 text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
             {copy.heading}
           </h1>
-          <p className="mt-5 text-base text-white/80 lg:text-lg">{copy.intro}</p>
+          <p className="mt-5 text-base text-slate lg:text-lg">{copy.intro}</p>
         </div>
       </section>
 

@@ -13,13 +13,13 @@ export function Header({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
   const bookNowHref = locale === "ar" ? "/ar/booking/" : "/booking/";
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] border-b border-white/10 bg-ink/95 text-white backdrop-blur supports-[backdrop-filter]:bg-ink/85">
+    <header className="sticky top-0 z-50 h-[72px] border-b border-ink/10 bg-white/95 text-ink backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex h-full max-w-[1200px] items-center justify-between gap-4 px-5 lg:px-10">
         <Link href={withSlash(homeHref)} className="flex min-w-0 flex-col justify-center">
           <span className="truncate font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
             {BUSINESS.brandName}
           </span>
-          <span className="eyebrow hidden text-brass-lit md:block">{dict.eyebrow}</span>
+          <span className="eyebrow hidden text-brass md:block">{dict.eyebrow}</span>
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">
@@ -28,7 +28,7 @@ export function Header({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
               <li key={link.href}>
                 <Link
                   href={withSlash(link.href)}
-                  className="text-sm font-medium text-white/85 hover:text-brass-lit"
+                  className="text-sm font-medium text-ink/75 hover:text-brass"
                 >
                   {link.label}
                 </Link>
@@ -40,7 +40,7 @@ export function Header({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
         <div className="hidden items-center gap-3 lg:flex">
           <a
             href={telHref()}
-            className="flex h-11 items-center gap-2 rounded-input border border-white/20 px-4 text-sm font-medium text-white/85 hover:border-brass-lit hover:text-brass-lit"
+            className="flex h-11 items-center gap-2 rounded-input border border-ink/15 px-4 text-sm font-medium text-ink/75 hover:border-brass hover:text-brass"
             data-analytics="call_click"
           >
             <PhoneIcon />

@@ -22,11 +22,11 @@ import type { Locale } from "@/lib/locale";
 function FooterColumn({ heading, links }: { heading: string; links: NavLink[] }) {
   return (
     <div>
-      <h2 className="eyebrow mb-4 text-white/60">{heading}</h2>
+      <h2 className="eyebrow mb-4 text-slate">{heading}</h2>
       <ul className="flex flex-col gap-2.5">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={withSlash(link.href)} className="text-sm text-white/85 hover:text-brass-lit">
+            <Link href={withSlash(link.href)} className="text-sm text-ink/75 hover:text-brass">
               {link.label}
             </Link>
           </li>
@@ -41,25 +41,25 @@ export function Footer({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
   const isAr = locale === "ar";
 
   return (
-    <footer className="bg-ink text-white">
+    <footer className="border-t border-ink/10 bg-white text-ink">
       <div className="mx-auto max-w-[1200px] px-5 py-16 lg:px-10 lg:py-20">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-5">
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <span className="font-[family-name:var(--font-display)] text-xl font-bold">
               {BUSINESS.brandName}
             </span>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/70">{dict.footerTagline}</p>
-            <p className="eyebrow mt-4 text-brass-lit">{dict.footerLicensedLine}</p>
-            <p className="mt-2 text-sm text-white/70">{dict.footerAvailable}</p>
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate">{dict.footerTagline}</p>
+            <p className="eyebrow mt-4 text-brass">{dict.footerLicensedLine}</p>
+            <p className="mt-2 text-sm text-slate">{dict.footerAvailable}</p>
             <div className="mt-5 flex flex-col gap-2">
-              <a href={telHref()} className="text-sm font-medium text-white hover:text-brass-lit">
+              <a href={telHref()} className="text-sm font-medium text-ink hover:text-brass">
                 {BUSINESS.phoneDisplay}
               </a>
               <a
                 href={whatsappHref()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-white hover:text-brass-lit"
+                className="text-sm font-medium text-ink hover:text-brass"
               >
                 {dict.whatsappCta}
               </a>
@@ -84,14 +84,14 @@ export function Footer({ dict, locale = "en" }: { dict: Dictionary; locale?: Loc
           />
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6">
+        <div className="mt-12 border-t border-ink/10 pt-6">
           <FooterColumn
             heading={dict.footerLegalHeading}
             links={isAr ? LEGAL_LINKS_AR : LEGAL_LINKS}
           />
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/50">
+        <div className="mt-10 flex flex-col gap-2 border-t border-ink/10 pt-6 text-xs text-slate">
           <p>
             © {year} {BUSINESS.brandName}. {dict.footerRightsReserved}
           </p>

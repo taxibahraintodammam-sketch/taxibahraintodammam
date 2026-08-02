@@ -41,7 +41,7 @@ export function MobileNav({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-11 w-11 items-center justify-center rounded-input border border-white/20 text-white"
+        className="flex h-11 w-11 items-center justify-center rounded-input border border-ink/15 text-ink"
       >
         <span className="sr-only">{open ? closeLabel : openLabel}</span>
         {open ? (
@@ -58,7 +58,7 @@ export function MobileNav({
       {open && (
         <div
           id={panelId}
-          className="fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto bg-ink px-5 py-6"
+          className="fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto border-t border-ink/10 bg-white px-5 py-6"
         >
           <nav aria-label="Mobile">
             <ul className="flex flex-col gap-1">
@@ -67,7 +67,7 @@ export function MobileNav({
                   <Link
                     href={withSlash(link.href)}
                     onClick={() => setOpen(false)}
-                    className="block rounded-input px-3 py-3 text-lg text-white/90 hover:bg-white/10"
+                    className="block rounded-input px-3 py-3 text-lg text-ink/85 hover:bg-ink/5"
                   >
                     {link.label}
                   </Link>

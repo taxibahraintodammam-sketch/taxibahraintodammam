@@ -93,13 +93,13 @@ export default async function FleetHubPage({ params }: { params: Promise<{ local
       <SchemaScript data={breadcrumbSchema(breadcrumbItems)} />
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink py-14 lg:py-20">
+      <section className="border-b border-ink/10 bg-white py-14 lg:py-20">
         <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-          <p className="eyebrow text-brass-lit">{dict.fleetCrumb}</p>
-          <h1 className="mt-3 max-w-2xl text-[2rem] font-bold leading-tight text-white lg:text-[2.75rem]">
+          <p className="eyebrow text-brass">{dict.fleetCrumb}</p>
+          <h1 className="mt-3 max-w-2xl text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
             {copy.heading}
           </h1>
-          <p className="mt-5 max-w-2xl text-base text-white/80 lg:text-lg">{copy.body}</p>
+          <p className="mt-5 max-w-2xl text-base text-slate lg:text-lg">{copy.body}</p>
         </div>
       </section>
 

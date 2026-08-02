@@ -148,7 +148,7 @@ export function QuoteForm({ variant = "card" }: { variant?: "card" | "pill" }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid grid-cols-1 gap-4 rounded-card bg-white p-5 shadow-elevation sm:grid-cols-2 lg:p-6"
+      className="grid grid-cols-1 gap-4 rounded-card border border-ink/10 bg-white p-5 shadow-elevation sm:grid-cols-2 lg:p-6"
       aria-label="Get a fare quote on WhatsApp"
     >
       <div className="flex flex-col gap-1.5">

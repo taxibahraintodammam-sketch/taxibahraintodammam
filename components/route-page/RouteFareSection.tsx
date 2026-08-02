@@ -35,7 +35,7 @@ export function RouteFareSection({
         <div className="mt-8 overflow-x-auto rounded-card border border-ink/10">
           <table className="w-full min-w-[560px] border-collapse text-start text-sm">
             <thead>
-              <tr className="bg-ink text-white">
+              <tr className="border-b-2 border-ink text-ink">
                 <th className="px-4 py-3 font-semibold">{dict.vehicleHeader}</th>
                 <th className="px-4 py-3 font-semibold">{dict.capacityHeader}</th>
                 <th className="px-4 py-3 font-semibold">{dict.startingFareHeader}</th>

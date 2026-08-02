@@ -120,32 +120,32 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
       <SchemaScript data={breadcrumbSchema(breadcrumbItems)} />
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink pb-16 pt-8 lg:pb-20 lg:pt-12">
+      <section className="border-b border-ink/10 bg-white pb-16 pt-8 lg:pb-20 lg:pt-12">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:gap-16 lg:px-10">
           <div className="flex flex-col justify-center">
-            <p className="eyebrow text-brass-lit">{copy.eyebrow}</p>
-            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-white lg:text-[2.75rem]">
+            <p className="eyebrow text-brass">{copy.eyebrow}</p>
+            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
               {copy.heading}
             </h1>
-            <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{copy.body}</p>
-            <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6">
+            <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{copy.body}</p>
+            <div className="mt-8 flex flex-col gap-4 border-t border-ink/10 pt-6">
               <a
                 href={whatsappHref()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-lg font-semibold text-white hover:text-brass-lit"
+                className="text-lg font-semibold text-ink hover:text-brass"
                 data-analytics="whatsapp_click"
               >
                 {copy.whatsappLabel}: {BUSINESS.phoneDisplay}
               </a>
               <a
                 href={telHref()}
-                className="text-lg font-semibold text-white hover:text-brass-lit"
+                className="text-lg font-semibold text-ink hover:text-brass"
                 data-analytics="call_click"
               >
                 {copy.callLabel}: {BUSINESS.phoneDisplay}
               </a>
-              <a href={`mailto:${BUSINESS.email}`} className="text-lg font-semibold text-white hover:text-brass-lit">
+              <a href={`mailto:${BUSINESS.email}`} className="text-lg font-semibold text-ink hover:text-brass">
                 {copy.emailLabel}: {BUSINESS.email}
               </a>
             </div>

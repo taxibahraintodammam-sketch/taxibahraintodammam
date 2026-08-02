@@ -94,16 +94,16 @@ export default async function CausewayHubPage({
 
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink pb-16 pt-8 lg:pb-20 lg:pt-12">
+      <section className="border-b border-ink/10 bg-white pb-16 pt-8 lg:pb-20 lg:pt-12">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:gap-16 lg:px-10">
           <div className="flex flex-col justify-center">
-            <p className="eyebrow text-brass-lit">
+            <p className="eyebrow text-brass">
               {isAr ? "البحرين ⇄ السعودية · مرخّصة على مدار الساعة" : "Bahrain ⇄ Saudi Arabia · Licensed 24/7"}
             </p>
-            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-white lg:text-[2.75rem]">
+            <h1 className="mt-3 text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
               {dict.causewayHubName}
             </h1>
-            <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{hub.intro[0]}</p>
+            <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{hub.intro[0]}</p>
           </div>
           <div className="flex items-center">
             <QuoteForm />

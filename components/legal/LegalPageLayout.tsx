@@ -29,12 +29,12 @@ export function LegalPageLayout({
       <SchemaScript data={breadcrumbSchema(breadcrumbItems)} />
       <Breadcrumbs items={breadcrumbItems} />
 
-      <section className="bg-ink py-14 lg:py-16">
+      <section className="border-b border-ink/10 bg-white py-14 lg:py-16">
         <div className="mx-auto max-w-[820px] px-5 lg:px-10">
-          <h1 className="text-[1.75rem] font-bold leading-tight text-white lg:text-[2.5rem]">
+          <h1 className="text-[1.75rem] font-bold leading-tight text-ink lg:text-[2.5rem]">
             {title}
           </h1>
-          <p className="mt-3 text-sm text-white/60">
+          <p className="mt-3 text-sm text-slate">
             {lastUpdatedLabel}: {lastUpdated}
           </p>
         </div>

@@ -75,10 +75,10 @@ export function CausewayStrip({
   ];
 
   return (
-    <section aria-label={copy.ariaLabel} className="bg-ink py-14 lg:py-20">
+    <section aria-label={copy.ariaLabel} className="border-y border-ink/10 bg-white py-14 lg:py-20">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <p className="eyebrow text-center text-brass-lit">{copy.eyebrow}</p>
-        <h2 className="mt-2 text-center text-2xl font-bold text-white lg:text-3xl">
+        <p className="eyebrow text-center text-brass">{copy.eyebrow}</p>
+        <h2 className="mt-2 text-center text-2xl font-bold text-ink lg:text-3xl">
           {heading ?? copy.defaultHeading}
         </h2>
 
@@ -90,7 +90,7 @@ export function CausewayStrip({
         */}
         <div dir="ltr" className="relative mt-12">
           <div
-            className="absolute left-[10%] right-[10%] top-[22px] h-px bg-white/15 lg:top-[27px]"
+            className="absolute left-[10%] right-[10%] top-[22px] h-px bg-ink/10 lg:top-[27px]"
             aria-hidden="true"
           />
           <div
@@ -103,16 +103,16 @@ export function CausewayStrip({
             {nodes.map((node, index) => (
               <li key={`${node.label}-${index}`} className="flex flex-col items-center text-center">
                 <span
-                  className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-brass-lit bg-ink"
+                  className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-brass bg-white"
                   aria-hidden="true"
                 >
-                  <span className="text-[11px] font-bold text-brass-lit">0{index + 1}</span>
+                  <span className="text-[11px] font-bold text-brass">0{index + 1}</span>
                 </span>
-                <span className="mt-3 text-[11px] font-semibold leading-tight text-white sm:text-sm">
+                <span className="mt-3 text-[11px] font-semibold leading-tight text-ink sm:text-sm">
                   {node.label}
                 </span>
                 {node.meta && (
-                  <span className="eyebrow mt-1 text-white/50 hidden sm:block">{node.meta}</span>
+                  <span className="eyebrow mt-1 text-slate hidden sm:block">{node.meta}</span>
                 )}
               </li>
             ))}
