@@ -452,8 +452,8 @@ export default function LetterheadPage() {
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">{t.authorizedSignature}</p>
                             <div className={`flex items-end gap-6 ${lang === 'ar' ? 'justify-start' : 'justify-end'}`}>
                                 <div className="text-center">
-                                    <img src="/ismail-signature.png" alt="Ismail" className="h-8 w-auto object-contain mx-auto" />
-                                    <p className="text-[10px] font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-1 min-w-[70px]">Ismail</p>
+                                    <img src="/fahed-signature.png" alt="Fahed Irshad" className="h-8 w-auto object-contain mx-auto" />
+                                    <p className="text-[10px] font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-1 min-w-[70px]">Fahed Irshad</p>
                                     <p className="text-[8px] text-gray-400">{t.director}</p>
                                 </div>
                                 <div className="text-center">

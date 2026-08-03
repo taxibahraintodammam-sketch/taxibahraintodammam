@@ -259,7 +259,7 @@ export default function HandoverPage() {
                                     <Image src="/zumer-signature.png" alt="Zumer" fill className="object-contain grayscale" />
                                 </div>
                                 <div className="h-full relative w-16">
-                                    <Image src="/ismail-signature.png" alt="Ismail" fill className="object-contain grayscale" />
+                                    <Image src="/fahed-signature.png" alt="Fahed Irshad" fill className="object-contain grayscale" />
                                 </div>
                             </div>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Partner Approvals</p>

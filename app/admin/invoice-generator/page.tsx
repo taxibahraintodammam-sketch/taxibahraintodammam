@@ -728,8 +728,8 @@ export default function UniversalInvoiceGenerator() {
                                             <p className="text-[7px] font-bold text-gray-300 mt-1 uppercase italic tracking-widest">Zumer</p>
                                         </div>
                                         <div className="text-center">
-                                            <img src="/ismail-signature.png" alt="Ismail" className="h-full w-auto object-contain select-none" />
-                                            <p className="text-[7px] font-bold text-gray-300 mt-1 uppercase italic tracking-widest">Ismail</p>
+                                            <img src="/fahed-signature.png" alt="Fahed Irshad" className="h-full w-auto object-contain select-none" />
+                                            <p className="text-[7px] font-bold text-gray-300 mt-1 uppercase italic tracking-widest">Fahed Irshad</p>
                                         </div>
                                     </div>
                                 </div>

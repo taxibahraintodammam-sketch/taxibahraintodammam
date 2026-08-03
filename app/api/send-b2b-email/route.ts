@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
                 <table role="presentation" style="margin-top: 28px; border-top: 1px solid #eee; padding-top: 18px;">
                     <tr>
                         <td style="padding-right: 24px;">
-                            <img src="https://taxibahraintodammam.com/ismail-signature.png" alt="Ismail" style="height: 34px; display: block;" />
-                            <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Ismail</p>
+                            <img src="https://taxibahraintodammam.com/fahed-signature.png" alt="Fahed Irshad" style="height: 34px; display: block;" />
+                            <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Fahed Irshad</p>
                             <p style="margin: 0; font-size: 11px; color: #888;">Director</p>
                         </td>
                         <td>
