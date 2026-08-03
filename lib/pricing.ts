@@ -1,14 +1,12 @@
+import { ROUTES } from "@/content/routes";
+import { ROUTE_FARES, type VehicleClass } from "@/content/fares";
 
 export type VehicleType =
     | "Mercedes S-Class"
     | "BMW 7 Series"
-    | "Cadillac Escalade"
     | "GMC Yukon XL / Denali"
-    | "Genesis G80 VIP"
-    | "Mercedes Vito"
-    | "Ford Taurus 2025"
-    | "Mercedes Sprinter"
     | "Hyundai Staria VIP"
+    | "Mercedes Sprinter"
     | "Toyota Hiace"
     | "Toyota Coaster"
     | "Toyota Camry"
@@ -21,52 +19,52 @@ export interface RoutePricing {
     }
 }
 
-// Normalized Locations
-export const LOCATIONS = ['Jeddah', 'Makkah', 'Madinah', 'Taif', 'Riyadh', 'Yanbu'];
-
-export const PRICING_RULES: { [route: string]: RoutePricing } = {
-    // Jeddah <-> Makkah
-    'jeddah-makkah': {
-        'Toyota Camry': { price: 300 },
-        'GMC Yukon XL / Denali': { price: 600 },
-        'Hyundai Staria VIP': { price: 350 },
-        'Hyundai Starex': { price: 300 },
-        'Toyota Hiace': { price: 450 },
-        'Toyota Coaster': { price: 800 },
-    },
-    // Jeddah <-> Madinah
-    'jeddah-madinah': {
-        'Toyota Camry': { price: 600 },
-        'GMC Yukon XL / Denali': { price: 1200 },
-        'Hyundai Staria VIP': { price: 850 },
-        'Hyundai Starex': { price: 750 },
-        'Toyota Hiace': { price: 950 },
-        'Toyota Coaster': { price: 1500 },
-    },
-    // Makkah <-> Madinah
-    'makkah-madinah': {
-        'Toyota Camry': { price: 550 },
-        'GMC Yukon XL / Denali': { price: 1000 },
-        'Hyundai Staria VIP': { price: 750 },
-        'Hyundai Starex': { price: 650 },
-        'Toyota Hiace': { price: 850 },
-        'Toyota Coaster': { price: 1400 },
-    },
-    // Taif <-> Makkah
-    'makkah-taif': {
-        'Toyota Camry': { price: 350 },
-        'GMC Yukon XL / Denali': { price: 700 },
-        'Hyundai Staria VIP': { price: 500 },
-        'Hyundai Starex': { price: 450 },
-        'Toyota Hiace': { price: 600 },
-        'Toyota Coaster': { price: 1000 },
-    },
+// This business's actual fleet vehicle names (VEHICLE_OPTIONS in
+// admin/bookings) mapped to the fare-tier class published on the live rate
+// cards (content/fares.ts), so the admin Pricing page can never drift from
+// what customers are actually quoted on the site.
+const VEHICLE_CLASS_MAP: Record<VehicleType, VehicleClass> = {
+    "Toyota Camry": "sedan",
+    "Hyundai Starex": "van",
+    "Toyota Hiace": "van",
+    "Mercedes Sprinter": "van",
+    "GMC Yukon XL / Denali": "suv",
+    "Hyundai Staria VIP": "suv",
+    "Mercedes S-Class": "luxury",
+    "BMW 7 Series": "luxury",
+    "Toyota Coaster": "bus",
+    "Luxurious Bus": "bus",
 };
+
+// Turns a real city/airport name (content/routes.ts "from"/"to" values) into
+// a stable slug fragment — e.g. "Dammam Airport (DMM)" -> "dammam-airport".
+function slugifyLocation(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/\(.*?\)/g, "")
+        .replace(/international/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function routeKeyFor(a: string, b: string): string {
+    return [slugifyLocation(a), slugifyLocation(b)].sort().join("-");
+}
+
+// Every real pickup/destination name used across the live route pages —
+// "Bahrain", "Dammam Airport (DMM)", "Al Ahsa / Hofuf", etc.
+export const LOCATIONS: string[] = Array.from(
+    new Set(ROUTES.flatMap((r) => [r.from, r.to]))
+);
+
+// Longest names first, so "Dammam Airport (DMM)" matches before the plain
+// "Dammam" substring it contains.
+const LOCATIONS_BY_LENGTH = [...LOCATIONS].sort((a, b) => b.length - a.length);
 
 export function normalizeLocation(loc: string): string | null {
     if (!loc) return null;
     const lower = loc.toLowerCase();
-    for (const city of LOCATIONS) {
+    for (const city of LOCATIONS_BY_LENGTH) {
         if (lower.includes(city.toLowerCase())) {
             return city;
         }
@@ -74,30 +72,56 @@ export function normalizeLocation(loc: string): string | null {
     return null;
 }
 
-export function getPrice(from: string, to: string, vehicle: string, isRoundTrip: boolean = false): number | null {
+// Built once from content/fares.ts — the same BHD figures shown on the
+// public site's fare tables — keyed by real route (not the old
+// Jeddah/Makkah/Madinah placeholder data from the template this project
+// started from).
+export const PRICING_RULES: { [route: string]: RoutePricing } = (() => {
+    const rules: { [route: string]: RoutePricing } = {};
+    for (const route of ROUTES) {
+        const fares = ROUTE_FARES[route.slug];
+        if (!fares) continue;
+        const key = routeKeyFor(route.from, route.to);
+        const vehicles: RoutePricing = rules[key] || {};
+        for (const [vehicleName, vehicleClass] of Object.entries(VEHICLE_CLASS_MAP)) {
+            const fare = fares.find((f) => f.vehicle === vehicleClass);
+            if (fare) vehicles[vehicleName] = { price: fare.bhd };
+        }
+        rules[key] = vehicles;
+    }
+    return rules;
+})();
+
+// content/fares.ts prices are BHD (this business's real quoting currency —
+// see content/business.ts CURRENCY.primary).
+export const PRICING_CURRENCY = "BHD";
+
+// Same key format used to build PRICING_RULES (and what's saved to/read from
+// the Supabase pricing_rules table) — shared here so any caller resolving a
+// custom saved price can match against it instead of re-deriving its own key.
+export function getRouteKey(from: string, to: string): string | null {
     const loc1 = normalizeLocation(from);
     const loc2 = normalizeLocation(to);
+    if (!loc1 || !loc2) return null;
+    return routeKeyFor(loc1, loc2);
+}
 
-    if (!loc1 || !loc2 || !vehicle) return null;
+export function getPrice(from: string, to: string, vehicle: string, isRoundTrip: boolean = false): number | null {
+    const routeKey = getRouteKey(from, to);
+    if (!routeKey || !vehicle) return null;
 
-    // Create route key (alphabetical order to handle bidirectional)
-    const routeKey = [loc1.toLowerCase(), loc2.toLowerCase()].sort().join('-');
-    const routeKeyDirect = `${loc1.toLowerCase()}-${loc2.toLowerCase()}`;
+    const rules = PRICING_RULES[routeKey];
+    if (!rules) return null;
 
-    // Check rules
-    const rules = PRICING_RULES[routeKey] || PRICING_RULES[routeKeyDirect];
+    // Find vehicle with flexible matching
+    const vehicleKey = Object.keys(rules).find(key =>
+        key.toLowerCase().includes(vehicle.toLowerCase()) ||
+        vehicle.toLowerCase().includes(key.toLowerCase())
+    );
 
-    if (rules) {
-        // Find vehicle with flexible matching
-        const vehicleKey = Object.keys(rules).find(key => 
-            key.toLowerCase().includes(vehicle.toLowerCase()) || 
-            vehicle.toLowerCase().includes(key.toLowerCase())
-        );
-
-        if (vehicleKey && rules[vehicleKey]) {
-            let basePrice = rules[vehicleKey].price;
-            return isRoundTrip ? basePrice * 2 : basePrice;
-        }
+    if (vehicleKey && rules[vehicleKey]) {
+        const basePrice = rules[vehicleKey].price;
+        return isRoundTrip ? basePrice * 2 : basePrice;
     }
 
     return null;

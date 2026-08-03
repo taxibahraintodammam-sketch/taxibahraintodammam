@@ -205,7 +205,7 @@ export default function PricingPage() {
                                         </div>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-neutral-400 pointer-events-none">
-                                                SAR
+                                                BHD
                                             </span>
                                             <Input
                                                 type="number"
@@ -218,7 +218,7 @@ export default function PricingPage() {
                                         </div>
                                         {isChanged && (
                                             <p className="text-[10px] text-amber-400">
-                                                Default: SAR {defaults[route]?.[vehicle]}
+                                                Default: BHD {defaults[route]?.[vehicle]}
                                             </p>
                                         )}
                                     </div>

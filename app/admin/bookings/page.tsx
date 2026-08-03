@@ -44,7 +44,7 @@ import {
     Mail,
     Truck
 } from 'lucide-react';
-import { getPrice } from '@/lib/pricing';
+import { getPrice, getRouteKey } from '@/lib/pricing';
 import { driverService, Driver } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -226,7 +226,7 @@ export default function BookingsPage() {
         driver_phone: '',
         driver_plate: '',
         flight_number: '',
-        currency: 'SAR',
+        currency: 'BHD',
         payment_method: 'Cash to Driver',
         has_return_trip: false
     });
@@ -821,24 +821,12 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
     };
 
     const getResolvedPrice = (from: string, to: string, vehicle: string, isRoundTrip: boolean = false) => {
-        const normalizeLocationLocal = (loc: string) => {
-            const locations = ['Jeddah', 'Makkah', 'Madinah', 'Taif', 'Riyadh', 'Yanbu'];
-            const lower = loc.toLowerCase();
-            for (const city of locations) {
-                if (lower.includes(city.toLowerCase())) return city.toLowerCase();
-            }
-            return null;
-        };
-        const loc1 = normalizeLocationLocal(from);
-        const loc2 = normalizeLocationLocal(to);
-        if (loc1 && loc2 && vehicle) {
-            const routeKey = [loc1, loc2].sort().join('-');
-            const routeKeyDirect = `${loc1}-${loc2}`;
-            
-            const dbRouteRules = dbPrices[routeKey] || dbPrices[routeKeyDirect];
+        const routeKey = getRouteKey(from, to);
+        if (routeKey && vehicle) {
+            const dbRouteRules = dbPrices[routeKey];
             if (dbRouteRules) {
-                const matchingVehicle = Object.keys(dbRouteRules).find(key => 
-                    key.toLowerCase().includes(vehicle.toLowerCase()) || 
+                const matchingVehicle = Object.keys(dbRouteRules).find(key =>
+                    key.toLowerCase().includes(vehicle.toLowerCase()) ||
                     vehicle.toLowerCase().includes(key.toLowerCase())
                 );
                 if (matchingVehicle && dbRouteRules[matchingVehicle]) {
@@ -855,9 +843,9 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
         const price = getResolvedPrice(from, to, vehicle, isRoundTrip);
         if (price) {
             if (target === 'new') {
-                setNewBooking({ ...newBooking, total_price: price });
+                setNewBooking({ ...newBooking, total_price: price, currency: 'BHD' });
             } else if (editedBooking) {
-                setEditedBooking({ ...editedBooking, total_price: price });
+                setEditedBooking({ ...editedBooking, total_price: price, currency: 'BHD' });
             }
         } else {
             alert("No standard pricing found for this route and vehicle. Please set price manually.");
@@ -2663,12 +2651,12 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                         </Button>
                                     </div>
                                     <div className="flex gap-1 mt-1 flex-wrap">
-                                        {['SAR', 'USD', 'AED', 'EUR', 'KWD', 'OMR'].map((c) => (
+                                        {['BHD', 'SAR', 'USD', 'AED', 'EUR', 'KWD', 'OMR'].map((c) => (
                                             <span
                                                 key={c}
                                                 onClick={() => setNewBooking({ ...newBooking, currency: c })}
                                                 className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer border transition-colors ${
-                                                    (newBooking.currency || 'SAR') === c
+                                                    (newBooking.currency || 'BHD') === c
                                                     ? 'bg-primary border-primary text-black font-bold'
                                                     : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
                                                 }`}
