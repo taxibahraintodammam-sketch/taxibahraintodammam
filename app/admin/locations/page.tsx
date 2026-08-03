@@ -21,7 +21,7 @@ interface Location {
     created_at?: string;
 }
 
-const LOCATION_TYPES = ['City', 'Holy City', 'Airport', 'Hotel Zone', 'Border', 'Other'];
+const LOCATION_TYPES = ['City', 'Airport', 'Hotel Zone', 'Border', 'Other'];
 
 const SETUP_SQL = `CREATE TABLE IF NOT EXISTS locations (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),

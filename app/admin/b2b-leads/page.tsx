@@ -433,7 +433,7 @@ export default function B2BLeadsPage() {
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-gray-900">B2B Leads</h1>
                     <p className="text-gray-500 text-sm mt-1">
-                        Umrah/Hajj travel companies and other partners — import, group, and email in bulk
+                        Corporate accounts, travel agencies, and other B2B partners — import, group, and email in bulk
                     </p>
                 </div>
             </div>
@@ -505,7 +505,7 @@ export default function B2BLeadsPage() {
                         <Input placeholder="Company name" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
                         <Input placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                         <Input placeholder="Country" value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
-                        <Input placeholder="Group (e.g. Pakistan Umrah)" value={form.group_name} onChange={e => setForm(f => ({ ...f, group_name: e.target.value }))} />
+                        <Input placeholder="Group (e.g. Aramco Contractors)" value={form.group_name} onChange={e => setForm(f => ({ ...f, group_name: e.target.value }))} />
                     </div>
                     <div className="flex gap-3 mt-3">
                         <Button onClick={handleAddLead} disabled={saving} className="bg-primary text-black hover:bg-black hover:text-white font-bold">
@@ -665,7 +665,7 @@ export default function B2BLeadsPage() {
                                 <Textarea
                                     value={message}
                                     onChange={e => setMessage(e.target.value)}
-                                    placeholder={`Dear {{company}} team,\n\nWe'd like to introduce Taxi Bahrain to Dammam as your trusted ground transport partner for pilgrims traveling to Makkah and Madinah...`}
+                                    placeholder={`Dear {{company}} team,\n\nWe'd like to introduce Taxi Bahrain to Dammam as your trusted ground transport partner for staff and client transfers across the King Fahd Causeway...`}
                                     rows={10}
                                     disabled={sending}
                                 />
@@ -762,7 +762,7 @@ export default function B2BLeadsPage() {
                                 <Textarea
                                     value={editForm.notes}
                                     onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-                                    placeholder="e.g. Spoke on phone 20 Jul, interested in group Umrah packages..."
+                                    placeholder="e.g. Spoke on phone 20 Jul, interested in recurring staff rotation transport..."
                                     rows={4}
                                 />
                             </div>

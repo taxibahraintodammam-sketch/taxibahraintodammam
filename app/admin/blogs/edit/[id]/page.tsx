@@ -44,7 +44,7 @@ export default function EditBlogPage({ params }: EditBlogPageProps) {
 
     const categories = [
         'Travel Tips',
-        'Umrah Guide',
+        'Border & Visa Guide',
         'Airport Guide',
         'Business Travel',
         'Saudi Arabia',
@@ -319,7 +319,6 @@ export default function EditBlogPage({ params }: EditBlogPageProps) {
                                     {AUTHORS.map(author => (
                                         <option key={author.id} value={author.name}>{author.name}</option>
                                     ))}
-                                    <option value="Taxi Service KSA">Taxi Service KSA (Legacy)</option>
                                 </select>
                             </div>
 

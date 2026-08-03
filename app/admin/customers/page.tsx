@@ -131,7 +131,7 @@ export default function CustomersPage() {
             const c = map.get(key)!;
             c.totalBookings++;
             c.totalSpent += Number(b.total_price || 0);
-            const bookingCurrency = b.currency || 'SAR';
+            const bookingCurrency = b.currency || 'BHD';
             c.totalSpentByCurrency[bookingCurrency] = (c.totalSpentByCurrency[bookingCurrency] || 0) + Number(b.total_price || 0);
             if (b.pickup_date > c.lastBookingDate) {
                 c.lastBookingDate = b.pickup_date;
@@ -142,7 +142,10 @@ export default function CustomersPage() {
         }
 
         const result = Array.from(map.values())
-            .map(c => ({ ...c, isRepeat: c.totalBookings > 1, isVIP: c.totalBookings >= 3 || c.totalSpent >= 2000 }))
+            // VIP-by-spend checks the BHD bucket only (real primary currency —
+            // see content/business.ts), not the currency-blind totalSpent sum,
+            // since mixing e.g. SAR and BHD totals misjudges VIP status.
+            .map(c => ({ ...c, isRepeat: c.totalBookings > 1, isVIP: c.totalBookings >= 3 || (c.totalSpentByCurrency['BHD'] || 0) >= 200 }))
             .sort((a, b) => b.totalBookings - a.totalBookings);
 
         setCustomers(result);

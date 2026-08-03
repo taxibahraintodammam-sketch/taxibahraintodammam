@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
         switch (status) {
             case 'quote_sent': {
-                const curr = currency || 'SAR';
+                const curr = currency || 'BHD';
                 const price = totalPrice ? `${curr} ${Number(totalPrice).toFixed(2)}` : null;
                 subject = `💰 Your Quote is Ready - Taxi Bahrain to Dammam`;
                 htmlContent = `${wrapperStart}

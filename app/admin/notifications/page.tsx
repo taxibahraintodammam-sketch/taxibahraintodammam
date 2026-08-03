@@ -22,6 +22,8 @@ interface NotifEntry {
     time: string;
     rawLine: string;
     status: string;
+    totalPrice?: number;
+    currency?: string;
 }
 
 interface Booking {
@@ -30,6 +32,8 @@ interface Booking {
     customer_email: string;
     status: string;
     internal_notes?: string;
+    total_price?: number;
+    currency?: string;
 }
 
 const TYPE_CONFIG: Record<string, { color: string; icon: string }> = {
@@ -38,27 +42,35 @@ const TYPE_CONFIG: Record<string, { color: string; icon: string }> = {
     'Cancelled': { color: 'bg-red-500/15 text-red-400',        icon: '❌' },
     'Completed': { color: 'bg-sky-500/15 text-sky-400',        icon: '🌟' },
     'In_progress':{ color: 'bg-purple-500/15 text-purple-400', icon: '🚗' },
+    'Receipt':   { color: 'bg-lime-500/15 text-lime-400',      icon: '🧾' },
+    'Invoice':   { color: 'bg-lime-500/15 text-lime-400',      icon: '🧾' },
     'Other':     { color: 'bg-neutral-500/15 text-neutral-400', icon: '📧' },
 };
 
 function parseNotes(booking: Booking): NotifEntry[] {
     if (!booking.internal_notes) return [];
-    const lines = booking.internal_notes.split('\n').filter(l => l.startsWith('📧'));
+    // Every appendEmailLog() call site writes "<optional emoji> [DD Mon, HH:MM] message",
+    // but the emoji prefix differs (📧 for status/quote emails, 🧾 for receipt/invoice,
+    // none at all for ad-hoc client emails) — matching on the timestamp bracket instead
+    // of one specific emoji catches all of them instead of silently dropping the rest.
+    const lines = booking.internal_notes.split('\n').filter(l => /\[\d{1,2}\s/.test(l));
     return lines.map(line => {
-        // Format: 📧 [DD Mon HH:MM] Status email — Confirmed
-        //      or 📧 [DD Mon HH:MM] Quote sent — SAR 500.00
+        // Format: 📧 [DD Mon, HH:MM] Status email — Confirmed
+        //      or 🧾 [DD Mon, HH:MM] Receipt sent — BHD 40.00 | Cash
         const timeMatch = line.match(/\[([^\]]+)\]/);
         const time = timeMatch?.[1] || '';
 
         let type = 'Other';
-        let label = line.replace('📧', '').replace(/\[[^\]]+\]/, '').trim();
+        const label = line.replace(/^.*?\]/, '').trim();
 
         const lower = label.toLowerCase();
-        if (lower.includes('quote'))        type = 'Quote';
+        if (lower.includes('quote'))          type = 'Quote';
         else if (lower.includes('confirmed')) type = 'Confirmed';
         else if (lower.includes('cancelled')) type = 'Cancelled';
         else if (lower.includes('completed')) type = 'Completed';
         else if (lower.includes('progress'))  type = 'In_progress';
+        else if (lower.includes('receipt'))   type = 'Receipt';
+        else if (lower.includes('invoice'))   type = 'Invoice';
 
         return {
             bookingId:    booking.id,
@@ -70,6 +82,8 @@ function parseNotes(booking: Booking): NotifEntry[] {
             time,
             rawLine: line,
             status: booking.status,
+            totalPrice: booking.total_price,
+            currency: booking.currency,
         };
     });
 }
@@ -94,7 +108,7 @@ export default function NotificationsPage() {
         setLoading(true);
         const { data } = await supabase
             .from('bookings')
-            .select('id,customer_name,customer_email,status,internal_notes')
+            .select('id,customer_name,customer_email,status,internal_notes,total_price,currency')
             .is('deleted_at', null)
             .not('internal_notes', 'is', null)
             .order('created_at', { ascending: false });
@@ -138,6 +152,8 @@ export default function NotificationsPage() {
                     status,
                     customerEmail: n.customerEmail,
                     customerName:  n.customerName,
+                    totalPrice:    n.totalPrice,
+                    currency:      n.currency,
                 }),
             });
             setResent(key);

@@ -101,8 +101,9 @@ export default function ReportsPage() {
     for (const b of filtered) {
         if (!['completed', 'confirmed'].includes(b.status)) continue;
         // Chart shows one number per month — mixing currencies into that bar
-        // would misreport revenue, so this chart tracks SAR bookings only.
-        if ((b.currency || 'SAR') !== 'SAR') continue;
+        // would misreport revenue, so this chart tracks BHD bookings only
+        // (the business's real primary currency — see content/business.ts).
+        if ((b.currency || 'BHD') !== 'BHD') continue;
         const key = new Date(b.pickup_date).toLocaleString('en-US', { month: 'short', year: '2-digit' });
         if (monthlyMap.has(key)) monthlyMap.set(key, (monthlyMap.get(key) || 0) + Number(b.total_price || 0));
     }
@@ -132,12 +133,12 @@ export default function ReportsPage() {
     const revenueByCurrency = filtered
         .filter(b => ['completed', 'confirmed'].includes(b.status))
         .reduce((acc, b) => {
-            const curr = b.currency || 'SAR';
+            const curr = b.currency || 'BHD';
             acc[curr] = (acc[curr] || 0) + Number(b.total_price || 0);
             return acc;
         }, {} as Record<string, number>);
     const totalRevenueLabel = Object.keys(revenueByCurrency).length === 0
-        ? 'SAR 0'
+        ? 'BHD 0'
         : Object.entries(revenueByCurrency).map(([curr, amount]) => `${curr} ${amount.toLocaleString()}`).join(' + ');
 
     const completedTrips = filtered.filter(b => b.status === 'completed').length;
@@ -146,14 +147,14 @@ export default function ReportsPage() {
     const completedByCurrency = filtered
         .filter(b => b.status === 'completed')
         .reduce((acc, b) => {
-            const curr = b.currency || 'SAR';
+            const curr = b.currency || 'BHD';
             if (!acc[curr]) acc[curr] = { sum: 0, count: 0 };
             acc[curr].sum += Number(b.total_price || 0);
             acc[curr].count += 1;
             return acc;
         }, {} as Record<string, { sum: number; count: number }>);
     const avgValueLabel = Object.keys(completedByCurrency).length === 0
-        ? 'SAR 0'
+        ? 'BHD 0'
         : Object.entries(completedByCurrency).map(([curr, { sum, count }]) => `${curr} ${Math.round(sum / count)}`).join(' + ');
 
     const hasDateFilter = !!dateFrom || !!dateTo;
@@ -243,14 +244,14 @@ export default function ReportsPage() {
                 <h2 className="text-sm font-bold text-neutral-300 uppercase tracking-widest mb-1">
                     Monthly Revenue (Last 6 Months)
                 </h2>
-                <p className="text-[11px] text-neutral-500 mb-4">SAR bookings only — other currencies excluded to avoid mixing totals</p>
+                <p className="text-[11px] text-neutral-500 mb-4">BHD bookings only — other currencies excluded to avoid mixing totals</p>
                 <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={monthlyRevenue} barSize={36}>
                         <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
                         <Tooltip
                             contentStyle={{ background: '#1f1f1f', border: '1px solid #333', borderRadius: 8, color: '#fff' }}
-                            formatter={(v) => [`SAR ${Number(v).toLocaleString()}`, 'Revenue']}
+                            formatter={(v) => [`BHD ${Number(v).toLocaleString()}`, 'Revenue']}
                         />
                         <Bar dataKey="revenue" fill="#C6FF00" radius={[6, 6, 0, 0]} />
                     </BarChart>

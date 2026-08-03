@@ -35,7 +35,7 @@ export default function NewBlogPage() {
 
     const categories = [
         'Travel Tips',
-        'Umrah Guide',
+        'Border & Visa Guide',
         'Airport Guide',
         'Business Travel',
         'Saudi Arabia',

@@ -28,10 +28,11 @@ interface Inquiry {
     created_at: string;
 }
 
-const SETUP_SQL = `See supabase-missing-schema.sql in the project root — it creates
-this table and locks it to the admin_users allowlist from
-supabase-rls-hardening.sql. The contact form at /contact already
-posts to /api/send-contact, which inserts into this table.`;
+const SETUP_SQL = `Run supabase-schema.sql in the project root (Supabase SQL editor) —
+it creates the support_inquiries table and its RLS policy. Any
+signed-in Supabase admin can read/update it. The contact form at
+/contact already posts to /api/send-contact, which inserts into
+this table.`;
 
 export default function SupportPage() {
     const router = useRouter();

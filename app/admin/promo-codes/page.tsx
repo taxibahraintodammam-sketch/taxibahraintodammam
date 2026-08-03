@@ -180,14 +180,14 @@ export default function PromoCodesPage() {
                                 className="w-full h-10 rounded-md border border-gray-200 px-3 text-sm font-medium bg-white"
                             >
                                 <option value="percentage">Percentage (%)</option>
-                                <option value="fixed">Fixed Amount (SAR)</option>
+                                <option value="fixed">Fixed Amount (BHD)</option>
                             </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Discount Value *</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                    {form.discount_type === 'percentage' ? '%' : 'SAR'}
+                                    {form.discount_type === 'percentage' ? '%' : 'BHD'}
                                 </span>
                                 <Input
                                     type="number"
@@ -276,7 +276,7 @@ export default function PromoCodesPage() {
                                                 {pc.discount_type === 'percentage' ? (
                                                     <><Percent className="w-3.5 h-3.5 text-blue-500" />{pc.discount_value}% off</>
                                                 ) : (
-                                                    <><DollarSign className="w-3.5 h-3.5 text-green-500" />SAR {pc.discount_value} off</>
+                                                    <><DollarSign className="w-3.5 h-3.5 text-green-500" />BHD {pc.discount_value} off</>
                                                 )}
                                             </span>
                                         </td>
