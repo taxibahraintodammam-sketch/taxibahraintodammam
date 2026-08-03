@@ -122,6 +122,9 @@ interface Booking {
     child_seats?: number;
     currency?: string;
     payment_method?: string;
+    booking_type?: 'transfer' | 'hourly' | 'multi_day';
+    duration_hours?: number;
+    end_date?: string;
 }
 
 export default function BookingsPage() {
@@ -228,7 +231,10 @@ export default function BookingsPage() {
         flight_number: '',
         currency: 'BHD',
         payment_method: 'Cash to Driver',
-        has_return_trip: false
+        has_return_trip: false,
+        booking_type: 'transfer',
+        duration_hours: undefined,
+        end_date: ''
     });
 
     const [newBooking, setNewBooking] = useState<Partial<Booking>>(emptyNewBooking());
@@ -317,6 +323,15 @@ export default function BookingsPage() {
         } catch (e) {
             return timeStr;
         }
+    };
+
+    // Inclusive day count for a multi-day tour, e.g. Mon->Wed = 3 days.
+    const tripDayCount = (start?: string, end?: string): number | null => {
+        if (!start || !end) return null;
+        const startMs = new Date(start).getTime();
+        const endMs = new Date(end).getTime();
+        if (isNaN(startMs) || isNaN(endMs) || endMs < startMs) return null;
+        return Math.round((endMs - startMs) / 86400000) + 1;
     };
 
     const getTimeSince = (dateStr: string) => {
@@ -504,6 +519,7 @@ export default function BookingsPage() {
     // Auto-suggest Price as user fills trip details
     useEffect(() => {
         if (!isCreating) return;
+        if ((newBooking.booking_type || 'transfer') !== 'transfer') return;
         if (newBooking.pickup_location && newBooking.destination && newBooking.vehicle_type) {
             const price = getResolvedPrice(
                 newBooking.pickup_location, 
@@ -515,7 +531,7 @@ export default function BookingsPage() {
                 setNewBooking(prev => ({ ...prev, total_price: price }));
             }
         }
-    }, [newBooking.pickup_location, newBooking.destination, newBooking.vehicle_type, newBooking.has_return_trip, isCreating, dbPrices]);
+    }, [newBooking.pickup_location, newBooking.destination, newBooking.vehicle_type, newBooking.has_return_trip, newBooking.booking_type, isCreating, dbPrices]);
 
     const saveDetails = async () => {
         if (!editedBooking) return;
@@ -1419,6 +1435,11 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1 text-sm">
+                                                {booking.booking_type && booking.booking_type !== 'transfer' && (
+                                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-tighter w-fit ${booking.booking_type === 'hourly' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-teal-50 text-teal-700 border border-teal-100'}`}>
+                                                        {booking.booking_type === 'hourly' ? 'Hourly' : 'Multi-Day Tour'}
+                                                    </span>
+                                                )}
                                                 <div className="flex items-center gap-1 text-gray-700">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                                     {booking.pickup_location}
@@ -1446,7 +1467,13 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                 {isToday && !isOverdue && <Badge className="bg-red-500 hover:bg-red-600 animate-pulse text-[10px] uppercase border-none text-white px-1.5 py-0">Today</Badge>}
                                                 {isTomorrow && <Badge className="bg-orange-500 hover:bg-orange-600 text-[10px] uppercase border-none text-white px-1.5 py-0">Tomorrow</Badge>}
                                             </div>
-                                            <div className={`text-xs ${isOverdue ? 'text-red-700 font-bold' : 'text-gray-500'}`}>{formatTime12h(booking.pickup_time)}</div>
+                                            {booking.booking_type === 'multi_day' && booking.end_date ? (
+                                                <div className="text-xs text-gray-500">→ {booking.end_date}{tripDayCount(booking.pickup_date, booking.end_date) ? ` (${tripDayCount(booking.pickup_date, booking.end_date)}d)` : ''}</div>
+                                            ) : booking.booking_type === 'hourly' && booking.duration_hours ? (
+                                                <div className="text-xs text-gray-500">{formatTime12h(booking.pickup_time)} · {booking.duration_hours} hrs</div>
+                                            ) : (
+                                                <div className={`text-xs ${isOverdue ? 'text-red-700 font-bold' : 'text-gray-500'}`}>{formatTime12h(booking.pickup_time)}</div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="group relative w-fit">
@@ -1611,6 +1638,11 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
                                 <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                                     <div className="col-span-2 flex flex-col gap-1 bg-gray-50 rounded-lg p-2 border border-gray-100">
+                                        {booking.booking_type && booking.booking_type !== 'transfer' && (
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-tighter w-fit ${booking.booking_type === 'hourly' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-teal-50 text-teal-700 border border-teal-100'}`}>
+                                                {booking.booking_type === 'hourly' ? 'Hourly' : 'Multi-Day Tour'}
+                                            </span>
+                                        )}
                                         <div className="flex items-center gap-1.5 text-gray-700">
                                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                             <span className="truncate">{booking.pickup_location}</span>
@@ -1622,8 +1654,12 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                     </div>
                                     <div>
                                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Date & Time</p>
-                                        <p className={isOverdue ? 'text-red-700 font-bold' : 'text-gray-800 font-medium'}>{booking.pickup_date}</p>
-                                        <p className="text-gray-500">{formatTime12h(booking.pickup_time)}</p>
+                                        <p className={isOverdue ? 'text-red-700 font-bold' : 'text-gray-800 font-medium'}>{booking.pickup_date}{booking.booking_type === 'multi_day' && booking.end_date ? ` → ${booking.end_date}` : ''}</p>
+                                        <p className="text-gray-500">
+                                            {booking.booking_type === 'hourly' && booking.duration_hours
+                                                ? `${formatTime12h(booking.pickup_time)} · ${booking.duration_hours} hrs`
+                                                : formatTime12h(booking.pickup_time)}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Price</p>
@@ -1854,8 +1890,42 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-green-500 to-red-500"></div>
 
                                     <div className="pl-4 relative">
+                                        <span className="block text-xs text-gray-500 mb-1">Booking Type</span>
+                                        {isEditing ? (
+                                            <div className="flex gap-2">
+                                                {([
+                                                    { value: 'transfer', label: 'Point-to-Point' },
+                                                    { value: 'hourly', label: 'Hourly Hire' },
+                                                    { value: 'multi_day', label: 'Multi-Day Tour' },
+                                                ] as const).map((t) => (
+                                                    <button
+                                                        key={t.value}
+                                                        type="button"
+                                                        onClick={() => setEditedBooking({ ...editedBooking, booking_type: t.value })}
+                                                        className={`flex-1 h-8 rounded-md text-[10px] font-bold border transition-colors ${
+                                                            (editedBooking.booking_type || 'transfer') === t.value
+                                                            ? 'bg-primary border-primary text-black'
+                                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {t.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <Badge variant="outline" className="bg-white border-gray-200 text-gray-700 font-medium">
+                                                {selectedBooking.booking_type === 'hourly' ? 'Hourly Hire'
+                                                    : selectedBooking.booking_type === 'multi_day' ? 'Multi-Day Tour'
+                                                    : 'Point-to-Point'}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="pl-4 relative">
                                         <span className="block w-3 h-3 bg-green-500 rounded-full absolute left-[-21px] top-1.5 border-2 border-white shadow-[0_0_0_2px_rgba(34,197,94,0.3)]"></span>
-                                        <span className="block text-xs text-gray-500 mb-1">Pickup Location</span>
+                                        <span className="block text-xs text-gray-500 mb-1">
+                                            {(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) && (isEditing ? editedBooking.booking_type : selectedBooking.booking_type) !== 'transfer' ? 'Starting Point' : 'Pickup Location'}
+                                        </span>
                                         {isEditing ? (
                                             <Input value={editedBooking.pickup_location} onChange={(e) => setEditedBooking({ ...editedBooking, pickup_location: e.target.value })} className="h-8 text-sm bg-white" />
                                         ) : (
@@ -1865,7 +1935,11 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
                                     <div className="pl-4 relative">
                                         <span className="block w-3 h-3 bg-red-500 rounded-full absolute left-[-21px] top-1.5 border-2 border-white shadow-[0_0_0_2px_rgba(239,68,68,0.3)]"></span>
-                                        <span className="block text-xs text-gray-500 mb-1">Destination</span>
+                                        <span className="block text-xs text-gray-500 mb-1">
+                                            {(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'hourly' ? 'Areas / Stops Covered'
+                                                : (isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'multi_day' ? 'Tour Area / Itinerary'
+                                                : 'Destination'}
+                                        </span>
                                         {isEditing ? (
                                             <Input value={editedBooking.destination} onChange={(e) => setEditedBooking({ ...editedBooking, destination: e.target.value })} className="h-8 text-sm bg-white" />
                                         ) : (
@@ -1875,22 +1949,56 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
                                     <div className="grid grid-cols-2 gap-4 pl-4 pt-4 border-t border-gray-200 mt-4">
                                         <div>
-                                            <span className="block text-xs text-gray-500 mb-1">Date</span>
+                                            <span className="block text-xs text-gray-500 mb-1">{(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'multi_day' ? 'Start Date' : 'Date'}</span>
                                             {isEditing ? (
                                                 <Input type="date" value={editedBooking.pickup_date} onChange={(e) => setEditedBooking({ ...editedBooking, pickup_date: e.target.value })} className="h-8 text-sm bg-white" />
                                             ) : (
                                                 <span className="font-medium bg-white border border-gray-200 px-2 py-1 rounded text-sm block w-fit text-gray-900">{selectedBooking.pickup_date}</span>
                                             )}
                                         </div>
-                                        <div>
-                                            <span className="block text-xs text-gray-500 mb-1">Time</span>
+                                        {(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'multi_day' ? (
+                                            <div>
+                                                <span className="block text-xs text-gray-500 mb-1">End Date</span>
+                                                {isEditing ? (
+                                                    <Input type="date" min={editedBooking.pickup_date} value={editedBooking.end_date || ''} onChange={(e) => setEditedBooking({ ...editedBooking, end_date: e.target.value })} className="h-8 text-sm bg-white" />
+                                                ) : (
+                                                    <span className="font-medium bg-white border border-gray-200 px-2 py-1 rounded text-sm block w-fit text-gray-900">{selectedBooking.end_date || '—'}</span>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <span className="block text-xs text-gray-500 mb-1">Time</span>
+                                                {isEditing ? (
+                                                    <Input type="time" value={editedBooking.pickup_time} onChange={(e) => setEditedBooking({ ...editedBooking, pickup_time: e.target.value })} className="h-8 text-sm bg-white" />
+                                                ) : (
+                                                    <span className="font-medium bg-white border border-gray-200 px-2 py-1 rounded text-sm block w-fit text-gray-900">{formatTime12h(selectedBooking.pickup_time)}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'multi_day' && tripDayCount(isEditing ? editedBooking.pickup_date : selectedBooking.pickup_date, isEditing ? editedBooking.end_date : selectedBooking.end_date) && (
+                                        <div className="pl-4 text-xs font-bold text-primary-700 bg-primary/10 border border-primary/20 rounded-md px-3 py-1.5 w-fit">
+                                            {tripDayCount(isEditing ? editedBooking.pickup_date : selectedBooking.pickup_date, isEditing ? editedBooking.end_date : selectedBooking.end_date)} day tour
+                                        </div>
+                                    )}
+
+                                    {(isEditing ? editedBooking.booking_type : selectedBooking.booking_type) === 'hourly' && (
+                                        <div className="pl-4">
+                                            <span className="block text-xs text-gray-500 mb-1">Duration (Hours)</span>
                                             {isEditing ? (
-                                                <Input type="time" value={editedBooking.pickup_time} onChange={(e) => setEditedBooking({ ...editedBooking, pickup_time: e.target.value })} className="h-8 text-sm bg-white" />
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    value={editedBooking.duration_hours ?? ''}
+                                                    onChange={(e) => setEditedBooking({ ...editedBooking, duration_hours: e.target.value ? parseFloat(e.target.value) : undefined })}
+                                                    className="h-8 text-sm bg-white w-24"
+                                                />
                                             ) : (
-                                                <span className="font-medium bg-white border border-gray-200 px-2 py-1 rounded text-sm block w-fit text-gray-900">{formatTime12h(selectedBooking.pickup_time)}</span>
+                                                <span className="font-medium bg-white border border-gray-200 px-2 py-1 rounded text-sm block w-fit text-gray-900">{selectedBooking.duration_hours ? `${selectedBooking.duration_hours} hrs` : '—'}</span>
                                             )}
                                         </div>
-                                    </div>
+                                    )}
 
                                     <div className="pl-4 pt-3 mt-1 border-t border-gray-100 flex items-center justify-between">
                                         <div>
@@ -1997,15 +2105,17 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                                 className="h-8 text-sm bg-white font-bold w-24" 
                                                                 placeholder="Price"
                                                             />
-                                                            <Button 
-                                                                variant="ghost" 
-                                                                size="icon" 
-                                                                className="h-8 w-8 text-primary" 
-                                                                onClick={() => suggestPrice(editedBooking.pickup_location, editedBooking.destination, editedBooking.vehicle_type, 'edit')}
-                                                                title="Suggest Price"
-                                                            >
-                                                                <Calculator className="h-4 w-4" />
-                                                            </Button>
+                                                            {(!editedBooking.booking_type || editedBooking.booking_type === 'transfer') && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-primary"
+                                                                    onClick={() => suggestPrice(editedBooking.pickup_location, editedBooking.destination, editedBooking.vehicle_type, 'edit')}
+                                                                    title="Suggest Price"
+                                                                >
+                                                                    <Calculator className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                         <div className="flex flex-wrap gap-1">
                                                             {['SAR', 'USD', 'AED', 'KWD', 'OMR', 'BHD'].map((curr) => (
@@ -2562,7 +2672,32 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                             <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Trip Information</h3>
                             <div className="space-y-4">
                                 <div className="space-y-1">
-                                    <label className="text-sm font-medium text-gray-700">Pickup Location</label>
+                                    <label className="text-sm font-medium text-gray-700">Booking Type</label>
+                                    <div className="flex gap-2">
+                                        {([
+                                            { value: 'transfer', label: 'Point-to-Point' },
+                                            { value: 'hourly', label: 'Hourly Hire' },
+                                            { value: 'multi_day', label: 'Multi-Day Tour' },
+                                        ] as const).map((t) => (
+                                            <button
+                                                key={t.value}
+                                                type="button"
+                                                onClick={() => setNewBooking({ ...newBooking, booking_type: t.value })}
+                                                className={`flex-1 h-9 rounded-md text-xs font-bold border transition-colors ${
+                                                    (newBooking.booking_type || 'transfer') === t.value
+                                                    ? 'bg-primary border-primary text-black'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                {t.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        {newBooking.booking_type && newBooking.booking_type !== 'transfer' ? 'Starting Point' : 'Pickup Location'}
+                                    </label>
                                     <Input
                                         placeholder="Hotel, Airport, etc."
                                         value={newBooking.pickup_location}
@@ -2571,9 +2706,15 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-sm font-medium text-gray-700">Destination</label>
+                                    <label className="text-sm font-medium text-gray-700">
+                                        {newBooking.booking_type === 'hourly' ? 'Areas / Stops Covered'
+                                            : newBooking.booking_type === 'multi_day' ? 'Tour Area / Itinerary'
+                                            : 'Destination'}
+                                    </label>
                                     <Input
-                                        placeholder="Hotel, Airport, etc."
+                                        placeholder={newBooking.booking_type === 'hourly' ? 'e.g. Meetings around Dammam & Khobar'
+                                            : newBooking.booking_type === 'multi_day' ? 'e.g. Riyadh & Al Ahsa sightseeing tour'
+                                            : 'Hotel, Airport, etc.'}
                                         value={newBooking.destination}
                                         onChange={(e) => setNewBooking({ ...newBooking, destination: e.target.value })}
                                         className="bg-white border-gray-200"
@@ -2581,7 +2722,9 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                 </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-sm font-medium text-gray-700">Pickup Date</label>
+                                            <label className="text-sm font-medium text-gray-700">
+                                                {newBooking.booking_type === 'multi_day' ? 'Start Date' : 'Pickup Date'}
+                                            </label>
                                             <Input
                                                 type="date"
                                                 value={newBooking.pickup_date}
@@ -2589,24 +2732,55 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                 className="bg-white border-gray-200"
                                             />
                                         </div>
+                                        {newBooking.booking_type === 'multi_day' ? (
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">End Date</label>
+                                                <Input
+                                                    type="date"
+                                                    min={newBooking.pickup_date}
+                                                    value={newBooking.end_date || ''}
+                                                    onChange={(e) => setNewBooking({ ...newBooking, end_date: e.target.value })}
+                                                    className="bg-white border-gray-200"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Pickup Time</label>
+                                                <Input
+                                                    type="time"
+                                                    value={newBooking.pickup_time}
+                                                    onChange={(e) => setNewBooking({ ...newBooking, pickup_time: e.target.value })}
+                                                    className="bg-white border-gray-200"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {newBooking.booking_type === 'multi_day' && tripDayCount(newBooking.pickup_date, newBooking.end_date) && (
+                                        <div className="text-xs font-bold text-primary-700 bg-primary/10 border border-primary/20 rounded-md px-3 py-1.5 w-fit">
+                                            {tripDayCount(newBooking.pickup_date, newBooking.end_date)} day{tripDayCount(newBooking.pickup_date, newBooking.end_date) === 1 ? '' : 's'} tour
+                                        </div>
+                                    )}
+                                    {newBooking.booking_type === 'hourly' && (
                                         <div className="space-y-1">
-                                            <label className="text-sm font-medium text-gray-700">Pickup Time</label>
+                                            <label className="text-sm font-medium text-gray-700">Duration (Hours)</label>
                                             <Input
-                                                type="time"
-                                                value={newBooking.pickup_time}
-                                                onChange={(e) => setNewBooking({ ...newBooking, pickup_time: e.target.value })}
+                                                type="number"
+                                                min={1}
+                                                placeholder="e.g. 6"
+                                                value={newBooking.duration_hours ?? ''}
+                                                onChange={(e) => setNewBooking({ ...newBooking, duration_hours: e.target.value ? parseFloat(e.target.value) : undefined })}
                                                 className="bg-white border-gray-200"
                                             />
                                         </div>
-                                        <div className="space-y-1 sm:col-span-2">
-                                            <label className="text-sm font-medium text-gray-700">Flight Number (If applicable)</label>
-                                            <Input
-                                                placeholder="e.g. SV123 or EK803"
-                                                value={newBooking.flight_number}
-                                                onChange={(e) => setNewBooking({ ...newBooking, flight_number: e.target.value })}
-                                                className="bg-white border-gray-200"
-                                            />
-                                        </div>
+                                    )}
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-gray-700">Flight Number (If applicable)</label>
+                                        <Input
+                                            placeholder="e.g. SV123 or EK803"
+                                            value={newBooking.flight_number}
+                                            onChange={(e) => setNewBooking({ ...newBooking, flight_number: e.target.value })}
+                                            className="bg-white border-gray-200"
+                                        />
                                     </div>
                             </div>
                         </div>
@@ -2641,15 +2815,20 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                             onChange={(e) => setNewBooking({ ...newBooking, total_price: parseFloat(e.target.value) })}
                                             className="bg-white border-gray-200 font-bold"
                                         />
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => suggestPrice(newBooking.pickup_location || '', newBooking.destination || '', newBooking.vehicle_type, 'new')}
-                                            title="Suggest standard price"
-                                        >
-                                            <Calculator className="h-4 w-4" />
-                                        </Button>
+                                        {(!newBooking.booking_type || newBooking.booking_type === 'transfer') && (
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => suggestPrice(newBooking.pickup_location || '', newBooking.destination || '', newBooking.vehicle_type, 'new')}
+                                                title="Suggest standard price"
+                                            >
+                                                <Calculator className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
+                                    {newBooking.booking_type && newBooking.booking_type !== 'transfer' && (
+                                        <p className="text-[10px] text-gray-400">Hourly/tour pricing is quoted manually — no standard rate card.</p>
+                                    )}
                                     <div className="flex gap-1 mt-1 flex-wrap">
                                         {['BHD', 'SAR', 'USD', 'AED', 'EUR', 'KWD', 'OMR'].map((c) => (
                                             <span

@@ -64,6 +64,14 @@ ALTER TABLE bookings ADD CONSTRAINT bookings_status_check
 -- reopen. Free-form since it's presentation data for one document, not
 -- booking facts anything else queries.
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_data jsonb;
+-- Booking type distinguishes standard point-to-point transfers from Hourly
+-- Chauffeur Hire (services.ts "hourly-chauffeur-hire") and multi-day tours.
+-- Both of those are quoted manually (no fixed rate card), so pricing stays a
+-- free-entry total_price rather than deriving from lib/pricing.ts.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_type text NOT NULL DEFAULT 'transfer'
+  CHECK (booking_type IN ('transfer','hourly','multi_day'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS duration_hours numeric;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS end_date text;
 CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
 CREATE INDEX IF NOT EXISTS bookings_pickup_date_idx ON bookings (pickup_date);
 CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC);
