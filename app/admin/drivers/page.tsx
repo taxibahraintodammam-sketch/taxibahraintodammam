@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType } from '@/lib/driverService';
+import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
 import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
     ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
-    CreditCard, TrendingUp, FileText
+    CreditCard, TrendingUp, FileText, Banknote
 } from 'lucide-react';
 
 const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
@@ -24,7 +24,7 @@ const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: strin
 const formatAmount = (amount: number, currency: string) =>
     `${currency} ${amount.toFixed(currency === 'BHD' ? 3 : 2)}`;
 
-const sumByCurrency = (list: DriverExpense[]) =>
+const sumByCurrency = (list: { amount: number; currency: string }[]) =>
     list.reduce((acc, e) => {
         acc[e.currency] = (acc[e.currency] || 0) + e.amount;
         return acc;
@@ -64,6 +64,21 @@ const emptyDocumentForm = () => ({
     document_number: '',
     expiry_date: '',
     file: null as File | null,
+});
+
+const emptyRepaymentForm = () => ({
+    amount: '',
+    currency: 'BHD',
+    repaid_date: new Date().toISOString().slice(0, 10),
+    note: '',
+});
+
+const emptySettlementForm = () => ({
+    period_start: new Date(new Date().setDate(1)).toISOString().slice(0, 10),
+    period_end: new Date().toISOString().slice(0, 10),
+    amount_paid: '',
+    currency: 'BHD',
+    note: '',
 });
 
 const emptyProfileForm = () => ({
@@ -113,6 +128,18 @@ export default function AdminDriversPage() {
     const [documentForm, setDocumentForm] = useState(emptyDocumentForm());
     const [savingDocument, setSavingDocument] = useState(false);
     const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+
+    // Outstanding advance balance (advances given minus repaid) + logged payouts per period
+    const [expandedSettlementId, setExpandedSettlementId] = useState<string | null>(null);
+    const [advanceRepayments, setAdvanceRepayments] = useState<{ [driverId: string]: DriverAdvanceRepayment[] }>({});
+    const [settlements, setSettlements] = useState<{ [driverId: string]: DriverSettlement[] }>({});
+    const [loadingSettlement, setLoadingSettlement] = useState<string | null>(null);
+    const [repaymentForm, setRepaymentForm] = useState(emptyRepaymentForm());
+    const [savingRepayment, setSavingRepayment] = useState(false);
+    const [deletingRepaymentId, setDeletingRepaymentId] = useState<string | null>(null);
+    const [settlementForm, setSettlementForm] = useState(emptySettlementForm());
+    const [savingSettlement, setSavingSettlement] = useState(false);
+    const [deletingSettlementId, setDeletingSettlementId] = useState<string | null>(null);
 
     // Add-to-roster + edit-profile (name/phone/vehicle/plate) — for company-owned drivers,
     // not just WhatsApp applications
@@ -301,6 +328,107 @@ export default function AdminDriversPage() {
             alert('Failed to delete document');
         } finally {
             setDeletingDocumentId(null);
+        }
+    };
+
+    const toggleSettlement = async (driverId: string) => {
+        if (expandedSettlementId === driverId) { setExpandedSettlementId(null); return; }
+        setExpandedSettlementId(driverId);
+        setRepaymentForm(emptyRepaymentForm());
+        setSettlementForm(emptySettlementForm());
+        const needsExpenses = !expenses[driverId];
+        const needsRepayments = !advanceRepayments[driverId];
+        const needsSettlements = !settlements[driverId];
+        if (needsExpenses || needsRepayments || needsSettlements) {
+            setLoadingSettlement(driverId);
+            try {
+                const [expenseData, repaymentData, settlementData] = await Promise.all([
+                    needsExpenses ? driverService.getExpenses(driverId) : Promise.resolve(expenses[driverId]),
+                    needsRepayments ? driverService.getAdvanceRepayments(driverId) : Promise.resolve(advanceRepayments[driverId]),
+                    needsSettlements ? driverService.getSettlements(driverId) : Promise.resolve(settlements[driverId]),
+                ]);
+                if (needsExpenses) setExpenses(prev => ({ ...prev, [driverId]: expenseData }));
+                if (needsRepayments) setAdvanceRepayments(prev => ({ ...prev, [driverId]: repaymentData }));
+                if (needsSettlements) setSettlements(prev => ({ ...prev, [driverId]: settlementData }));
+            } catch (error) {
+                console.error('Error loading settlement data:', error);
+            } finally {
+                setLoadingSettlement(null);
+            }
+        }
+    };
+
+    const handleAddRepayment = async (driverId: string) => {
+        const amountNum = parseFloat(repaymentForm.amount);
+        if (!amountNum || amountNum <= 0) { alert('Enter a valid amount'); return; }
+        setSavingRepayment(true);
+        try {
+            const newRepayment = await driverService.addAdvanceRepayment({
+                driver_id: driverId,
+                amount: amountNum,
+                currency: repaymentForm.currency,
+                repaid_date: repaymentForm.repaid_date,
+                note: repaymentForm.note || undefined,
+            });
+            setAdvanceRepayments(prev => ({ ...prev, [driverId]: [newRepayment, ...(prev[driverId] || [])] }));
+            setRepaymentForm({ ...emptyRepaymentForm(), currency: repaymentForm.currency });
+        } catch (error) {
+            console.error('Error adding repayment:', error);
+            alert('Failed to add repayment');
+        } finally {
+            setSavingRepayment(false);
+        }
+    };
+
+    const handleDeleteRepayment = async (driverId: string, repaymentId: string) => {
+        if (!confirm('Delete this repayment entry?')) return;
+        setDeletingRepaymentId(repaymentId);
+        try {
+            await driverService.deleteAdvanceRepayment(repaymentId);
+            setAdvanceRepayments(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(r => r.id !== repaymentId) }));
+        } catch (error) {
+            console.error('Error deleting repayment:', error);
+            alert('Failed to delete repayment');
+        } finally {
+            setDeletingRepaymentId(null);
+        }
+    };
+
+    const handleAddSettlement = async (driverId: string) => {
+        const amountNum = parseFloat(settlementForm.amount_paid);
+        if (!amountNum || amountNum <= 0) { alert('Enter a valid amount'); return; }
+        if (!settlementForm.period_start || !settlementForm.period_end) { alert('Pick a period'); return; }
+        setSavingSettlement(true);
+        try {
+            const newSettlement = await driverService.addSettlement({
+                driver_id: driverId,
+                period_start: settlementForm.period_start,
+                period_end: settlementForm.period_end,
+                amount_paid: amountNum,
+                currency: settlementForm.currency,
+                note: settlementForm.note || undefined,
+            });
+            setSettlements(prev => ({ ...prev, [driverId]: [newSettlement, ...(prev[driverId] || [])] }));
+            setSettlementForm({ ...emptySettlementForm(), currency: settlementForm.currency });
+        } catch (error) {
+            console.error('Error adding settlement:', error);
+            alert('Failed to add settlement');
+        } finally {
+            setSavingSettlement(false);
+        }
+    };
+
+    const handleDeleteSettlement = async (driverId: string, settlementId: string) => {
+        if (!confirm('Delete this settlement record?')) return;
+        setDeletingSettlementId(settlementId);
+        try {
+            await driverService.deleteSettlement(settlementId);
+            setSettlements(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(s => s.id !== settlementId) }));
+        } catch (error) {
+            console.error('Error deleting settlement:', error);
+            alert('Failed to delete settlement');
+        } finally {
+            setDeletingSettlementId(null);
         }
     };
 
@@ -795,6 +923,17 @@ export default function AdminDriversPage() {
                                             ? <ChevronUp className="w-4 h-4 ml-2" />
                                             : <ChevronDown className="w-4 h-4 ml-2" />}
                                     </Button>
+                                    <Button
+                                        onClick={() => toggleSettlement(driver.id)}
+                                        variant="outline"
+                                        className="text-amber-700 border-amber-300 hover:bg-amber-50"
+                                    >
+                                        <Banknote className="w-4 h-4 mr-2" />
+                                        Settlement{settlements[driver.id] ? ` (${settlements[driver.id].length})` : ''}
+                                        {expandedSettlementId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
                                 </div>
 
                                 {/* Finance — earnings from completed bookings vs fuel/maintenance/advance/penalty spend */}
@@ -1044,6 +1183,183 @@ export default function AdminDriversPage() {
                                                     );
                                                 })}
                                             </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Settlement — outstanding advance balance, repayments, logged payouts */}
+                                {expandedSettlementId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        {loadingSettlement === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading settlement data...</div>
+                                        ) : (
+                                            <>
+                                                {(() => {
+                                                    const advancesGiven = (expenses[driver.id] || []).filter(e => e.category === 'advance');
+                                                    const givenByCur = sumByCurrency(advancesGiven);
+                                                    const repaidByCur = sumByCurrency(advanceRepayments[driver.id] || []);
+                                                    const currencies = Array.from(new Set([...Object.keys(givenByCur), ...Object.keys(repaidByCur)]));
+                                                    const outstanding = currencies
+                                                        .map(cur => [cur, (givenByCur[cur] || 0) - (repaidByCur[cur] || 0)] as const)
+                                                        .filter(([, amt]) => Math.abs(amt) > 0.001);
+                                                    return outstanding.length > 0 ? (
+                                                        <div className="flex flex-wrap gap-2 mb-4">
+                                                            {outstanding.map(([cur, amt]) => (
+                                                                <span key={cur} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold">
+                                                                    Outstanding Advance: {formatAmount(amt, cur)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-gray-400 mb-4">No outstanding advance balance</p>
+                                                    );
+                                                })()}
+
+                                                {/* Record repayment */}
+                                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4">
+                                                    <p className="text-xs font-bold text-amber-700 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                                                        <Banknote className="w-3.5 h-3.5" /> Record Advance Repayment
+                                                    </p>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.001"
+                                                            placeholder="Amount"
+                                                            value={repaymentForm.amount}
+                                                            onChange={e => setRepaymentForm({ ...repaymentForm, amount: e.target.value })}
+                                                            className="text-sm border border-amber-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                                        />
+                                                        <select
+                                                            value={repaymentForm.currency}
+                                                            onChange={e => setRepaymentForm({ ...repaymentForm, currency: e.target.value })}
+                                                            className="text-sm border border-amber-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                                        >
+                                                            <option value="BHD">BHD</option>
+                                                            <option value="SAR">SAR</option>
+                                                        </select>
+                                                        <input
+                                                            type="date"
+                                                            value={repaymentForm.repaid_date}
+                                                            onChange={e => setRepaymentForm({ ...repaymentForm, repaid_date: e.target.value })}
+                                                            className="text-sm border border-amber-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                                        />
+                                                        <input
+                                                            value={repaymentForm.note}
+                                                            onChange={e => setRepaymentForm({ ...repaymentForm, note: e.target.value })}
+                                                            placeholder="Note (optional)"
+                                                            className="text-sm border border-amber-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => handleAddRepayment(driver.id)}
+                                                        disabled={savingRepayment || !repaymentForm.amount}
+                                                        className="bg-amber-600 text-white hover:bg-amber-700"
+                                                    >
+                                                        {savingRepayment ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                                                        Record Repayment
+                                                    </Button>
+                                                </div>
+
+                                                {(advanceRepayments[driver.id] || []).length > 0 && (
+                                                    <div className="space-y-1.5 mb-4">
+                                                        {(advanceRepayments[driver.id] || []).map(r => (
+                                                            <div key={r.id} className="flex items-center justify-between gap-3 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 text-sm">
+                                                                <span className="text-gray-700 truncate">
+                                                                    <span className="font-semibold">{formatAmount(r.amount, r.currency)}</span> repaid on {new Date(r.repaid_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                    {r.note && <span className="text-gray-400"> — {r.note}</span>}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => handleDeleteRepayment(driver.id, r.id)}
+                                                                    disabled={deletingRepaymentId === r.id}
+                                                                    className="shrink-0 text-gray-300 hover:text-red-600 transition-colors p-1"
+                                                                    title="Delete"
+                                                                >
+                                                                    {deletingRepaymentId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Log a payout */}
+                                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4">
+                                                    <p className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                                                        <Banknote className="w-3.5 h-3.5" /> Log a Settlement Payout
+                                                    </p>
+                                                    <p className="text-xs text-slate-500 mb-2">Check the Finance tab for earned/spent for the period, then log what was actually paid out.</p>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
+                                                        <input
+                                                            type="date"
+                                                            value={settlementForm.period_start}
+                                                            onChange={e => setSettlementForm({ ...settlementForm, period_start: e.target.value })}
+                                                            className="text-sm border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+                                                        />
+                                                        <input
+                                                            type="date"
+                                                            value={settlementForm.period_end}
+                                                            onChange={e => setSettlementForm({ ...settlementForm, period_end: e.target.value })}
+                                                            className="text-sm border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="0.001"
+                                                                placeholder="Amount paid"
+                                                                value={settlementForm.amount_paid}
+                                                                onChange={e => setSettlementForm({ ...settlementForm, amount_paid: e.target.value })}
+                                                                className="text-sm border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 flex-1"
+                                                            />
+                                                            <select
+                                                                value={settlementForm.currency}
+                                                                onChange={e => setSettlementForm({ ...settlementForm, currency: e.target.value })}
+                                                                className="text-sm border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+                                                            >
+                                                                <option value="BHD">BHD</option>
+                                                                <option value="SAR">SAR</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <input
+                                                        value={settlementForm.note}
+                                                        onChange={e => setSettlementForm({ ...settlementForm, note: e.target.value })}
+                                                        placeholder="Note (optional)"
+                                                        className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 mb-2"
+                                                    />
+                                                    <Button
+                                                        onClick={() => handleAddSettlement(driver.id)}
+                                                        disabled={savingSettlement || !settlementForm.amount_paid}
+                                                        className="bg-slate-900 text-white hover:bg-slate-800"
+                                                    >
+                                                        {savingSettlement ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                                                        Save Settlement
+                                                    </Button>
+                                                </div>
+
+                                                {(settlements[driver.id] || []).length === 0 ? (
+                                                    <div className="text-center py-4 text-sm text-gray-400">No settlements logged yet</div>
+                                                ) : (
+                                                    <div className="space-y-1.5">
+                                                        {(settlements[driver.id] || []).map(s => (
+                                                            <div key={s.id} className="flex items-center justify-between gap-3 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 text-sm">
+                                                                <span className="text-gray-700 truncate">
+                                                                    <span className="font-semibold">{formatAmount(s.amount_paid, s.currency)}</span> for {new Date(s.period_start).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} – {new Date(s.period_end).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                    {s.note && <span className="text-gray-400"> — {s.note}</span>}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => handleDeleteSettlement(driver.id, s.id)}
+                                                                    disabled={deletingSettlementId === s.id}
+                                                                    className="shrink-0 text-gray-300 hover:text-red-600 transition-colors p-1"
+                                                                    title="Delete"
+                                                                >
+                                                                    {deletingSettlementId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 )}

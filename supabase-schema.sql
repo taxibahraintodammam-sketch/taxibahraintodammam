@@ -323,6 +323,50 @@ CREATE POLICY "Admin full access" ON driver_documents
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------------------------
+-- driver_advance_repayments — money a driver pays back against an 'advance'
+-- expense. Outstanding balance = sum(driver_expenses where category='advance')
+-- minus sum(this table), computed in the app, not stored.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_advance_repayments (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id    uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  amount       numeric NOT NULL,
+  currency     text NOT NULL DEFAULT 'BHD',
+  repaid_date  date NOT NULL DEFAULT current_date,
+  note         text,
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_advance_repayments_driver_id_idx ON driver_advance_repayments (driver_id);
+
+ALTER TABLE driver_advance_repayments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_advance_repayments;
+CREATE POLICY "Admin full access" ON driver_advance_repayments
+  FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
+-- driver_settlements — a paper trail of what was actually paid out to a
+-- driver for a period. The admin reads the Finance panel's earned/spent
+-- numbers and logs the agreed payout here; this table doesn't recompute or
+-- enforce that math, since payroll/commission terms differ per driver.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_settlements (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id     uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  period_start  date NOT NULL,
+  period_end    date NOT NULL,
+  amount_paid   numeric NOT NULL,
+  currency      text NOT NULL DEFAULT 'BHD',
+  note          text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_settlements_driver_id_idx ON driver_settlements (driver_id);
+
+ALTER TABLE driver_settlements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_settlements;
+CREATE POLICY "Admin full access" ON driver_settlements
+  FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
 -- Admin-only utility tables (no public access at all) — every one of these
 -- already shipped a matching CREATE TABLE snippet inline in its admin page;
 -- collected here verbatim so the whole schema lives in one file.

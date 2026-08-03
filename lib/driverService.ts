@@ -40,6 +40,27 @@ export interface DriverDocument {
     created_at: string;
 }
 
+export interface DriverAdvanceRepayment {
+    id: string;
+    driver_id: string;
+    amount: number;
+    currency: string;
+    repaid_date: string;
+    note?: string;
+    created_at: string;
+}
+
+export interface DriverSettlement {
+    id: string;
+    driver_id: string;
+    period_start: string;
+    period_end: string;
+    amount_paid: number;
+    currency: string;
+    note?: string;
+    created_at: string;
+}
+
 async function uploadToDriverBucket(file: File): Promise<string | null> {
     try {
         const fileExt = file.name.split('.').pop();
@@ -300,5 +321,69 @@ export const driverService = {
 
         if (error) throw error;
         return data as { driver_id: string; total_price: number | null; currency: string | null; status: string }[];
+    },
+
+    // Repayments a driver has made against an 'advance' expense (admin)
+    async getAdvanceRepayments(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_advance_repayments')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('repaid_date', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverAdvanceRepayment[];
+    },
+
+    async addAdvanceRepayment(repayment: Omit<DriverAdvanceRepayment, 'id' | 'created_at'>) {
+        const { data, error } = await supabase
+            .from('driver_advance_repayments')
+            .insert(repayment)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as DriverAdvanceRepayment;
+    },
+
+    async deleteAdvanceRepayment(id: string) {
+        const { error } = await supabase
+            .from('driver_advance_repayments')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    // Logged payouts to a driver for a period (admin reads the Finance panel numbers and records what was paid)
+    async getSettlements(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_settlements')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('period_end', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverSettlement[];
+    },
+
+    async addSettlement(settlement: Omit<DriverSettlement, 'id' | 'created_at'>) {
+        const { data, error } = await supabase
+            .from('driver_settlements')
+            .insert(settlement)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as DriverSettlement;
+    },
+
+    async deleteSettlement(id: string) {
+        const { error } = await supabase
+            .from('driver_settlements')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
     },
 };
