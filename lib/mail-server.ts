@@ -3,9 +3,12 @@ import { Resend } from 'resend';
 
 // Resend Config (Recommended for Vercel)
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Domain used for the "from"/"reply-to" address — must be a domain verified
+// in the Resend dashboard, otherwise Resend will reject the send.
+const emailDomain = process.env.RESEND_EMAIL_DOMAIN || 'taxiserviceksa.com';
 
 // SMTP Config (Fallback)
-const emailUser = process.env.EMAIL_USER || 'info@taxiserviceksa.com';
+const emailUser = process.env.EMAIL_USER || `info@${emailDomain}`;
 const emailPass = process.env.EMAIL_PASS;
 let smtpHost = process.env.SMTP_HOST;
 if (!smtpHost) {
@@ -56,12 +59,12 @@ export async function sendMail({ to, cc, subject, html, fromName = 'Taxi Service
         try {
             console.log(`📧 Sending via Resend to: ${to}${cc?.length ? ` + CC: ${cc.join(', ')}` : ''}`);
             const { data, error } = await resend.emails.send({
-                from: `${fromName} <info@taxiserviceksa.com>`,
+                from: `${fromName} <info@${emailDomain}>`,
                 to,
                 cc: cc?.length ? cc : undefined,
                 subject,
                 html,
-                replyTo: replyTo || 'info@taxiserviceksa.com',
+                replyTo: replyTo || `info@${emailDomain}`,
                 attachments: attachments?.map(a => ({
                     filename: a.filename,
                     content: a.content,
