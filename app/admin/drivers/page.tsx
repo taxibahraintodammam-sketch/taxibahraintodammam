@@ -560,7 +560,7 @@ export default function AdminDriversPage() {
                 setDrivers(prev => prev.map(d => d.id === driver.id ? updated : d));
             }
             const url = absoluteUrl(`/driver/${token}`);
-            const message = `Hi ${driver.full_name}, use this link to submit your fuel/expense receipts directly to the office: ${url}`;
+            const message = `Hi ${driver.full_name}, here's your driver portal — view your trips, update trip status, submit fuel/expense receipts, check your earnings, and manage your documents: ${url}`;
             window.open(`https://wa.me/${driver.phone_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
         } catch (error) {
             console.error('Error generating portal link:', error);
@@ -1012,7 +1012,7 @@ export default function AdminDriversPage() {
                                             {sendingPortalLinkId === driver.id
                                                 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                                 : <Link2 className="w-4 h-4 mr-2" />}
-                                            Upload Link
+                                            Driver Portal
                                         </Button>
                                     )}
                                     <Button

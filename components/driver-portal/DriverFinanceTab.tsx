@@ -1,12 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Loader2, CheckCircle, Fuel, Wrench, MoreHorizontal, Upload } from 'lucide-react';
-
-interface DriverInfo {
-    full_name: string;
-    vehicle_model: string;
-}
+import type { PortalEarnings } from './DriverPortalDashboard';
 
 const CATEGORIES = [
     { value: 'fuel', label: 'Fuel', icon: Fuel },
@@ -14,11 +10,18 @@ const CATEGORIES = [
     { value: 'other', label: 'Other', icon: MoreHorizontal },
 ];
 
-export default function DriverExpenseForm({ token }: { token: string }) {
-    const [driver, setDriver] = useState<DriverInfo | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
+const formatAmount = (amount: number, currency: string) =>
+    `${currency} ${amount.toFixed(currency === 'BHD' ? 3 : 2)}`;
 
+export default function DriverFinanceTab({
+    token,
+    earnings,
+    onExpenseAdded,
+}: {
+    token: string;
+    earnings: PortalEarnings;
+    onExpenseAdded: () => void;
+}) {
     const [category, setCategory] = useState('fuel');
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('BHD');
@@ -29,16 +32,9 @@ export default function DriverExpenseForm({ token }: { token: string }) {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        fetch(`/api/driver-portal/${token}/`)
-            .then(res => {
-                if (!res.ok) throw new Error('not found');
-                return res.json();
-            })
-            .then(data => setDriver(data))
-            .catch(() => setNotFound(true))
-            .finally(() => setLoading(false));
-    }, [token]);
+    const earnedEntries = Object.entries(earnings.earnedByCurrency);
+    const spentEntries = Object.entries(earnings.spentByCurrency);
+    const currencies = Array.from(new Set([...Object.keys(earnings.earnedByCurrency), ...Object.keys(earnings.spentByCurrency)]));
 
     const handleSubmit = async () => {
         setError('');
@@ -55,7 +51,7 @@ export default function DriverExpenseForm({ token }: { token: string }) {
             if (description) formData.append('description', description);
             if (file) formData.append('file', file);
 
-            const res = await fetch(`/api/driver-portal/${token}/`, { method: 'POST', body: formData });
+            const res = await fetch(`/api/driver-portal/${token}/expenses/`, { method: 'POST', body: formData });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to submit');
 
@@ -63,6 +59,7 @@ export default function DriverExpenseForm({ token }: { token: string }) {
             setAmount('');
             setDescription('');
             setFile(null);
+            onExpenseAdded();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to submit');
         } finally {
@@ -70,47 +67,44 @@ export default function DriverExpenseForm({ token }: { token: string }) {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-            </div>
-        );
-    }
-
-    if (notFound || !driver) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-                <div className="text-center max-w-sm">
-                    <p className="text-lg font-bold text-gray-900 mb-2">Link not valid</p>
-                    <p className="text-sm text-gray-500">This link is invalid or your account isn&apos;t active. Please contact your manager.</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-            <div className="max-w-md mx-auto">
-                <div className="text-center mb-6">
-                    <h1 className="text-xl font-bold text-gray-900">Hi, {driver.full_name}</h1>
-                    <p className="text-sm text-gray-500">{driver.vehicle_model}</p>
-                </div>
+        <div className="space-y-4">
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-4">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">My Earnings</p>
+                <p className="text-xs text-gray-500 mb-3">{earnings.completedTrips} completed trip{earnings.completedTrips === 1 ? '' : 's'}</p>
+                {currencies.length === 0 ? (
+                    <p className="text-sm text-gray-400">No completed trips or expenses yet</p>
+                ) : (
+                    <div className="space-y-2">
+                        {earnedEntries.map(([cur, amt]) => (
+                            <div key={`e-${cur}`} className="flex justify-between text-sm">
+                                <span className="text-gray-500">Earned ({cur})</span>
+                                <span className="font-bold text-emerald-700">{formatAmount(amt, cur)}</span>
+                            </div>
+                        ))}
+                        {spentEntries.map(([cur, amt]) => (
+                            <div key={`s-${cur}`} className="flex justify-between text-sm">
+                                <span className="text-gray-500">Spent ({cur})</span>
+                                <span className="font-bold text-blue-700">{formatAmount(amt, cur)}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-4">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Submit an Expense</p>
 
                 {submitted ? (
-                    <div className="bg-white rounded-2xl p-6 text-center border-2 border-green-200">
-                        <CheckCircle className="w-10 h-10 text-green-600 mx-auto mb-3" />
-                        <p className="font-bold text-gray-900 mb-1">Submitted!</p>
-                        <p className="text-sm text-gray-500 mb-4">Your expense has been sent to the office.</p>
-                        <button
-                            onClick={() => setSubmitted(false)}
-                            className="text-sm font-semibold text-primary underline"
-                        >
+                    <div className="text-center py-4">
+                        <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                        <p className="font-bold text-gray-900 mb-1 text-sm">Submitted!</p>
+                        <button onClick={() => setSubmitted(false)} className="text-xs font-semibold text-primary underline">
                             Submit another
                         </button>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl p-5 border-2 border-gray-200 space-y-3">
+                    <div className="space-y-3">
                         <div className="grid grid-cols-3 gap-2">
                             {CATEGORIES.map(c => {
                                 const Icon = c.icon;

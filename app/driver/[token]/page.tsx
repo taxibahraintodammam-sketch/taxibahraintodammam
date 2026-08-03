@@ -1,4 +1,4 @@
-import DriverExpenseForm from '@/components/driver-portal/DriverExpenseForm';
+import DriverPortalDashboard from '@/components/driver-portal/DriverPortalDashboard';
 
 export default async function DriverPortalPage({
     params,
@@ -6,5 +6,5 @@ export default async function DriverPortalPage({
     params: Promise<{ token: string }>;
 }) {
     const { token } = await params;
-    return <DriverExpenseForm token={token} />;
+    return <DriverPortalDashboard token={token} />;
 }
