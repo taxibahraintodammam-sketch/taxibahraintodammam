@@ -353,7 +353,7 @@ export default function HomeHero() {
                                 <span className="text-[11px] font-bold uppercase tracking-wider">25k+ Happy Travelers</span>
                             </div>
                             <a
-                                href="https://wa.me/966569487569?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
+                                href="https://wa.me/97335014335?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
                                 target="_blank"
                                 rel="nofollow noopener noreferrer"
                                 className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors ml-auto"

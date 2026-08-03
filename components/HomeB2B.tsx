@@ -97,7 +97,7 @@ export default function HomeB2B() {
                                         Inquire B2B Pricing
                                     </span>
                                 </Link>
-                                <a href="mailto:taxiserviceksa9988@gmail.com">
+                                <a href="mailto:booking@taxibahraintodammam.com">
                                     <span className="inline-flex items-center justify-center text-gray-900 hover:text-primary text-sm font-semibold px-2 py-3 transition-colors underline">
                                         Email Business Team
                                     </span>

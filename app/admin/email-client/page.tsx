@@ -268,7 +268,7 @@ export default function EmailClientPage() {
                                     placeholder="Type your message to the client here..."
                                     rows={10}
                                 />
-                                <p className="text-xs text-gray-400 mt-1">Sent inside the standard Taxi Service KSA branded email template.</p>
+                                <p className="text-xs text-gray-400 mt-1">Sent inside the standard Taxi Bahrain to Dammam branded email template.</p>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Attachment (optional, max 3MB)</label>

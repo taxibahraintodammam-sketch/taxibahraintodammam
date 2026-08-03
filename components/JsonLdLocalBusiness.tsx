@@ -5,8 +5,8 @@ export default function JsonLdLocalBusiness() {
         "@context": "https://schema.org",
         "@type": "TaxiService",
         "@id": "https://taxibahraintodammam.com/#taxiservice",
-        "name": "Taxi Service KSA",
-        "alternateName": "TaxiServiceKSA",
+        "name": "Taxi Bahrain to Dammam",
+        "alternateName": "TaxiBahrainToDammam",
         "logo": {
             "@type": "ImageObject",
             "url": "https://taxibahraintodammam.com/logo.png",
@@ -16,7 +16,7 @@ export default function JsonLdLocalBusiness() {
         "image": "https://taxibahraintodammam.com/og-image.jpg",
         "url": "https://taxibahraintodammam.com",
         "telephone": "+966-56-948-7569",
-        "email": "taxiserviceksa9988@gmail.com",
+        "email": "booking@taxibahraintodammam.com",
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "Prince Sultan Road",

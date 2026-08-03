@@ -7,11 +7,11 @@ export default function Welcome() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                            Welcome to <span className="text-primary">Taxi Service KSA</span> – Your Trusted Travel Partner in Saudi Arabia
+                            Welcome to <span className="text-primary">Taxi Bahrain to Dammam</span> – Your Trusted Travel Partner in Saudi Arabia
                         </h2>
                         <p className="text-gray-600 text-lg mb-6 leading-relaxed">
                             Are you looking for a reliable, comfortable, and luxury taxi service in Saudi Arabia? Look no further.
-                            Taxi Service KSA is the leading provider of elite chauffeur services, airport transfers, and intercity travel across the Kingdom.
+                            Taxi Bahrain to Dammam is the leading provider of elite chauffeur services, airport transfers, and intercity travel across the Kingdom.
                         </p>
                         <p className="text-gray-600 text-lg mb-8 leading-relaxed">
                             Whether you are a pilgrim performing Umrah, a business traveler attending meetings in Riyadh, or a tourist exploring the historic streets of Jeddah,

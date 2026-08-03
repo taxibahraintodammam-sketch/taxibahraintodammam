@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service</p>
+                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Bahrain to Dammam • Premium Chauffeur &amp; Private Transport Service</p>
                 </div>
             </div>`,
         });

@@ -7,7 +7,7 @@ export default function FloatingWhatsApp() {
     const nearFooter = useHideNearFooter();
     return (
         <a
-            href="https://wa.me/966569487569?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20transfer."
+            href="https://wa.me/97335014335?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20transfer."
             target="_blank"
             rel="nofollow noopener noreferrer"
             className={`fixed bottom-6 right-6 z-[100] group items-center gap-3 transition-opacity duration-300 ${nearFooter ? 'hidden opacity-0 pointer-events-none' : 'hidden lg:flex opacity-100'}`}

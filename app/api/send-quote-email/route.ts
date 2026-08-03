@@ -79,11 +79,11 @@ export async function POST(request: NextRequest) {
             <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
                 <div style="background-color: #000; padding: 25px; text-align: center; border-radius: 10px 10px 0 0;">
                     <h1 style="margin: 0; color: #C6FF00; text-transform: uppercase; letter-spacing: 2px;">Your Quote</h1>
-                    <p style="color: #aaa; margin: 8px 0 0; font-size: 13px;">Taxi Service KSA</p>
+                    <p style="color: #aaa; margin: 8px 0 0; font-size: 13px;">Taxi Bahrain to Dammam</p>
                 </div>
                 <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
                     <p style="font-size: 16px;">Dear <strong>${safeName}</strong>,</p>
-                    <p>Thank you for choosing <strong>Taxi Service KSA</strong>. Here is your official quote for the requested journey. <strong>Please find the full quotation PDF attached to this email.</strong></p>
+                    <p>Thank you for choosing <strong>Taxi Bahrain to Dammam</strong>. Here is your official quote for the requested journey. <strong>Please find the full quotation PDF attached to this email.</strong></p>
 
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #ebedf0;">
                         <h3 style="margin-top: 0; color: #000; border-bottom: 2px solid #C6FF00; padding-bottom: 8px; display: inline-block;">Journey Details</h3>
@@ -107,11 +107,11 @@ export async function POST(request: NextRequest) {
 
                     <div style="text-align: center; margin: 30px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                         <a href="https://taxibahraintodammam.com/booking/quote?ref=${booking.id.slice(0, 8)}" style="background-color: #C6FF00; color: #000; padding: 14px 28px; text-decoration: none; font-weight: 900; border-radius: 30px; display: inline-block; font-size: 15px;">✅ Accept Quote Online</a>
-                        <a href="https://wa.me/966569487569?text=${whatsappMsg}" style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 15px;">💬 Confirm on WhatsApp</a>
+                        <a href="https://wa.me/97335014335?text=${whatsappMsg}" style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 15px;">💬 Confirm on WhatsApp</a>
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service<br>taxiserviceksa9988@gmail.com • www.taxibahraintodammam.com</p>
+                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Bahrain to Dammam • Premium Chauffeur &amp; Private Transport Service<br>booking@taxibahraintodammam.com • www.taxibahraintodammam.com</p>
                 </div>
             </div>`;
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         await sendMail({
             to: booking.customer_email,
             cc: cc.length ? cc : undefined,
-            subject: `Your Quote ${refId} - Taxi Service KSA`,
+            subject: `Your Quote ${refId} - Taxi Bahrain to Dammam`,
             html: quoteHtml,
             attachments,
         });

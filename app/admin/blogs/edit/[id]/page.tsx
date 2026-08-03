@@ -35,7 +35,7 @@ export default function EditBlogPage({ params }: EditBlogPageProps) {
         seo_title: '',
         seo_description: '',
         seo_keywords: [] as string[],
-        author: 'Taxi Service KSA',
+        author: 'Taxi Bahrain to Dammam',
         created_at: '',
         views: 0,
         featured_image: '',

@@ -30,7 +30,7 @@ export default function JsonLdLocation({
                 "description": description,
                 "provider": {
                     "@type": "LocalBusiness",
-                    "name": "TaxiServiceKSA",
+                    "name": "TaxiBahrainToDammam",
                     "image": image || `${baseUrl}/logo.png`,
                     "url": baseUrl,
                     "aggregateRating": {

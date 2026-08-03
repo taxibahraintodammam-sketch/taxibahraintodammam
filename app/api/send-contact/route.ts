@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         try {
             await sendMail({
                 to: email,
-                subject: `Re: ${subject} - Taxi Service KSA`,
+                subject: `Re: ${subject} - Taxi Bahrain to Dammam`,
                 html: `
                 <div style="font-family: Arial, sans-serif; padding: 25px; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px;">
                     <div style="text-align: center; margin-bottom: 25px;">
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
                     </div>
 
                     <p>Dear <strong>${safeName}</strong>,</p>
-                    <p>Thank you for contacting <strong>Taxi Service KSA</strong>. We have received your message regarding "<strong>${safeSubject}</strong>".</p>
+                    <p>Thank you for contacting <strong>Taxi Bahrain to Dammam</strong>. We have received your message regarding "<strong>${safeSubject}</strong>".</p>
                     <p>Our customer support team is currently reviewing your inquiry and will get back to you within the next hour.</p>
 
                     <div style="background-color: #f8f9fa; border-left: 4px solid #000; padding: 15px; margin: 20px 0;">
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
 
                     <p>For urgent inquiries, please do not hesitate to reply to this email.</p>
 
-                    <p style="margin-top: 30px;">Best regards,<br><strong>Customer Success Team</strong><br>Taxi Service KSA</p>
+                    <p style="margin-top: 30px;">Best regards,<br><strong>Customer Success Team</strong><br>Taxi Bahrain to Dammam</p>
                 </div>
                 `,
             });

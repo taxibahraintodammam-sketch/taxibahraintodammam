@@ -70,7 +70,7 @@ export default function ServiceQuickLinks() {
 
                     {/* WhatsApp quote card */}
                     <a
-                        href="https://wa.me/966569487569?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
+                        href="https://wa.me/97335014335?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
                         target="_blank"
                         rel="nofollow noopener noreferrer"
                         className="group relative flex flex-col justify-between bg-emerald-50 hover:bg-emerald-100 rounded-2xl p-6 min-h-[210px] transition-colors overflow-hidden"

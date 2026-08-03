@@ -37,7 +37,7 @@ export default function HomeSocialProof() {
         <section className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div className="max-w-7xl mx-auto">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                    25,000+ travelers love riding with Taxi Service KSA
+                    25,000+ travelers love riding with Taxi Bahrain to Dammam
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mb-8 text-sm sm:text-base">
                     <span className="flex items-center justify-center w-5 h-5 bg-[#00b67a] rounded-sm shrink-0">

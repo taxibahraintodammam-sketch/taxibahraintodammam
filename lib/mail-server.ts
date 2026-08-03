@@ -45,7 +45,7 @@ interface Attachment {
     content: string; // base64 encoded
 }
 
-export async function sendMail({ to, cc, subject, html, fromName = 'Taxi Service KSA', replyTo, attachments }: {
+export async function sendMail({ to, cc, subject, html, fromName = 'Taxi Bahrain to Dammam', replyTo, attachments }: {
     to: string;
     cc?: string[];
     subject: string;

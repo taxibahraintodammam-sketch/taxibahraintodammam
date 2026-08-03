@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
             <p>Dear <strong>${safeName}</strong>,</p>
         `;
         const wrapperEnd = `
-            <p style="margin-top: 30px;">Best regards,<br><strong>Customer Success Team</strong><br>Taxi Service KSA</p>
+            <p style="margin-top: 30px;">Best regards,<br><strong>Customer Success Team</strong><br>Taxi Bahrain to Dammam</p>
         </div>
         `;
 
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
             case 'quote_sent': {
                 const curr = currency || 'SAR';
                 const price = totalPrice ? `${curr} ${Number(totalPrice).toFixed(2)}` : null;
-                subject = `💰 Your Quote is Ready - Taxi Service KSA`;
+                subject = `💰 Your Quote is Ready - Taxi Bahrain to Dammam`;
                 htmlContent = `${wrapperStart}
-                    <p>Thank you for choosing <strong>Taxi Service KSA</strong>. Your official quote for booking <span style="font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">#${bookingId.slice(0, 8).toUpperCase()}</span> is ready.</p>
+                    <p>Thank you for choosing <strong>Taxi Bahrain to Dammam</strong>. Your official quote for booking <span style="font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">#${bookingId.slice(0, 8).toUpperCase()}</span> is ready.</p>
                     ${price ? `<div style="background-color: #000; color: #fff; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0;">
                         <p style="margin: 0 0 4px; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Total Quote Price</p>
                         <p style="margin: 0; font-size: 32px; font-weight: 900; color: #C6FF00;">${price}</p>
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
                 break;
             }
             case 'in_progress':
-                subject = '🚗 Your Driver is On the Way - Taxi Service KSA';
+                subject = '🚗 Your Driver is On the Way - Taxi Bahrain to Dammam';
                 htmlContent = `${wrapperStart}
                     <p>Great news! Your driver for booking <span style="font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">#${bookingId.slice(0, 8).toUpperCase()}</span> is on the way to your pickup location.</p>
                     <div style="background-color: #F6FFF0; border-left: 4px solid #C6FF00; padding: 15px; margin: 20px 0;">
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
                 ${wrapperEnd}`;
                 break;
             case 'confirmed':
-                subject = '✅ Booking Confirmed - Taxi Service KSA';
+                subject = '✅ Booking Confirmed - Taxi Bahrain to Dammam';
                 htmlContent = `${wrapperStart}
                     <p>We are pleased to inform you that your booking <span style="font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">#${bookingId.slice(0, 8).toUpperCase()}</span> has been <strong>successfully confirmed</strong>.</p>
                     <p>Our chauffeur will be ready at your specified pickup location and time. You will receive a notification when they are on the way.</p>
@@ -103,16 +103,16 @@ export async function POST(request: NextRequest) {
                 ${wrapperEnd}`;
                 break;
             case 'cancelled':
-                subject = 'Booking Cancellation - Taxi Service KSA';
+                subject = 'Booking Cancellation - Taxi Bahrain to Dammam';
                 htmlContent = `${wrapperStart}
                     <p>Your booking <span style="font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">#${bookingId.slice(0, 8).toUpperCase()}</span> has been <strong>cancelled</strong> as per your request or system update.</p>
                     <p>If you believe this is an error or would like to reschedule, please reply to this email immediately.</p>
                 ${wrapperEnd}`;
                 break;
             case 'completed':
-                subject = '🌟 Your Trip with Taxi Service KSA';
+                subject = '🌟 Your Trip with Taxi Bahrain to Dammam';
                 htmlContent = `${wrapperStart}
-                    <p>Thank you for choosing <strong>Taxi Service KSA</strong> for your recent journey.</p>
+                    <p>Thank you for choosing <strong>Taxi Bahrain to Dammam</strong> for your recent journey.</p>
                     <p>We hope you enjoyed the premium experience. Your feedback helps us maintain our leading standards in Saudi Arabia.</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="https://www.trustpilot.com/review/taxibahraintodammam.com" style="background-color: #00B67A; color: #fff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">⭐ Leave a Review on Trustpilot</a>

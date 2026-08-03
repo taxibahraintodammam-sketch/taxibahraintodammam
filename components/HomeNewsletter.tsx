@@ -33,7 +33,7 @@ export default function HomeNewsletter() {
                         Be the first to discover more
                     </h2>
                     <p className="text-gray-600">
-                        Get handpicked travel ideas, insider highlights, and special Taxi Service KSA offers.
+                        Get handpicked travel ideas, insider highlights, and special Taxi Bahrain to Dammam offers.
                     </p>
                 </div>
 
@@ -67,7 +67,7 @@ export default function HomeNewsletter() {
                                 <p className="text-red-600 text-xs mt-2">Something went wrong. Please try again.</p>
                             )}
                             <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-                                By signing up, you are agreeing to receive marketing emails from Taxi Service KSA. You can unsubscribe anytime. For more details, check our{' '}
+                                By signing up, you are agreeing to receive marketing emails from Taxi Bahrain to Dammam. You can unsubscribe anytime. For more details, check our{' '}
                                 <Link href="/privacy-policy/" className="underline hover:text-gray-600">Privacy Policy</Link>.
                             </p>
                         </form>

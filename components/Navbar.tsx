@@ -148,9 +148,9 @@ export default function Navbar() {
             <div className={`bg-[#0a1442] text-white overflow-hidden transition-all duration-300 ${scrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'}`}>
                 <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between text-[10px] font-black tracking-wide sm:tracking-widest uppercase gap-3">
                     <div className="flex items-center gap-4 sm:gap-6 text-gray-400 min-w-0">
-                        <a href="mailto:taxiserviceksa9988@gmail.com" className="flex items-center gap-2 hover:text-primary transition-colors min-w-0">
+                        <a href="mailto:booking@taxibahraintodammam.com" className="flex items-center gap-2 hover:text-primary transition-colors min-w-0">
                             <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span className="hidden sm:inline">taxiserviceksa9988@gmail.com</span>
+                            <span className="hidden sm:inline">booking@taxibahraintodammam.com</span>
                             <span className="sm:hidden truncate">Email Us</span>
                         </a>
                         <div className="hidden sm:flex items-center gap-2 cursor-default font-black">
@@ -265,7 +265,7 @@ export default function Navbar() {
 
                             <div className="ml-6 flex items-center gap-3">
                                 <Link
-                                    href="https://wa.me/966569487569"
+                                    href="https://wa.me/97335014335"
                                     target="_blank"
                                     className="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                                 >
@@ -278,7 +278,7 @@ export default function Navbar() {
                         {/* Mobile Toggle */}
                         <div className="xl:hidden flex items-center gap-1.5 sm:gap-2 shrink-0">
                             <Link
-                                href="https://wa.me/966569487569"
+                                href="https://wa.me/97335014335"
                                 target="_blank"
                                 className="bg-emerald-500 text-white font-black rounded-xl px-2.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
                             >
@@ -380,7 +380,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="p-8 bg-gray-50 border-t space-y-6">
-                        <Link href="https://wa.me/966569487569" onClick={() => setIsOpen(false)} className="block w-full">
+                        <Link href="https://wa.me/97335014335" onClick={() => setIsOpen(false)} className="block w-full">
                             <div className="w-full bg-primary hover:bg-black text-white font-black h-16 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center transition-all active:scale-95">
                                 Book via WhatsApp
                             </div>

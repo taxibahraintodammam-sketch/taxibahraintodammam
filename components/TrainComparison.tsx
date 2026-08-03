@@ -66,7 +66,7 @@ export default function TrainComparison({
                             </div>
                             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl">
                                 <Car className="w-5 h-5 text-emerald-500" />
-                                <span className="text-emerald-400 text-sm font-bold uppercase">Taxi Service KSA</span>
+                                <span className="text-emerald-400 text-sm font-bold uppercase">Taxi Bahrain to Dammam</span>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@ export default function TrainComparison({
                                     <div className="space-y-2 border-l border-gray-100 pl-6">
                                         <div className="flex items-center gap-2">
                                             <point.taxiIcon className="w-3 h-3 text-emerald-500" />
-                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest text-wrap">Taxi Service KSA</span>
+                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest text-wrap">Taxi Bahrain to Dammam</span>
                                         </div>
                                         <p className="text-xs text-gray-900 font-bold leading-relaxed">{point.taxi}</p>
                                     </div>

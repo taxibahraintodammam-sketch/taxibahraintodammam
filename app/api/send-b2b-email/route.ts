@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         const html = `
         <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
             <div style="background-color: #000; padding: 25px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0; color: #C6FF00; font-size: 20px; letter-spacing: 1px;">Taxi Service KSA</h1>
+                <h1 style="margin: 0; color: #C6FF00; font-size: 20px; letter-spacing: 1px;">Taxi Bahrain to Dammam</h1>
                 <p style="color: #aaa; margin: 6px 0 0; font-size: 12px;">Ground Transport Partner in Saudi Arabia</p>
             </div>
             <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 14px;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
-                    Taxi Service KSA &bull; info@taxibahraintodammam.com &bull; +966 56 948 7569 &bull; www.taxibahraintodammam.com
+                    Taxi Bahrain to Dammam &bull; info@taxibahraintodammam.com &bull; +973 3501 4335 &bull; www.taxibahraintodammam.com
                 </p>
                 <p style="font-size: 11px; color: #bbb; text-align: center;">
                     If you'd rather not receive future updates from us, just reply and let us know.

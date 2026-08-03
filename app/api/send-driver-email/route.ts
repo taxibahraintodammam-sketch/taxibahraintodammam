@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         try {
             await sendMail({
                 to: driver.email,
-                subject: 'Partnership Application Received - Taxi Service KSA',
+                subject: 'Partnership Application Received - Taxi Bahrain to Dammam',
                 html: `
                 <div style="font-family: Arial, sans-serif; padding: 25px; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px;">
                     <div style="text-align: center; margin-bottom: 25px;">
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
                     </div>
                     
                     <p>Dear <strong>${driver.full_name}</strong>,</p>
-                    <p>Thank you for your interest in joining the <strong>Taxi Service KSA</strong> professional network.</p>
+                    <p>Thank you for your interest in joining the <strong>Taxi Bahrain to Dammam</strong> professional network.</p>
                     <p>We have received your registration details and our partner compliance team is currently reviewing your profile and vehicle information.</p>
                     
                     <div style="background-color: #f8f9fa; border-left: 4px solid #C6FF00; padding: 15px; margin: 20px 0;">
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
                     <p>Please ensure your vehicle remains in top condition and your documents are ready for final verification.</p>
                     
-                    <p style="margin-top: 30px;">Best regards,<br><strong>Onboarding Team</strong><br>Taxi Service KSA</p>
+                    <p style="margin-top: 30px;">Best regards,<br><strong>Onboarding Team</strong><br>Taxi Bahrain to Dammam</p>
                 </div>
                 `,
             });

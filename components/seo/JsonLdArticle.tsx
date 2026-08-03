@@ -18,7 +18,7 @@ export default function JsonLdArticle({
     datePublished,
     dateModified,
     authorName = "Haram Taxi Editorial",
-    publisherName = "Taxi Service KSA",
+    publisherName = "Taxi Bahrain to Dammam",
     url
 }: JsonLdArticleProps) {
     const baseUrl = 'https://taxibahraintodammam.com';

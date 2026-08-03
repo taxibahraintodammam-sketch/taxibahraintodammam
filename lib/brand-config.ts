@@ -1,20 +1,20 @@
 /**
- * Taxi Service KSA - Brand Knowledge Base
+ * Taxi Bahrain to Dammam - Brand Knowledge Base
  * This file serves as the "Golden Record" for AI agents and developers to ensure
  * consistency across the website.
  */
 
 export const BRAND = {
-    name: "Taxi Service KSA",
-    legalName: "Taxi Service KSA Transport",
+    name: "Taxi Bahrain to Dammam",
+    legalName: "Taxi Bahrain to Dammam Transport",
     founder: "Muhammad Ismail",
     coFounder: "Zumer",
     foundingYear: 2012,
-    headquarters: "Jeddah, Saudi Arabia",
+    headquarters: "Manama, Bahrain",
     contact: {
-        email: "taxiserviceksa9988@gmail.com",
-        whatsapp: "+966569487569",
-        phone: "+966569487569"
+        email: "booking@taxibahraintodammam.com",
+        whatsapp: "+97335014335",
+        phone: "+97335014335"
     },
     vipOnly: true,
     socialLinks: {

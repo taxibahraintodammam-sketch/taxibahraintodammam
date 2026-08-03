@@ -62,14 +62,14 @@ interface CompanyProfile {
 
 const DEFAULT_PROFILES: Record<string, CompanyProfile> = {
     'taxi-ksa': {
-        name: 'Taxi Service KSA',
-        address: 'Jeddah, Saudi Arabia',
-        phone: 'taxiserviceksa9988@gmail.com',
-        email: 'taxiserviceksa9988@gmail.com',
+        name: 'Taxi Bahrain to Dammam',
+        address: 'Manama, Bahrain',
+        phone: 'booking@taxibahraintodammam.com',
+        email: 'booking@taxibahraintodammam.com',
         website: 'www.taxibahraintodammam.com',
         logoUrl: '/logo.svg',
         bankName: 'Al Rajhi Bank',
-        accountName: 'Taxi Service KSA LLC',
+        accountName: 'Taxi Bahrain to Dammam LLC',
         accountNumber: '123456789012345',
         iban: 'SA8280000000123456789012',
         swiftCode: 'RAJHSARIXXX'
@@ -456,7 +456,7 @@ export default function UniversalInvoiceGenerator() {
                             <div>
                                 <Label className="text-[10px] text-gray-400 uppercase ml-1">Account Holder Name</Label>
                                 <Input 
-                                    placeholder="e.g. Taxi Service KSA" 
+                                    placeholder="e.g. Taxi Bahrain to Dammam" 
                                     value={bankDetails.accountName} 
                                     onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})} 
                                     className="h-9 text-xs font-semibold focus-visible:ring-blue-500" 

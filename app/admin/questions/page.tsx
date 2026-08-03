@@ -217,7 +217,7 @@ export default function AdminQuestionsPage() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <CheckCircle className="w-4 h-4 text-green-600" />
                                                     <span className="text-sm font-bold text-green-900">
-                                                        Answer by {question.answered_by || 'Taxi Service KSA'}:
+                                                        Answer by {question.answered_by || 'Taxi Bahrain to Dammam'}:
                                                     </span>
                                                 </div>
                                                 <p className="text-green-800">{question.answer}</p>

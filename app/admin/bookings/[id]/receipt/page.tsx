@@ -24,8 +24,8 @@ const RECEIPT_TEXT: Record<DocLang, Record<string, string>> = {
         payeeInfo: 'Payee Information', fullName: 'Full Name', phone: 'Phone', email: 'Email',
         director: 'Director', partner: 'Partner',
         issued: 'Issued', officialNote: 'This is an official receipt — Please retain for your records',
-        companyTagline: 'Premium Private Transport — Kingdom of Saudi Arabia',
-        city: 'Jeddah',
+        companyTagline: 'Premium Private Transport — Kingdom of Bahrain',
+        city: 'Manama',
     },
     ar: {
         officialReceipt: 'إيصال دفع رسمي', no: 'الرقم', date: 'التاريخ:',
@@ -41,8 +41,8 @@ const RECEIPT_TEXT: Record<DocLang, Record<string, string>> = {
         payeeInfo: 'معلومات المستلم', fullName: 'الاسم الكامل', phone: 'الهاتف', email: 'البريد الإلكتروني',
         director: 'المدير', partner: 'الشريك',
         issued: 'تاريخ الإصدار', officialNote: 'هذا إيصال رسمي — يرجى الاحتفاظ به لسجلاتكم',
-        companyTagline: 'خدمة نقل خاصة فاخرة — المملكة العربية السعودية',
-        city: 'جدة',
+        companyTagline: 'خدمة نقل خاصة فاخرة — مملكة البحرين',
+        city: 'المنامة',
     },
 };
 
@@ -285,9 +285,9 @@ export default function ReceiptPage() {
 
                         {/* Company letterhead */}
                         <div className="text-center pb-5 border-b-2 border-gray-900">
-                            <p className="text-2xl font-black text-gray-900 uppercase tracking-[0.15em]">Taxi Service KSA</p>
+                            <p className="text-2xl font-black text-gray-900 uppercase tracking-[0.15em]">Taxi Bahrain to Dammam</p>
                             <p className="text-xs text-gray-500 mt-1">{t.companyTagline}</p>
-                            <p className="text-xs text-gray-400">{t.city} · info@taxibahraintodammam.com · <span dir="ltr">+966 56 948 7569</span> · www.taxibahraintodammam.com</p>
+                            <p className="text-xs text-gray-400">{t.city} · info@taxibahraintodammam.com · <span dir="ltr">+973 3501 4335</span> · www.taxibahraintodammam.com</p>
                         </div>
 
                         {/* OFFICIAL RECEIPT title */}
@@ -420,11 +420,11 @@ export default function ReceiptPage() {
                                         <circle cx="60" cy="60" r="50" fill="none" stroke="#15803d" strokeWidth="1" />
                                         {/* Curved top text */}
                                         <text fill="#15803d" fontSize="9" fontWeight="900" letterSpacing="2" fontFamily="Arial, sans-serif">
-                                            <textPath href="#topArc" startOffset="10%">TAXI SERVICE KSA</textPath>
+                                            <textPath href="#topArc" startOffset="10%">TAXI BAHRAIN DAMMAM</textPath>
                                         </text>
                                         {/* Curved bottom text */}
                                         <text fill="#15803d" fontSize="8" fontWeight="700" letterSpacing="1.5" fontFamily="Arial, sans-serif">
-                                            <textPath href="#botArc" startOffset="18%">JEDDAH · SAUDI ARABIA</textPath>
+                                            <textPath href="#botArc" startOffset="18%">MANAMA · BAHRAIN</textPath>
                                         </text>
                                         {/* Center checkmark */}
                                         <circle cx="60" cy="60" r="18" fill="#15803d" />

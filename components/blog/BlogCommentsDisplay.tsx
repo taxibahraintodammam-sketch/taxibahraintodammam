@@ -42,7 +42,7 @@ export default async function BlogCommentsDisplay({ blogSlug }: Props) {
 
                         {comment.admin_reply && (
                             <div className="mt-4 ml-4 pl-4 border-l-2 border-primary/30 bg-primary/5 rounded-r-xl p-4">
-                                <div className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Taxi Service KSA</div>
+                                <div className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Taxi Bahrain to Dammam</div>
                                 <p className="text-gray-700 text-sm">{comment.admin_reply}</p>
                             </div>
                         )}

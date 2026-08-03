@@ -207,7 +207,7 @@ export default function LocationsPage() {
                             <Input
                                 value={form.name}
                                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                                placeholder="e.g. Jeddah Airport"
+                                placeholder="e.g. Bahrain Airport"
                                 className="bg-neutral-800 border-neutral-700 text-white"
                                 autoFocus
                             />

@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
                     </div>
                     <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
                         <p style="font-size: 16px;">Dear <strong>${booking.customer_name}</strong>,</p>
-                        <p>This is a friendly reminder that your transfer with <strong>Taxi Service KSA</strong> is scheduled for <strong>tomorrow</strong>.</p>
+                        <p>This is a friendly reminder that your transfer with <strong>Taxi Bahrain to Dammam</strong> is scheduled for <strong>tomorrow</strong>.</p>
 
                         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #ebedf0;">
                             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -93,11 +93,11 @@ export async function GET(request: NextRequest) {
                         </div>
 
                         <div style="text-align: center; margin: 25px 0;">
-                            <a href="https://wa.me/966569487569?text=${whatsappMsg}" style="background-color: #25D366; color: white; padding: 13px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 15px;">💬 Contact Driver / Support</a>
+                            <a href="https://wa.me/97335014335?text=${whatsappMsg}" style="background-color: #25D366; color: white; padding: 13px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 15px;">💬 Contact Driver / Support</a>
                         </div>
 
                         <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                        <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service</p>
+                        <p style="font-size: 12px; color: #999; text-align: center;">Taxi Bahrain to Dammam • Premium Chauffeur &amp; Private Transport Service</p>
                     </div>
                 </div>`,
             });

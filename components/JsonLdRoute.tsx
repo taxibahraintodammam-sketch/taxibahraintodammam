@@ -24,9 +24,9 @@ export default function JsonLdRoute({ from, to, description, distance, duration,
                 "description": description,
                 "provider": {
                     "@type": "LocalBusiness",
-                    "name": "TaxiServiceKSA",
+                    "name": "TaxiBahrainToDammam",
                     "url": baseUrl,
-                    "telephone": "+966 56 073 2928",
+                    "telephone": "+973 3501 4335",
                     "aggregateRating": {
                         "@type": "AggregateRating",
                         "ratingValue": ratingValue,

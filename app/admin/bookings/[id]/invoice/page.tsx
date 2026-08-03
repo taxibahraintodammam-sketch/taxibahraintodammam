@@ -50,8 +50,8 @@ const INVOICE_TEXT: Record<DocLang, Record<string, string>> = {
         term3: 'Driver will wait 60 minutes for airport pickups.',
         term4: 'This invoice is valid for 30 days from date issued.',
         authorizedSignature: 'Authorized Signature', director: 'Director', partner: 'Partner',
-        thankYou: 'Thank you for choosing Taxi Service KSA — www.taxibahraintodammam.com',
-        pax: 'Pax', bags: 'Bags', city: 'Jeddah, Saudi Arabia',
+        thankYou: 'Thank you for choosing Taxi Bahrain to Dammam — www.taxibahraintodammam.com',
+        pax: 'Pax', bags: 'Bags', city: 'Manama, Bahrain',
     },
     ar: {
         invoice: 'فاتورة', no: 'الرقم', date: 'التاريخ:', roundTrip: 'ذهاب وعودة',
@@ -76,8 +76,8 @@ const INVOICE_TEXT: Record<DocLang, Record<string, string>> = {
         term3: 'ينتظر السائق 60 دقيقة عند الاستلام من المطار.',
         term4: 'هذه الفاتورة صالحة لمدة 30 يوماً من تاريخ الإصدار.',
         authorizedSignature: 'التوقيع المعتمد', director: 'المدير', partner: 'الشريك',
-        thankYou: 'شكراً لاختياركم تاكسي سيرفس السعودية — www.taxibahraintodammam.com',
-        pax: 'راكب', bags: 'حقيبة', city: 'جدة، المملكة العربية السعودية',
+        thankYou: 'شكراً لاختياركم تاكسي البحرين إلى الدمام — www.taxibahraintodammam.com',
+        pax: 'راكب', bags: 'حقيبة', city: 'المنامة، مملكة البحرين',
     },
 };
 
@@ -131,7 +131,7 @@ export default function InvoicePage() {
     const [bankDetails, setBankDetails] = useState({
         showOnDocument: false,
         bankName: 'Al Rajhi Bank',
-        accountName: 'Taxi Service KSA LLC',
+        accountName: 'Taxi Bahrain to Dammam LLC',
         accountNumber: '123456789012345',
         iban: 'SA8280000000123456789012',
         swiftCode: 'RAJHSARIXXX',
@@ -604,7 +604,7 @@ export default function InvoicePage() {
                                 <input
                                     value={bankDetails.accountName}
                                     onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})}
-                                    placeholder="e.g. Taxi Service KSA"
+                                    placeholder="e.g. Taxi Bahrain to Dammam"
                                     className="h-8 text-xs font-bold border rounded px-2 outline-none focus:border-blue-400 bg-gray-50/50"
                                 />
                             </div>
@@ -658,7 +658,7 @@ export default function InvoicePage() {
                                 <div className="text-xs text-gray-500 space-y-1 mt-2 leading-snug">
                                     <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> {t.city}</p>
                                     <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxibahraintodammam.com</p>
-                                    <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+966 56 948 7569</span></p>
+                                    <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+973 3501 4335</span></p>
                                     <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxibahraintodammam.com</p>
                                 </div>
                             </div>

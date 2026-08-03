@@ -27,7 +27,7 @@ const QUOTE_TEXT: Record<DocLang, Record<string, string>> = {
         quotation: 'QUOTATION', ref: 'Ref:', date: 'Date:',
         preparedFor: 'Prepared For', clientName: 'Client Name', phone: 'Phone:', email: 'Email:',
         subject: 'Sub: Official Quotation for Transport Services',
-        dear: 'Dear', intro: 'Thank you for choosing Taxi Service KSA. We are pleased to provide the following quotation for your requested transportation services. Please review the details of your upcoming journey below:',
+        dear: 'Dear', intro: 'Thank you for choosing Taxi Bahrain to Dammam. We are pleased to provide the following quotation for your requested transportation services. Please review the details of your upcoming journey below:',
         pickupDate: 'Pickup Date', time: 'Time', routeDetails: 'Route Details', from: 'From:', to: 'To:',
         vehicleReq: 'Vehicle Requirements', occupancy: 'Occupancy', passengers: 'Passengers', bags: 'Bags',
         specialRequests: 'Special Requests',
@@ -38,13 +38,13 @@ const QUOTE_TEXT: Record<DocLang, Record<string, string>> = {
         term2: 'Cancellation is free up to 24 hours before pickup.',
         term3: 'This quotation is valid for 7 days from the date of issue.',
         authorizedSignature: 'Authorized Signature', director: 'Director', partner: 'Partner',
-        city: 'Jeddah, Saudi Arabia',
+        city: 'Manama, Bahrain',
     },
     ar: {
         quotation: 'عرض سعر', ref: 'الرقم:', date: 'التاريخ:',
         preparedFor: 'مُعد لـ', clientName: 'اسم العميل', phone: 'الهاتف:', email: 'البريد الإلكتروني:',
         subject: 'الموضوع: عرض سعر رسمي لخدمات النقل',
-        dear: 'عزيزي', intro: 'شكراً لاختياركم تاكسي سيرفس السعودية. يسعدنا تزويدكم بعرض السعر التالي لخدمات النقل المطلوبة. يرجى مراجعة تفاصيل رحلتكم القادمة أدناه:',
+        dear: 'عزيزي', intro: 'شكراً لاختياركم تاكسي البحرين إلى الدمام. يسعدنا تزويدكم بعرض السعر التالي لخدمات النقل المطلوبة. يرجى مراجعة تفاصيل رحلتكم القادمة أدناه:',
         pickupDate: 'تاريخ الانطلاق', time: 'الوقت', routeDetails: 'تفاصيل المسار', from: 'من:', to: 'إلى:',
         vehicleReq: 'متطلبات المركبة', occupancy: 'عدد الركاب', passengers: 'ركاب', bags: 'حقائب',
         specialRequests: 'طلبات خاصة',
@@ -55,7 +55,7 @@ const QUOTE_TEXT: Record<DocLang, Record<string, string>> = {
         term2: 'إلغاء مجاني حتى 24 ساعة قبل موعد الانطلاق.',
         term3: 'هذا العرض صالح لمدة 7 أيام من تاريخ الإصدار.',
         authorizedSignature: 'التوقيع المعتمد', director: 'المدير', partner: 'الشريك',
-        city: 'جدة، المملكة العربية السعودية',
+        city: 'المنامة، مملكة البحرين',
     },
 };
 
@@ -341,7 +341,7 @@ export default function LetterheadPage() {
                                     <div className="relative w-12 h-12 print:w-10 print:h-10">
                                         <Image
                                             src="/logo.svg"
-                                            alt="Taxi Service KSA"
+                                            alt="Taxi Bahrain to Dammam"
                                             fill
                                             className="object-contain"
                                         />
@@ -353,7 +353,7 @@ export default function LetterheadPage() {
                                 <div className="text-xs text-gray-500 space-y-1 leading-snug">
                                     <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> {t.city}</p>
                                     <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxibahraintodammam.com</p>
-                                    <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+966 56 948 7569</span></p>
+                                    <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+973 3501 4335</span></p>
                                     <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxibahraintodammam.com</p>
                                 </div>
                             </div>

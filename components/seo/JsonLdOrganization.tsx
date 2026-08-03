@@ -6,7 +6,7 @@ export default function JsonLdOrganization() {
     const schema = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Taxi Service KSA",
+        "name": "Taxi Bahrain to Dammam",
         "alternateName": "Haram Taxi Service",
         "url": baseUrl,
         "logo": `${baseUrl}/logo.png`,
@@ -15,20 +15,20 @@ export default function JsonLdOrganization() {
             "https://www.linkedin.com/company/taxi-service-ksa/",
             "https://www.youtube.com/channel/UCeP44oxBUKUG5X-UhYmPMNw",
             "https://www.pinterest.com/taxiserviceksa/",
-            "https://twitter.com/TaxiServiceKSA",
+            "https://twitter.com/TaxiBahrainToDammam",
             "https://www.instagram.com/taxiserviceksa/"
         ],
         "contactPoint": [
             {
                 "@type": "ContactPoint",
-                "telephone": "+966 56 073 2928",
+                "telephone": "+973 3501 4335",
                 "contactType": "customer service",
                 "areaServed": "SA",
                 "availableLanguage": ["en", "ar", "ur"]
             },
             {
                 "@type": "ContactPoint",
-                "telephone": "+966 56 948 7569",
+                "telephone": "+973 3501 4335",
                 "contactType": "WhatsApp Booking",
                 "areaServed": "SA",
                 "availableLanguage": ["en", "ar", "ur"]

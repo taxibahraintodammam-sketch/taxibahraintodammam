@@ -665,7 +665,7 @@ export default function B2BLeadsPage() {
                                 <Textarea
                                     value={message}
                                     onChange={e => setMessage(e.target.value)}
-                                    placeholder={`Dear {{company}} team,\n\nWe'd like to introduce Taxi Service KSA as your trusted ground transport partner for pilgrims traveling to Makkah and Madinah...`}
+                                    placeholder={`Dear {{company}} team,\n\nWe'd like to introduce Taxi Bahrain to Dammam as your trusted ground transport partner for pilgrims traveling to Makkah and Madinah...`}
                                     rows={10}
                                     disabled={sending}
                                 />

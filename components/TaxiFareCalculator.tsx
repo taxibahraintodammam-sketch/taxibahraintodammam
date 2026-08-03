@@ -99,7 +99,7 @@ export default function TaxiFareCalculator() {
                                 <div className="text-xl font-black text-gray-900 mb-4">
                                     {result.sedan ? `SAR ${result.sedan}` : <span className="text-sm font-semibold text-gray-500">Contact for Quote</span>}
                                 </div>
-                                <Link href={`https://wa.me/966569487569?text=${encodeURIComponent(`Hello, I want to book a Sedan from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.sedan ? ` (quoted SAR ${result.sedan})` : ''}.`)}`}>
+                                <Link href={`https://wa.me/97335014335?text=${encodeURIComponent(`Hello, I want to book a Sedan from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.sedan ? ` (quoted SAR ${result.sedan})` : ''}.`)}`}>
                                     <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700">WhatsApp Quote</Button>
                                 </Link>
                             </div>
@@ -113,7 +113,7 @@ export default function TaxiFareCalculator() {
                                 <div className="text-xl font-black text-gray-900 mb-4">
                                     {result.suv ? `SAR ${result.suv}` : <span className="text-sm font-semibold text-gray-500">Contact for Quote</span>}
                                 </div>
-                                <Link href={`https://wa.me/966569487569?text=${encodeURIComponent(`Hello, I want to book an SUV from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.suv ? ` (quoted SAR ${result.suv})` : ''}.`)}`}>
+                                <Link href={`https://wa.me/97335014335?text=${encodeURIComponent(`Hello, I want to book an SUV from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.suv ? ` (quoted SAR ${result.suv})` : ''}.`)}`}>
                                     <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700">WhatsApp Quote</Button>
                                 </Link>
                             </div>
@@ -126,7 +126,7 @@ export default function TaxiFareCalculator() {
                                 <div className="text-xl font-black text-gray-900 mb-4">
                                     {result.van ? `SAR ${result.van}` : <span className="text-sm font-semibold text-gray-500">Contact for Quote</span>}
                                 </div>
-                                <Link href={`https://wa.me/966569487569?text=${encodeURIComponent(`Hello, I want to book Group Transport from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.van ? ` (quoted SAR ${result.van})` : ''}.`)}`}>
+                                <Link href={`https://wa.me/97335014335?text=${encodeURIComponent(`Hello, I want to book Group Transport from ${CITY_LABELS[from]} to ${CITY_LABELS[to]}${result.van ? ` (quoted SAR ${result.van})` : ''}.`)}`}>
                                     <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700">WhatsApp Quote</Button>
                                 </Link>
                             </div>

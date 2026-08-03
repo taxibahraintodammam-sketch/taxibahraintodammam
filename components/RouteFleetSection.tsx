@@ -133,7 +133,7 @@ export default function RouteFleetSection() {
                                         </Button>
                                     </Link>
                                     <a
-                                        href={`https://wa.me/966569487569?text=Hello%2C%20I%20want%20a%20${encodeURIComponent(vehicle.name)}%20for%20this%20route.`}
+                                        href={`https://wa.me/97335014335?text=Hello%2C%20I%20want%20a%20${encodeURIComponent(vehicle.name)}%20for%20this%20route.`}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                         className="w-full"

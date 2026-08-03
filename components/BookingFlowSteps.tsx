@@ -268,7 +268,7 @@ export default function BookingFlowSteps(props: BookingFlowStepsProps) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <a href="mailto:taxiserviceksa9988@gmail.com" className="block w-full">
+                        <a href="mailto:booking@taxibahraintodammam.com" className="block w-full">
                             <Button
                                 type="button"
                                 className="w-full h-14 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
@@ -277,7 +277,7 @@ export default function BookingFlowSteps(props: BookingFlowStepsProps) {
                                 Email
                             </Button>
                         </a>
-                        <a href="https://wa.me/966569487569?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20transfer." target="_blank" rel="nofollow noopener noreferrer" className="block w-full">
+                        <a href="https://wa.me/97335014335?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20transfer." target="_blank" rel="nofollow noopener noreferrer" className="block w-full">
                             <Button
                                 type="button"
                                 className="w-full h-14 bg-[#25D366] hover:bg-[#128C7E] text-white font-black text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"

@@ -104,7 +104,7 @@ export default function Hero(props: HeroProps) {
                 {/* Direct WhatsApp CTA - Clearly Dominant */}
                 <div className="w-full max-w-md mb-16">
                     <a 
-                        href="https://wa.me/966569487569?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
+                        href="https://wa.me/97335014335?text=Hello%2C%20I%20want%20to%20get%20a%20taxi%20quote."
                         target="_blank"
                         rel="nofollow noopener noreferrer"
                         className="group flex items-center justify-center gap-4 bg-primary text-white font-black py-8 px-12 rounded-3xl text-2xl shadow-[0_20px_50px_rgba(255,193,7,0.3)] transition-all hover:scale-[1.02] active:scale-95"

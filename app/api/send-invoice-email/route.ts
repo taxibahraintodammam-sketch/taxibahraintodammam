@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         await sendMail({
             to: booking.customer_email,
             cc: cc.length ? cc : undefined,
-            subject: `Your Invoice ${refId} - Taxi Service KSA`,
+            subject: `Your Invoice ${refId} - Taxi Bahrain to Dammam`,
             html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
                 <div style="background-color: #000; padding: 25px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
                     <p style="font-size: 16px;">Dear <strong>${booking.customer_name}</strong>,</p>
-                    <p>Please find your invoice attached for your upcoming journey with <strong>Taxi Service KSA</strong>.</p>
+                    <p>Please find your invoice attached for your upcoming journey with <strong>Taxi Bahrain to Dammam</strong>.</p>
 
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #ebedf0;">
                         <h3 style="margin-top: 0; color: #000; border-bottom: 2px solid #C6FF00; padding-bottom: 8px; display: inline-block;">Booking Summary</h3>
@@ -81,11 +81,11 @@ export async function POST(request: NextRequest) {
                     <p style="font-size: 14px; color: #666;">The PDF invoice is attached to this email. Please save it for your records.</p>
 
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://wa.me/966569487569" style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 16px;">💬 Contact Us on WhatsApp</a>
+                        <a href="https://wa.me/97335014335" style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 16px;">💬 Contact Us on WhatsApp</a>
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service</p>
+                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Bahrain to Dammam • Premium Chauffeur &amp; Private Transport Service</p>
                 </div>
             </div>
             `,

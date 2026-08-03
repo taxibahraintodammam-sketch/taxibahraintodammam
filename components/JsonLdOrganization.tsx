@@ -16,8 +16,8 @@ export default function JsonLdOrganization() {
         "@context": "https://schema.org",
         "@type": "Organization",
         "@id": "https://taxibahraintodammam.com/#organization",
-        "name": "Taxi Service KSA",
-        "alternateName": "TaxiServiceKSA",
+        "name": "Taxi Bahrain to Dammam",
+        "alternateName": "TaxiBahrainToDammam",
         "url": "https://taxibahraintodammam.com",
         "logo": {
             "@type": "ImageObject",
@@ -60,7 +60,7 @@ export default function JsonLdOrganization() {
             },
             {
                 "@type": "ContactPoint",
-                "email": "taxiserviceksa9988@gmail.com",
+                "email": "booking@taxibahraintodammam.com",
                 "contactType": "reservations",
                 "availableLanguage": ["English", "Arabic", "Urdu"],
                 "areaServed": "SA"

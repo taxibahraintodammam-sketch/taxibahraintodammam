@@ -65,7 +65,7 @@ export default function NewBlogPage() {
                 ...formData,
                 status: publish ? 'published' : 'draft',
                 published_at: formData.published_at || (publish ? new Date().toISOString() : undefined),
-                author: 'Taxi Service KSA',
+                author: 'Taxi Bahrain to Dammam',
                 featured_image: formData.featured_image
             });
 

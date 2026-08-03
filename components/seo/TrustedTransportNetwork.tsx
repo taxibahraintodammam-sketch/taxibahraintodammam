@@ -16,11 +16,11 @@ const TrustedTransportNetwork = () => {
                             Official Transport Partner
                         </span>
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                            Why <span className="text-primary decoration-primary/30 underline decoration-4 underline-offset-4">TaxiServiceKSA</span> is the Trusted Choice Across Saudi Arabia &amp; the GCC
+                            Why <span className="text-primary decoration-primary/30 underline decoration-4 underline-offset-4">TaxiBahrainToDammam</span> is the Trusted Choice Across Saudi Arabia &amp; the GCC
                         </h2>
                         <p className="text-gray-600 leading-relaxed text-base">
                             Whether you're performing Umrah, connecting between business hubs, or crossing into a neighbouring
-                            GCC country, <strong>TaxiServiceKSA</strong> isn't just a generic ride-booking platform — we are a
+                            GCC country, <strong>TaxiBahrainToDammam</strong> isn't just a generic ride-booking platform — we are a
                             dedicated transport network covering <Link href="/locations/makkah/" className="text-primary hover:underline font-semibold">Makkah</Link>, <Link href="/locations/madinah/" className="text-primary hover:underline font-semibold">Madinah</Link>, <Link href="/locations/riyadh/" className="text-primary hover:underline font-semibold">Riyadh</Link>, <Link href="/locations/dammam/" className="text-primary hover:underline font-semibold">Dammam</Link>, and cross-border routes into the GCC.
                         </p>
                         <p className="text-gray-600 leading-relaxed text-base mt-4">

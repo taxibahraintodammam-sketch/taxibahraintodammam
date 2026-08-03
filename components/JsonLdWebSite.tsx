@@ -16,9 +16,9 @@ export default function JsonLdWebSite() {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "@id": "https://taxibahraintodammam.com/#website",
-        "name": "Taxi Service KSA",
+        "name": "Taxi Bahrain to Dammam",
         "alternateName": [
-            "TaxiServiceKSA", 
+            "TaxiBahrainToDammam", 
             "Taxi Service Saudi Arabia", 
             "taxibahraintodammam.com"
         ],

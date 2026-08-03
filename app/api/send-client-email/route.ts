@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         const html = `
         <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
             <div style="background-color: #000; padding: 25px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0; color: #C6FF00; font-size: 20px; letter-spacing: 1px;">Taxi Service KSA</h1>
+                <h1 style="margin: 0; color: #C6FF00; font-size: 20px; letter-spacing: 1px;">Taxi Bahrain to Dammam</h1>
             </div>
             <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
                 ${greetingName ? `<p style="font-size: 16px; margin-top: 0;">Dear <strong>${greetingName}</strong>,</p>` : ''}
@@ -53,14 +53,14 @@ export async function POST(request: NextRequest) {
                         <td style="padding-right: 16px;">
                             <img src="https://taxibahraintodammam.com/ismail-signature.png" alt="Ismail" style="height: 36px; display: block;" />
                             <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Ismail</p>
-                            <p style="margin: 0; font-size: 11px; color: #888;">Director, Taxi Service KSA</p>
+                            <p style="margin: 0; font-size: 11px; color: #888;">Director, Taxi Bahrain to Dammam</p>
                         </td>
                     </tr>
                 </table>
 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 14px;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
-                    Taxi Service KSA &bull; info@taxibahraintodammam.com &bull; +966 56 948 7569 &bull; www.taxibahraintodammam.com
+                    Taxi Bahrain to Dammam &bull; info@taxibahraintodammam.com &bull; +973 3501 4335 &bull; www.taxibahraintodammam.com
                 </p>
             </div>
         </div>`;

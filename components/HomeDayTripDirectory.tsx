@@ -73,7 +73,7 @@ export default function HomeDayTripDirectory() {
         <section className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div className="max-w-7xl mx-auto">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
-                    The most popular Taxi Service KSA
+                    The most popular Taxi Bahrain to Dammam
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">

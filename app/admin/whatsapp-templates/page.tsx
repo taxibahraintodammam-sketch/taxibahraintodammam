@@ -43,7 +43,7 @@ const DEFAULT_TEMPLATES: Omit<Template, 'id' | 'created_at'>[] = [
     {
         title: 'Greeting — New Booking',
         category: 'Greeting',
-        body: `Hello {name} 👋\n\nThank you for choosing Taxi Service KSA!\n\nWe've received your booking request (Ref: {ref}).\nRoute: {from} → {to}\nDate: {date} at {time}\nVehicle: {vehicle}\n\nWe'll send your quote shortly. 🚗`,
+        body: `Hello {name} 👋\n\nThank you for choosing Taxi Bahrain to Dammam!\n\nWe've received your booking request (Ref: {ref}).\nRoute: {from} → {to}\nDate: {date} at {time}\nVehicle: {vehicle}\n\nWe'll send your quote shortly. 🚗`,
     },
     {
         title: 'Quote Ready',
@@ -68,7 +68,7 @@ const DEFAULT_TEMPLATES: Omit<Template, 'id' | 'created_at'>[] = [
     {
         title: 'Review Request',
         category: 'Review Request',
-        body: `Hello {name} 🌟\n\nThank you for travelling with Taxi Service KSA!\n\nWe hope your journey (Ref: {ref}) was excellent. Your feedback means the world to us.\n\nPlease take 1 minute to leave a review — it really helps! 🙏`,
+        body: `Hello {name} 🌟\n\nThank you for travelling with Taxi Bahrain to Dammam!\n\nWe hope your journey (Ref: {ref}) was excellent. Your feedback means the world to us.\n\nPlease take 1 minute to leave a review — it really helps! 🙏`,
     },
 ];
 

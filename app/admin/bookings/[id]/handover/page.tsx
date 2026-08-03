@@ -269,7 +269,7 @@ export default function HandoverPage() {
 
                 {/* Footer Bar */}
                 <div className="bg-slate-50 border-t border-slate-100 p-4 flex justify-between items-center text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] print:bg-white print:border-t-2">
-                    <p>© TAXI SERVICE KSA OPERATIONS</p>
+                    <p>© TAXI BAHRAIN TO DAMMAM OPERATIONS</p>
                     <p>OFFICIAL DOCUMENT — S-TRN-HDO</p>
                 </div>
             </div>

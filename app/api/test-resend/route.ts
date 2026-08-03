@@ -8,7 +8,7 @@ export async function GET() {
         console.log('🧪 Triggering Resend Test API...');
         
         const result = await sendMail({
-            to: 'taxiserviceksa9988@gmail.com',
+            to: 'booking@taxibahraintodammam.com',
             subject: '🚀 Resend Connection Test - Taxi KSA',
             html: `
                 <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
