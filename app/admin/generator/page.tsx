@@ -43,7 +43,7 @@ export default function BlogGeneratorPage() {
                 category: template.category,
                 tags: template.seo_keywords,
                 status: 'draft',
-                author: 'Muhammad Ismail',
+                author: 'Fahed Irshad',
                 seo_title: template.seo_title,
                 seo_description: template.seo_description,
                 seo_keywords: template.seo_keywords,

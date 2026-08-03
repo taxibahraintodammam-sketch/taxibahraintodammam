@@ -17,25 +17,11 @@ export const AUTHORS = [
     },
     {
         id: '2',
-        name: 'Muhammad Ismail',
-        slug: 'muhammad-ismail',
-        role: 'Founder & SEO Logistics Expert',
-        bio: 'Founder of Taxi Bahrain to Dammam and a seasoned professional in Gulf cross-border travel logistics. With over 12 years of experience in the transport industry and a deep background in SQA and AI Automation, Ismail ensures that every passenger crossing the King Fahd Causeway receives a world-class, tech-enabled travel experience. He is a recognized authority on Bahrain-Saudi border transport logistics and AI-driven content strategy.',
-        metaDescription: 'Read expert insights on Bahrain-Saudi causeway travel logistics and VIP transfers by Muhammad Ismail, Founder of Taxi Bahrain to Dammam.',
-        avatar: '/images/authors/ismail.jpg',
-        social: {
-            twitter: '',
-            linkedin: 'https://www.linkedin.com/in/muhammad-ismail-sqa/',
-            facebook: 'https://www.facebook.com/profile.php?id=100007701130236',
-            instagram: ''
-        }
-    },
-    {
-        id: '3',
-        name: 'Zumer',
-        slug: 'zumer',
-        role: 'Partner & Co-Founder',
-        bio: 'Co-Founder of Taxi Bahrain to Dammam and an expert in strategic partnerships and operations. Zumer plays a pivotal role in ensuring the highest standards of service for our VIP and corporate clients. Her dedication to excellence and detailed understanding of the Bahrain-Saudi hospitality landscape ensures that every traveler enjoys a seamless and premium experience crossing the causeway.',
+        name: 'Fahed Irshad',
+        slug: 'fahed-irshad',
+        role: 'Founder',
+        bio: 'Founder of Taxi Bahrain to Dammam, with 15 years of experience in the transportation industry before building this operator around the Bahrain-Saudi Arabia corridor specifically. Fahed ensures that every passenger crossing the King Fahd Causeway receives a reliable, professional travel experience.',
+        metaDescription: 'Read expert insights on Bahrain-Saudi causeway travel logistics and VIP transfers by Fahed Irshad, Founder of Taxi Bahrain to Dammam.',
         avatar: '/logo.png',
         social: {
             twitter: '',

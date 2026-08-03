@@ -891,11 +891,6 @@ export default function InvoicePage() {
                                         <p className="text-[10px] font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-1 min-w-[70px]">Fahed Irshad</p>
                                         <p className="text-[8px] text-gray-400">{t.director}</p>
                                     </div>
-                                    <div className="text-center">
-                                        <img src="/zumer-signature.png" alt="Zumer" className="h-8 w-auto object-contain mx-auto" />
-                                        <p className="text-[10px] font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-1 min-w-[70px]">Zumer</p>
-                                        <p className="text-[8px] text-gray-400">{t.partner}</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
