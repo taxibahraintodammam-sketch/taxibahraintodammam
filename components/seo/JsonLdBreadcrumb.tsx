@@ -16,7 +16,7 @@ export default function JsonLdBreadcrumb({ items }: JsonLdBreadcrumbProps) {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://taxiserviceksa.com${item.item.startsWith('/') ? item.item : '/' + item.item}`
+      "item": `https://taxibahraintodammam.com${item.item.startsWith('/') ? item.item : '/' + item.item}`
     }))
   };
 

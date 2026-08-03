@@ -352,9 +352,9 @@ export default function LetterheadPage() {
                                 </div>
                                 <div className="text-xs text-gray-500 space-y-1 leading-snug">
                                     <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> {t.city}</p>
-                                    <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxiserviceksa.com</p>
+                                    <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxibahraintodammam.com</p>
                                     <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+966 56 948 7569</span></p>
-                                    <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxiserviceksa.com</p>
+                                    <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxibahraintodammam.com</p>
                                 </div>
                             </div>
                             <div className={lang === 'ar' ? 'text-left' : 'text-right'}>

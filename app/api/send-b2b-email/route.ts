@@ -43,12 +43,12 @@ export async function POST(request: NextRequest) {
                 <table role="presentation" style="margin-top: 28px; border-top: 1px solid #eee; padding-top: 18px;">
                     <tr>
                         <td style="padding-right: 24px;">
-                            <img src="https://taxiserviceksa.com/ismail-signature.png" alt="Ismail" style="height: 34px; display: block;" />
+                            <img src="https://taxibahraintodammam.com/ismail-signature.png" alt="Ismail" style="height: 34px; display: block;" />
                             <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Ismail</p>
                             <p style="margin: 0; font-size: 11px; color: #888;">Director</p>
                         </td>
                         <td>
-                            <img src="https://taxiserviceksa.com/zumer-signature.png" alt="Zumer" style="height: 34px; display: block;" />
+                            <img src="https://taxibahraintodammam.com/zumer-signature.png" alt="Zumer" style="height: 34px; display: block;" />
                             <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Zumer</p>
                             <p style="margin: 0; font-size: 11px; color: #888;">Partner</p>
                         </td>
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 14px;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
-                    Taxi Service KSA &bull; info@taxiserviceksa.com &bull; +966 56 948 7569 &bull; www.taxiserviceksa.com
+                    Taxi Service KSA &bull; info@taxibahraintodammam.com &bull; +966 56 948 7569 &bull; www.taxibahraintodammam.com
                 </p>
                 <p style="font-size: 11px; color: #bbb; text-align: center;">
                     If you'd rather not receive future updates from us, just reply and let us know.
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
             cc: ccList.length ? ccList : undefined,
             subject,
             html,
-            replyTo: 'info@taxiserviceksa.com',
+            replyTo: 'info@taxibahraintodammam.com',
             attachments: attachment?.filename && attachment?.content
                 ? [{ filename: attachment.filename, content: attachment.content }]
                 : undefined,

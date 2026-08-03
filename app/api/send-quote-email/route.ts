@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
             ? additionalEmails.filter((e: string) => e && e.includes('@'))
             : [];
 
-        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
         const refId      = `#${String(booking.id).slice(0, 8).toUpperCase()}`;
         const curr       = currency || booking.currency || 'SAR';
         const price      = Number(booking.total_price).toFixed(2);
@@ -106,12 +106,12 @@ export async function POST(request: NextRequest) {
                     <p style="font-size: 14px; color: #555;">This quote is valid for <strong>48 hours</strong>. To confirm your booking or ask any questions, simply reply to this email or tap the button below.</p>
 
                     <div style="text-align: center; margin: 30px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                        <a href="https://taxiserviceksa.com/booking/quote?ref=${booking.id.slice(0, 8)}" style="background-color: #C6FF00; color: #000; padding: 14px 28px; text-decoration: none; font-weight: 900; border-radius: 30px; display: inline-block; font-size: 15px;">✅ Accept Quote Online</a>
+                        <a href="https://taxibahraintodammam.com/booking/quote?ref=${booking.id.slice(0, 8)}" style="background-color: #C6FF00; color: #000; padding: 14px 28px; text-decoration: none; font-weight: 900; border-radius: 30px; display: inline-block; font-size: 15px;">✅ Accept Quote Online</a>
                         <a href="https://wa.me/966569487569?text=${whatsappMsg}" style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; font-size: 15px;">💬 Confirm on WhatsApp</a>
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service<br>taxiserviceksa9988@gmail.com • www.taxiserviceksa.com</p>
+                    <p style="font-size: 12px; color: #999; text-align: center;">Taxi Service KSA • Premium Chauffeur &amp; Private Transport Service<br>taxiserviceksa9988@gmail.com • www.taxibahraintodammam.com</p>
                 </div>
             </div>`;
 

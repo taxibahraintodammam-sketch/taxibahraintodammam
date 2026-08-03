@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         }
 
         const { booking } = body;
-        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
 
         const safeName     = escapeHtml(booking.customer_name);
         const safePickup   = escapeHtml(booking.pickup_location);

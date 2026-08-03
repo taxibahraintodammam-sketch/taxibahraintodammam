@@ -50,7 +50,7 @@ const INVOICE_TEXT: Record<DocLang, Record<string, string>> = {
         term3: 'Driver will wait 60 minutes for airport pickups.',
         term4: 'This invoice is valid for 30 days from date issued.',
         authorizedSignature: 'Authorized Signature', director: 'Director', partner: 'Partner',
-        thankYou: 'Thank you for choosing Taxi Service KSA — www.taxiserviceksa.com',
+        thankYou: 'Thank you for choosing Taxi Service KSA — www.taxibahraintodammam.com',
         pax: 'Pax', bags: 'Bags', city: 'Jeddah, Saudi Arabia',
     },
     ar: {
@@ -76,7 +76,7 @@ const INVOICE_TEXT: Record<DocLang, Record<string, string>> = {
         term3: 'ينتظر السائق 60 دقيقة عند الاستلام من المطار.',
         term4: 'هذه الفاتورة صالحة لمدة 30 يوماً من تاريخ الإصدار.',
         authorizedSignature: 'التوقيع المعتمد', director: 'المدير', partner: 'الشريك',
-        thankYou: 'شكراً لاختياركم تاكسي سيرفس السعودية — www.taxiserviceksa.com',
+        thankYou: 'شكراً لاختياركم تاكسي سيرفس السعودية — www.taxibahraintodammam.com',
         pax: 'راكب', bags: 'حقيبة', city: 'جدة، المملكة العربية السعودية',
     },
 };
@@ -657,9 +657,9 @@ export default function InvoicePage() {
                                 </h2>
                                 <div className="text-xs text-gray-500 space-y-1 mt-2 leading-snug">
                                     <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> {t.city}</p>
-                                    <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxiserviceksa.com</p>
+                                    <p className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gray-400" /> info@taxibahraintodammam.com</p>
                                     <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-gray-400" /> <span dir="ltr">+966 56 948 7569</span></p>
-                                    <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxiserviceksa.com</p>
+                                    <p className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-gray-400" /> www.taxibahraintodammam.com</p>
                                 </div>
                             </div>
                             <div className={lang === 'ar' ? 'text-left' : 'text-right'}>

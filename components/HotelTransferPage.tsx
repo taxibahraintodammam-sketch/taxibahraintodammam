@@ -45,7 +45,7 @@ export default function HotelTransferPage({ hotel, otherHotels }: HotelTransferP
                     { name: 'Family Van Service', description: 'Spacious vehicles perfect for groups with luggage.' },
                     { name: 'Airport & Hotel Transfers', description: 'Convenient pickups and drop-offs at all major locations.' },
                 ]}
-                image="https://taxiserviceksa.com/hero-slide-1.webp"
+                image="https://taxibahraintodammam.com/hero-slide-1.webp"
             />
 
             <Hero

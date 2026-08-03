@@ -19,7 +19,7 @@ export default function JsonLdLocation({
     ratingValue = "4.9",
     reviewCount = "312"
 }: JsonLdLocationProps) {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     
     const schema = {
         "@context": "https://schema.org",

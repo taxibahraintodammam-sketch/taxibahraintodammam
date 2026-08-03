@@ -658,7 +658,7 @@ export default function B2BLeadsPage() {
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">CC (optional, comma separated)</label>
-                                <Input value={cc} onChange={e => setCc(e.target.value)} placeholder="teammate@taxiserviceksa.com" disabled={sending} />
+                                <Input value={cc} onChange={e => setCc(e.target.value)} placeholder="teammate@taxibahraintodammam.com" disabled={sending} />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Message *</label>

@@ -31,7 +31,7 @@ function priorityFor(slug: string): number {
 }
 
 export async function GET() {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
 
     // Dynamically read routes from the filesystem
     let routePages: string[] = [];

@@ -4,17 +4,17 @@ export default function JsonLdLocalBusiness() {
     const schema = {
         "@context": "https://schema.org",
         "@type": "TaxiService",
-        "@id": "https://taxiserviceksa.com/#taxiservice",
+        "@id": "https://taxibahraintodammam.com/#taxiservice",
         "name": "Taxi Service KSA",
         "alternateName": "TaxiServiceKSA",
         "logo": {
             "@type": "ImageObject",
-            "url": "https://taxiserviceksa.com/logo.png",
+            "url": "https://taxibahraintodammam.com/logo.png",
             "width": 512,
             "height": 512
         },
-        "image": "https://taxiserviceksa.com/og-image.jpg",
-        "url": "https://taxiserviceksa.com",
+        "image": "https://taxibahraintodammam.com/og-image.jpg",
+        "url": "https://taxibahraintodammam.com",
         "telephone": "+966-56-948-7569",
         "email": "taxiserviceksa9988@gmail.com",
         "address": {

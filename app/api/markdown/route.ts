@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const path = searchParams.get('path') || '/';
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taxiserviceksa.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taxibahraintodammam.com';
   const targetUrl = `${siteUrl}${path}`;
 
   try {

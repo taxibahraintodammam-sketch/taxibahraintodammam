@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     
     const staticPages = [
         { route: '', priority: 1.0 },

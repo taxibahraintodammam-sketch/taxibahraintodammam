@@ -1,5 +1,5 @@
 export default function JsonLdSiteNavigation() {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
 
     const navigationItems = [
         { name: "Home", url: `${baseUrl}/` },

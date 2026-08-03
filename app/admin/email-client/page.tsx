@@ -168,7 +168,7 @@ export default function EmailClientPage() {
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-gray-900">Email Client</h1>
                     <p className="text-gray-500 text-sm mt-1">
-                        Send a direct email to any client — sent from <span className="font-semibold text-gray-700">info@taxiserviceksa.com</span>
+                        Send a direct email to any client — sent from <span className="font-semibold text-gray-700">info@taxibahraintodammam.com</span>
                     </p>
                 </div>
             </div>
@@ -242,7 +242,7 @@ export default function EmailClientPage() {
                                 <Input
                                     value={cc}
                                     onChange={e => setCc(e.target.value)}
-                                    placeholder="teammate@taxiserviceksa.com"
+                                    placeholder="teammate@taxibahraintodammam.com"
                                 />
                             </div>
                             <div>

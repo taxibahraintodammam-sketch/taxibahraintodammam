@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fire-and-forget confirmation email
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://taxiserviceksa.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://taxibahraintodammam.com';
     const internalHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
     if (process.env.INTERNAL_API_SECRET) {
         internalHeaders['x-internal-secret'] = process.env.INTERNAL_API_SECRET;

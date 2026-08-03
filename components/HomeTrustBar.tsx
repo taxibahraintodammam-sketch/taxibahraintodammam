@@ -35,7 +35,7 @@ export default function HomeTrustBar() {
                     <div className="hidden sm:block h-6 w-px bg-gray-300" />
 
                     <a
-                        href="https://www.trustpilot.com/review/taxiserviceksa.com"
+                        href="https://www.trustpilot.com/review/taxibahraintodammam.com"
                         target="_blank"
                         rel="nofollow noopener noreferrer"
                         className="flex items-center gap-2 font-semibold text-gray-800 hover:text-[#00b67a] transition-colors"

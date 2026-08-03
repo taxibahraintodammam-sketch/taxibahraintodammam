@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 // Domain used for the "from"/"reply-to" address — must be a domain verified
 // in the Resend dashboard, otherwise Resend will reject the send.
-const emailDomain = process.env.RESEND_EMAIL_DOMAIN || 'taxiserviceksa.com';
+const emailDomain = process.env.RESEND_EMAIL_DOMAIN || 'taxibahraintodammam.com';
 
 // SMTP Config (Fallback)
 const emailUser = process.env.EMAIL_USER || `info@${emailDomain}`;

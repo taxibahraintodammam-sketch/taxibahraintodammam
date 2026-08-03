@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
             vehicle_model: escapeHtml(rawDriver.vehicle_model),
             owns_car: rawDriver.owns_car,
         };
-        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
 
         console.log('Sending driver application emails for:', driver.full_name);
 

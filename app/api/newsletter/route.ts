@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
             .upsert([{ email, source: 'homepage' }], { onConflict: 'email', ignoreDuplicates: true });
         if (dbError) console.error('Failed to save newsletter subscriber:', dbError);
 
-        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
         await sendMail({
             to: adminEmail,
             subject: '📧 New Newsletter Signup',

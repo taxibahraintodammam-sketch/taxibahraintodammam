@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         const safeName = escapeHtml(name);
         const safeSubject = escapeHtml(subject);
         const safeMessage = escapeHtml(message);
-        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
 
         // Save to support_inquiries so it shows up in the admin Support inbox,
         // not just as an email. Best-effort — a DB hiccup shouldn't block the
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
               </div>
               <p style="color: #666; font-size: 14px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Message Content:</p>
               <div style="padding: 15px; border: 1px dashed #ddd; border-radius: 8px; background-color: #fff; white-space: pre-wrap; color: #333; line-height: 1.6;">${safeMessage}</div>
-              <p style="font-size: 12px; color: #999; margin-top: 20px;">Sent via Contact Form at taxiserviceksa.com</p>
+              <p style="font-size: 12px; color: #999; margin-top: 20px;">Sent via Contact Form at taxibahraintodammam.com</p>
             </div>
             `,
         });

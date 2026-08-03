@@ -11,7 +11,7 @@ export default function JsonLdService() {
 
                 "areaServed": "Saudi Arabia",
                 "serviceType": "Airport Transfer",
-                "url": "https://taxiserviceksa.com/locations/jeddah"
+                "url": "https://taxibahraintodammam.com/locations/jeddah"
             },
             {
                 "@type": "TaxiService",
@@ -20,7 +20,7 @@ export default function JsonLdService() {
 
                 "areaServed": ["Makkah", "Madinah"],
                 "serviceType": "Religious Travel",
-                "url": "https://taxiserviceksa.com/locations/makkah"
+                "url": "https://taxibahraintodammam.com/locations/makkah"
             },
             {
                 "@type": "TaxiService",
@@ -29,7 +29,7 @@ export default function JsonLdService() {
 
                 "areaServed": "Saudi Arabia",
                 "serviceType": "Executive Transport",
-                "url": "https://taxiserviceksa.com/fleet"
+                "url": "https://taxibahraintodammam.com/fleet"
             }
         ]
     };

@@ -1,7 +1,7 @@
 'use client';
 
 export default function JsonLdOrganization() {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     
     const schema = {
         "@context": "https://schema.org",

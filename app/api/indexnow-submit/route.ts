@@ -15,7 +15,7 @@ export async function GET() {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        const siteUrl = "https://taxiserviceksa.com";
+        const siteUrl = "https://taxibahraintodammam.com";
         
         // 2. Build URL list starting with main pages and then dynamic blogs
         const urls = [
@@ -36,9 +36,9 @@ export async function GET() {
 
         // 3. Make IndexNow post request to Bing
         const payload = {
-            host: "taxiserviceksa.com",
+            host: "taxibahraintodammam.com",
             key: "88b0d5a1c86d4e6da275c07ab1aeb952",
-            keyLocation: "https://taxiserviceksa.com/88b0d5a1c86d4e6da275c07ab1aeb952.txt",
+            keyLocation: "https://taxibahraintodammam.com/88b0d5a1c86d4e6da275c07ab1aeb952.txt",
             urlList: urls
         };
 

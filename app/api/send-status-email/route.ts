@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
                     </div>` : ''}
                     <p style="font-size: 14px; color: #555;">This quote is valid for <strong>48 hours</strong>. Click below to accept and confirm your booking instantly.</p>
                     <div style="text-align: center; margin: 25px 0;">
-                        <a href="https://taxiserviceksa.com/booking/quote?ref=${bookingId.slice(0, 8)}" style="background-color: #C6FF00; color: #000; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: 900; display: inline-block; font-size: 16px;">✅ Accept Quote Online</a>
+                        <a href="https://taxibahraintodammam.com/booking/quote?ref=${bookingId.slice(0, 8)}" style="background-color: #C6FF00; color: #000; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: 900; display: inline-block; font-size: 16px;">✅ Accept Quote Online</a>
                     </div>
                     <p style="font-size: 13px; color: #777; text-align: center;">Or reply to this email / WhatsApp us to confirm.</p>
                 ${wrapperEnd}`;
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
                     <p>Thank you for choosing <strong>Taxi Service KSA</strong> for your recent journey.</p>
                     <p>We hope you enjoyed the premium experience. Your feedback helps us maintain our leading standards in Saudi Arabia.</p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://www.trustpilot.com/review/taxiserviceksa.com" style="background-color: #00B67A; color: #fff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">⭐ Leave a Review on Trustpilot</a>
+                        <a href="https://www.trustpilot.com/review/taxibahraintodammam.com" style="background-color: #00B67A; color: #fff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">⭐ Leave a Review on Trustpilot</a>
                     </div>
                 ${wrapperEnd}`;
                 break;

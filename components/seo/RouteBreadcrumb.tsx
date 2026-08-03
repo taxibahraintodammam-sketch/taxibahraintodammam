@@ -17,19 +17,19 @@ export default function RouteBreadcrumb({ fromCity, toCity, fromSlug, toSlug }: 
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://taxiserviceksa.com/"
+                "item": "https://taxibahraintodammam.com/"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Routes",
-                "item": "https://taxiserviceksa.com/routes/"
+                "item": "https://taxibahraintodammam.com/routes/"
             },
             {
                 "@type": "ListItem",
                 "position": 3,
                 "name": `Taxi ${fromCity} to ${toCity}`,
-                "item": `https://taxiserviceksa.com/routes/${fromSlug}-${toSlug}/`
+                "item": `https://taxibahraintodammam.com/routes/${fromSlug}-${toSlug}/`
             }
         ]
     };

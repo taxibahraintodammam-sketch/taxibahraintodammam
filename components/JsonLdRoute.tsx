@@ -11,7 +11,7 @@ interface JsonLdRouteProps {
 }
 
 export default function JsonLdRoute({ from, to, description, distance, duration, ratingValue = "4.9", reviewCount = "156" }: JsonLdRouteProps) {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     const routeName = `Taxi from ${from} to ${to}`;
     
 

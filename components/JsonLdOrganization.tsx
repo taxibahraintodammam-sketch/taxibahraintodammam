@@ -15,23 +15,23 @@ export default function JsonLdOrganization() {
     const schema = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "@id": "https://taxiserviceksa.com/#organization",
+        "@id": "https://taxibahraintodammam.com/#organization",
         "name": "Taxi Service KSA",
         "alternateName": "TaxiServiceKSA",
-        "url": "https://taxiserviceksa.com",
+        "url": "https://taxibahraintodammam.com",
         "logo": {
             "@type": "ImageObject",
-            "url": "https://taxiserviceksa.com/logo.png",
+            "url": "https://taxibahraintodammam.com/logo.png",
             "width": 512,
             "height": 512
         },
-        "image": "https://taxiserviceksa.com/og-image.jpg",
+        "image": "https://taxibahraintodammam.com/og-image.jpg",
         "description": "Executive chauffeur and private transfer service in Saudi Arabia. Specializing in Umrah transport, airport pickups, and intercity travel across the Kingdom.",
         "foundingDate": "2012",
         "founder": {
             "@type": "Person",
             "name": "Muhammad Ismail",
-            "url": "https://taxiserviceksa.com/author/muhammad-ismail"
+            "url": "https://taxibahraintodammam.com/author/muhammad-ismail"
         },
         "address": {
             "@type": "PostalAddress",

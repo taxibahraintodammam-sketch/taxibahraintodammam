@@ -39,7 +39,7 @@ export default function JsonLdJobPosting({
     "hiringOrganization": {
       "@type": "Organization",
       "name": hiringOrganization,
-      "sameAs": "https://taxiserviceksa.com"
+      "sameAs": "https://taxibahraintodammam.com"
     },
     "jobLocation": {
       "@type": "Place",

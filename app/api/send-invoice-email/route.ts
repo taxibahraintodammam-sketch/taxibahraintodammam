@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
             : [];
 
         const refId = `#${String(booking.id).slice(0, 8).toUpperCase()}`;
-        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxiserviceksa.com';
+        const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
         const curr = currency || 'SAR';
         const amount = booking.total_price?.toFixed(2) || '0.00';
 

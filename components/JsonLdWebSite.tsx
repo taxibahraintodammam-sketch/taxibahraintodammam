@@ -15,23 +15,23 @@ export default function JsonLdWebSite() {
     const schema = {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "@id": "https://taxiserviceksa.com/#website",
+        "@id": "https://taxibahraintodammam.com/#website",
         "name": "Taxi Service KSA",
         "alternateName": [
             "TaxiServiceKSA", 
             "Taxi Service Saudi Arabia", 
-            "taxiserviceksa.com"
+            "taxibahraintodammam.com"
         ],
-        "url": "https://taxiserviceksa.com",
+        "url": "https://taxibahraintodammam.com",
         "publisher": {
-            "@id": "https://taxiserviceksa.com/#organization"
+            "@id": "https://taxibahraintodammam.com/#organization"
         },
         "inLanguage": ["en", "ar", "ur"],
         "potentialAction": {
             "@type": "SearchAction",
             "target": {
                 "@type": "EntryPoint",
-                "urlTemplate": "https://taxiserviceksa.com/search?q={search_term_string}"
+                "urlTemplate": "https://taxibahraintodammam.com/search?q={search_term_string}"
             },
             "query-input": "required name=search_term_string"
         }

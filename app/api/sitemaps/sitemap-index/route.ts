@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     const now = new Date().toISOString().split('T')[0];
 
     const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>

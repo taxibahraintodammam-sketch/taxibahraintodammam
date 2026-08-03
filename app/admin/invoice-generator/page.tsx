@@ -66,7 +66,7 @@ const DEFAULT_PROFILES: Record<string, CompanyProfile> = {
         address: 'Jeddah, Saudi Arabia',
         phone: 'taxiserviceksa9988@gmail.com',
         email: 'taxiserviceksa9988@gmail.com',
-        website: 'www.taxiserviceksa.com',
+        website: 'www.taxibahraintodammam.com',
         logoUrl: '/logo.svg',
         bankName: 'Al Rajhi Bank',
         accountName: 'Taxi Service KSA LLC',

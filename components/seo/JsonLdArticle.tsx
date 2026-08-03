@@ -21,7 +21,7 @@ export default function JsonLdArticle({
     publisherName = "Taxi Service KSA",
     url
 }: JsonLdArticleProps) {
-    const baseUrl = 'https://taxiserviceksa.com';
+    const baseUrl = 'https://taxibahraintodammam.com';
     const finalImage = image || `${baseUrl}/logo.png`;
 
     const schema = {
