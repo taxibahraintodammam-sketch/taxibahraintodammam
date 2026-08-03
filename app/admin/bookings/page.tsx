@@ -44,6 +44,7 @@ import {
     Truck
 } from 'lucide-react';
 import { getPrice } from '@/lib/pricing';
+import { driverService, Driver } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -128,6 +129,7 @@ export default function BookingsPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [dbPrices, setDbPrices] = useState<Record<string, Record<string, number>>>({});
+    const [approvedDrivers, setApprovedDrivers] = useState<Driver[]>([]);
 
     // Sheet State
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -236,6 +238,7 @@ export default function BookingsPage() {
             } else {
                 fetchBookings();
                 fetchDbPrices();
+                driverService.getApprovedDrivers().then(setApprovedDrivers).catch(err => console.error('Failed to load approved drivers:', err));
                 // Request browser notification permission
                 if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
                     Notification.requestPermission();
@@ -2052,7 +2055,31 @@ Please let us know if you would like to proceed with the booking. *Taxi Service 
                                         <div>
                                             <span className="block text-xs text-gray-500 mb-1">Driver Name</span>
                                             {isEditing ? (
-                                                <Input value={editedBooking.driver_name || ''} onChange={(e) => setEditedBooking({ ...editedBooking, driver_name: e.target.value })} className="h-8 text-sm bg-white" placeholder="Assign Driver" />
+                                                <div className="space-y-1">
+                                                    <Select
+                                                        onValueChange={(driverId) => {
+                                                            const d = approvedDrivers.find(dr => dr.id === driverId);
+                                                            if (d) {
+                                                                setEditedBooking({
+                                                                    ...editedBooking,
+                                                                    driver_name: d.full_name,
+                                                                    driver_phone: d.phone_number,
+                                                                    driver_plate: d.vehicle_plate || editedBooking.driver_plate,
+                                                                });
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="h-8 text-sm bg-white">
+                                                            <SelectValue placeholder={approvedDrivers.length ? 'Pick from roster...' : 'No approved drivers yet'} />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-white border-gray-200">
+                                                            {approvedDrivers.map(d => (
+                                                                <SelectItem key={d.id} value={d.id}>{d.full_name} — {d.vehicle_model}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Input value={editedBooking.driver_name || ''} onChange={(e) => setEditedBooking({ ...editedBooking, driver_name: e.target.value })} className="h-8 text-sm bg-white" placeholder="Or type a name manually" />
+                                                </div>
                                             ) : (
                                                 <span className="font-medium text-gray-900">{selectedBooking.driver_name || 'Not Assigned'}</span>
                                             )}
@@ -2626,8 +2653,30 @@ Please let us know if you would like to proceed with the booking. *Taxi Service 
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium text-gray-700">Driver Name</label>
+                                    <Select
+                                        onValueChange={(driverId) => {
+                                            const d = approvedDrivers.find(dr => dr.id === driverId);
+                                            if (d) {
+                                                setNewBooking({
+                                                    ...newBooking,
+                                                    driver_name: d.full_name,
+                                                    driver_phone: d.phone_number,
+                                                    driver_plate: d.vehicle_plate || newBooking.driver_plate,
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="bg-white border-gray-200">
+                                            <SelectValue placeholder={approvedDrivers.length ? 'Pick from roster...' : 'No approved drivers yet'} />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white border-gray-200">
+                                            {approvedDrivers.map(d => (
+                                                <SelectItem key={d.id} value={d.id}>{d.full_name} — {d.vehicle_model}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <Input
-                                        placeholder="Assign later"
+                                        placeholder="Or type a name manually"
                                         value={newBooking.driver_name}
                                         onChange={(e) => setNewBooking({ ...newBooking, driver_name: e.target.value })}
                                         className="bg-white border-gray-200"

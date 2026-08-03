@@ -7,6 +7,7 @@ export interface Driver {
     email: string;
     city: string;
     vehicle_model: string;
+    vehicle_plate?: string;
     status: 'pending' | 'approved' | 'rejected';
     admin_notes?: string;
     created_at: string;
@@ -37,6 +38,57 @@ export const driverService = {
 
         if (error) throw error;
         return data as Driver[];
+    },
+
+    // Get only active roster drivers — used to populate the "assign driver" dropdown on bookings
+    async getApprovedDrivers() {
+        const { data, error } = await supabase
+            .from('drivers')
+            .select('*')
+            .eq('status', 'approved')
+            .order('full_name', { ascending: true });
+
+        if (error) throw error;
+        return data as Driver[];
+    },
+
+    // Add a driver straight to the roster (admin adding their own driver, skips the application flow)
+    async addDriver(driver: {
+        full_name: string;
+        phone_number: string;
+        email?: string;
+        city: string;
+        vehicle_model: string;
+        vehicle_plate?: string;
+    }) {
+        const { data, error } = await supabase
+            .from('drivers')
+            .insert({ ...driver, status: 'approved', reviewed_at: new Date().toISOString() })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Driver;
+    },
+
+    // Edit a driver's profile fields (admin)
+    async updateDriverProfile(id: string, updates: {
+        full_name: string;
+        phone_number: string;
+        email?: string;
+        city: string;
+        vehicle_model: string;
+        vehicle_plate?: string;
+    }) {
+        const { data, error } = await supabase
+            .from('drivers')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Driver;
     },
 
     // Approve a driver application (admin)

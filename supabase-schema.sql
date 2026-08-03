@@ -249,11 +249,14 @@ CREATE TABLE IF NOT EXISTS drivers (
   email          text NOT NULL,
   city           text NOT NULL,
   vehicle_model  text NOT NULL,
+  vehicle_plate  text,
   status         text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
   admin_notes    text,
   created_at     timestamptz NOT NULL DEFAULT now(),
   reviewed_at    timestamptz
 );
+-- Safe to re-run on a table created before vehicle_plate existed.
+ALTER TABLE drivers ADD COLUMN IF NOT EXISTS vehicle_plate text;
 CREATE INDEX IF NOT EXISTS drivers_status_idx ON drivers (status);
 
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;

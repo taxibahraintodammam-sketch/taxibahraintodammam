@@ -9,7 +9,8 @@ import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
-    ChevronUp, Plus, Trash2, Image as ImageIcon
+    ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
+    CreditCard
 } from 'lucide-react';
 
 const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
@@ -28,6 +29,15 @@ const sumByCurrency = (list: DriverExpense[]) =>
         acc[e.currency] = (acc[e.currency] || 0) + e.amount;
         return acc;
     }, {} as Record<string, number>);
+
+const emptyProfileForm = () => ({
+    full_name: '',
+    phone_number: '',
+    email: '',
+    city: '',
+    vehicle_model: '',
+    vehicle_plate: '',
+});
 
 const emptyExpenseForm = () => ({
     category: 'fuel' as DriverExpenseCategory,
@@ -55,6 +65,15 @@ export default function AdminDriversPage() {
     const [expenseForm, setExpenseForm] = useState(emptyExpenseForm());
     const [savingExpense, setSavingExpense] = useState(false);
     const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+
+    // Add-to-roster + edit-profile (name/phone/vehicle/plate) — for company-owned drivers,
+    // not just WhatsApp applications
+    const [showAddDriver, setShowAddDriver] = useState(false);
+    const [addDriverForm, setAddDriverForm] = useState(emptyProfileForm());
+    const [addingDriver, setAddingDriver] = useState(false);
+    const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+    const [profileForm, setProfileForm] = useState(emptyProfileForm());
+    const [savingProfile, setSavingProfile] = useState(false);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -199,6 +218,55 @@ export default function AdminDriversPage() {
         }
     };
 
+    const handleAddDriver = async () => {
+        if (!addDriverForm.full_name || !addDriverForm.phone_number || !addDriverForm.city || !addDriverForm.vehicle_model) {
+            alert('Full name, phone, city and vehicle are required');
+            return;
+        }
+        setAddingDriver(true);
+        try {
+            const created = await driverService.addDriver(addDriverForm);
+            setDrivers(prev => [created, ...prev]);
+            setAddDriverForm(emptyProfileForm());
+            setShowAddDriver(false);
+        } catch (error) {
+            console.error('Error adding driver:', error);
+            alert('Failed to add driver');
+        } finally {
+            setAddingDriver(false);
+        }
+    };
+
+    const startEditProfile = (driver: Driver) => {
+        setEditingProfileId(driver.id);
+        setProfileForm({
+            full_name: driver.full_name,
+            phone_number: driver.phone_number,
+            email: driver.email,
+            city: driver.city,
+            vehicle_model: driver.vehicle_model,
+            vehicle_plate: driver.vehicle_plate || '',
+        });
+    };
+
+    const handleSaveProfile = async (id: string) => {
+        if (!profileForm.full_name || !profileForm.phone_number || !profileForm.city || !profileForm.vehicle_model) {
+            alert('Full name, phone, city and vehicle are required');
+            return;
+        }
+        setSavingProfile(true);
+        try {
+            const updated = await driverService.updateDriverProfile(id, profileForm);
+            setDrivers(prev => prev.map(d => d.id === id ? updated : d));
+            setEditingProfileId(null);
+        } catch (error) {
+            console.error('Error updating driver profile:', error);
+            alert('Failed to update driver');
+        } finally {
+            setSavingProfile(false);
+        }
+    };
+
     const filteredDrivers = drivers.filter(d => filter === 'all' || d.status === filter);
 
     const stats = {
@@ -212,10 +280,74 @@ export default function AdminDriversPage() {
         <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Driver Applications</h1>
-                    <p className="text-gray-600 mt-2">Review and manage drivers who applied to join the fleet</p>
+                <div className="mb-8 flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Driver Management</h1>
+                        <p className="text-gray-600 mt-2">Manage your driver roster, applications, and per-driver expenses</p>
+                    </div>
+                    <Button
+                        onClick={() => setShowAddDriver(prev => !prev)}
+                        className="bg-black text-white hover:bg-gray-800"
+                    >
+                        {showAddDriver ? <X className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+                        {showAddDriver ? 'Cancel' : 'Add Driver'}
+                    </Button>
                 </div>
+
+                {/* Add driver directly to the roster (bypasses the application flow) */}
+                {showAddDriver && (
+                    <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-gray-900 mb-8">
+                        <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                            <UserPlus className="w-4 h-4" /> Add a company driver
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                            <input
+                                value={addDriverForm.full_name}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, full_name: e.target.value })}
+                                placeholder="Full name *"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                            <input
+                                value={addDriverForm.phone_number}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, phone_number: e.target.value })}
+                                placeholder="Phone number *"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                            <input
+                                value={addDriverForm.email}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, email: e.target.value })}
+                                placeholder="Email (optional)"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                            <input
+                                value={addDriverForm.city}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, city: e.target.value })}
+                                placeholder="City *"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                            <input
+                                value={addDriverForm.vehicle_model}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, vehicle_model: e.target.value })}
+                                placeholder="Vehicle model *"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                            <input
+                                value={addDriverForm.vehicle_plate}
+                                onChange={e => setAddDriverForm({ ...addDriverForm, vehicle_plate: e.target.value })}
+                                placeholder="Vehicle plate"
+                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            />
+                        </div>
+                        <Button
+                            onClick={handleAddDriver}
+                            disabled={addingDriver}
+                            className="bg-green-600 text-white hover:bg-green-700"
+                        >
+                            {addingDriver ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                            Add to Roster
+                        </Button>
+                    </div>
+                )}
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
@@ -300,22 +432,92 @@ export default function AdminDriversPage() {
                                             Applied {new Date(driver.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                         </p>
                                     </div>
+                                    {editingProfileId !== driver.id && (
+                                        <button
+                                            onClick={() => startEditProfile(driver)}
+                                            className="text-gray-400 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
+                                            title="Edit driver profile"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-sm">
-                                    <a href={`mailto:${driver.email}`} className="flex items-center gap-2 text-gray-700 hover:text-primary transition-colors">
-                                        <Mail className="w-4 h-4 text-gray-400 shrink-0" /> <span className="truncate">{driver.email}</span>
-                                    </a>
-                                    <a href={`https://wa.me/${driver.phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-700 hover:text-emerald-600 transition-colors">
-                                        <Phone className="w-4 h-4 text-gray-400 shrink-0" /> {driver.phone_number}
-                                    </a>
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                        <MapPin className="w-4 h-4 text-gray-400 shrink-0" /> {driver.city}
+                                {editingProfileId === driver.id ? (
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                                            <input
+                                                value={profileForm.full_name}
+                                                onChange={e => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                                                placeholder="Full name *"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                            <input
+                                                value={profileForm.phone_number}
+                                                onChange={e => setProfileForm({ ...profileForm, phone_number: e.target.value })}
+                                                placeholder="Phone number *"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                            <input
+                                                value={profileForm.email}
+                                                onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
+                                                placeholder="Email"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                            <input
+                                                value={profileForm.city}
+                                                onChange={e => setProfileForm({ ...profileForm, city: e.target.value })}
+                                                placeholder="City *"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                            <input
+                                                value={profileForm.vehicle_model}
+                                                onChange={e => setProfileForm({ ...profileForm, vehicle_model: e.target.value })}
+                                                placeholder="Vehicle model *"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                            <input
+                                                value={profileForm.vehicle_plate}
+                                                onChange={e => setProfileForm({ ...profileForm, vehicle_plate: e.target.value })}
+                                                placeholder="Vehicle plate"
+                                                className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={() => handleSaveProfile(driver.id)}
+                                                disabled={savingProfile}
+                                                className="bg-black text-white hover:bg-gray-800"
+                                            >
+                                                {savingProfile ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                                                Save
+                                            </Button>
+                                            <Button onClick={() => setEditingProfileId(null)} variant="outline">
+                                                Cancel
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                        <Car className="w-4 h-4 text-gray-400 shrink-0" /> {driver.vehicle_model}
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-sm">
+                                        <a href={`mailto:${driver.email}`} className="flex items-center gap-2 text-gray-700 hover:text-primary transition-colors">
+                                            <Mail className="w-4 h-4 text-gray-400 shrink-0" /> <span className="truncate">{driver.email || '—'}</span>
+                                        </a>
+                                        <a href={`https://wa.me/${driver.phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-700 hover:text-emerald-600 transition-colors">
+                                            <Phone className="w-4 h-4 text-gray-400 shrink-0" /> {driver.phone_number}
+                                        </a>
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                            <MapPin className="w-4 h-4 text-gray-400 shrink-0" /> {driver.city}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                            <Car className="w-4 h-4 text-gray-400 shrink-0" /> {driver.vehicle_model}
+                                        </div>
+                                        {driver.vehicle_plate && (
+                                            <div className="flex items-center gap-2 text-gray-700">
+                                                <CreditCard className="w-4 h-4 text-gray-400 shrink-0" /> {driver.vehicle_plate}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Internal Notes */}
                                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4">
