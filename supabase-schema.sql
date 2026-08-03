@@ -261,6 +261,15 @@ ALTER TABLE drivers ADD COLUMN IF NOT EXISTS vehicle_plate text;
 -- Generated lazily by the admin panel the first time it's shared, not at signup.
 ALTER TABLE drivers ADD COLUMN IF NOT EXISTS access_token text UNIQUE;
 CREATE INDEX IF NOT EXISTS drivers_access_token_idx ON drivers (access_token);
+-- Self-registration (app/driver/login) — phone + password, no SMS/OTP provider
+-- needed. NULL for drivers the admin added directly via "Add Driver" (they
+-- only have the token link until/unless they also register a password).
+-- Partial index so it only enforces uniqueness among rows that actually
+-- have a password, and re-running this migration can't fail on older rows
+-- that happen to share a phone number.
+ALTER TABLE drivers ADD COLUMN IF NOT EXISTS password_hash text;
+CREATE UNIQUE INDEX IF NOT EXISTS drivers_phone_number_password_idx
+  ON drivers (phone_number) WHERE password_hash IS NOT NULL;
 CREATE INDEX IF NOT EXISTS drivers_status_idx ON drivers (status);
 
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
