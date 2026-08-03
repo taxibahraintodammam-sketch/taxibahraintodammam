@@ -8,6 +8,7 @@ export interface PortalDriver {
     city: string;
     vehicle_model: string;
     vehicle_plate: string | null;
+    duty_status: string;
     status: string;
 }
 
@@ -17,7 +18,7 @@ export interface PortalDriver {
 export async function getDriverByToken(token: string): Promise<PortalDriver | null> {
     const { data, error } = await supabaseAdmin
         .from('drivers')
-        .select('id, full_name, phone_number, email, city, vehicle_model, vehicle_plate, status')
+        .select('id, full_name, phone_number, email, city, vehicle_model, vehicle_plate, duty_status, status')
         .eq('access_token', token)
         .single();
 

@@ -516,6 +516,7 @@ export default function BookingsPage() {
     const saveDetails = async () => {
         if (!editedBooking) return;
         try {
+            const driverJustAssigned = editedBooking.driver_id && editedBooking.driver_id !== selectedBooking?.driver_id;
             const { id, created_at, status, ...updateData } = editedBooking;
             const { error } = await supabase
                 .from('bookings')
@@ -528,6 +529,15 @@ export default function BookingsPage() {
             setBookings(bookings.map(b => b.id === id ? editedBooking : b));
             setSelectedBooking(editedBooking);
             setIsEditing(false);
+
+            // Best-effort — a failed notification shouldn't block the save itself.
+            if (driverJustAssigned) {
+                adminFetch('/api/send-driver-trip-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId: id }),
+                }).catch(err => console.warn('Driver trip notification failed:', err));
+            }
         } catch (error) {
             console.error('Error updating booking details:', error);
             alert("Failed to update booking details.");
@@ -546,6 +556,15 @@ export default function BookingsPage() {
             if (data && data[0]) {
                 setBookings([data[0], ...bookings]);
                 setIsCreating(false);
+
+                if (data[0].driver_id) {
+                    adminFetch('/api/send-driver-trip-notification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bookingId: data[0].id }),
+                    }).catch(err => console.warn('Driver trip notification failed:', err));
+                }
+
                 // Reset new booking state
                 setNewBooking({
                     customer_name: '',

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { reviewService, Review } from '@/lib/reviewQuestionService';
+import { driverService, Driver } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
-import { Star, CheckCircle, XCircle, MessageSquare, Calendar, MapPin } from 'lucide-react';
+import { Star, CheckCircle, XCircle, MessageSquare, Calendar, MapPin, User } from 'lucide-react';
 
 export default function AdminReviewsPage() {
     const router = useRouter();
@@ -13,13 +14,25 @@ export default function AdminReviewsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
     const [responseText, setResponseText] = useState<{ [key: string]: string }>({});
+    const [approvedDrivers, setApprovedDrivers] = useState<Driver[]>([]);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) { router.push('/admin/login'); return; }
             loadReviews();
+            driverService.getApprovedDrivers().then(setApprovedDrivers).catch(err => console.error('Failed to load drivers:', err));
         });
     }, [router]);
+
+    const handleAssignDriver = async (id: string, driverId: string) => {
+        try {
+            const updated = await reviewService.assignDriver(id, driverId || null);
+            setReviews(prev => prev.map(r => r.id === id ? updated : r));
+        } catch (error) {
+            console.error('Error assigning driver to review:', error);
+            alert('Failed to assign driver');
+        }
+    };
 
     const loadReviews = async () => {
         try {
@@ -211,6 +224,21 @@ export default function AdminReviewsPage() {
                                             )}
                                             {review.location && <span className="bg-gray-100 px-2 py-1 rounded">{review.location}</span>}
                                             {review.service && <span className="bg-gray-100 px-2 py-1 rounded">{review.service}</span>}
+                                        </div>
+
+                                        {/* Tag this review to the driver it's about, for per-driver rating averages */}
+                                        <div className="flex items-center gap-2 mt-3">
+                                            <User className="w-4 h-4 text-gray-400" />
+                                            <select
+                                                value={review.driver_id || ''}
+                                                onChange={e => handleAssignDriver(review.id, e.target.value)}
+                                                className="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            >
+                                                <option value="">No driver tagged</option>
+                                                {approvedDrivers.map(d => (
+                                                    <option key={d.id} value={d.id}>{d.full_name}</option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         {/* Admin Response */}

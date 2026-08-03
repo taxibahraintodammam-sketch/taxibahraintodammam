@@ -3,16 +3,36 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement } from '@/lib/driverService';
+import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement, DriverVehicleMaintenance, MaintenanceServiceType } from '@/lib/driverService';
 import { absoluteUrl } from '@/lib/url';
+// @ts-ignore
+import html2canvas from 'html2canvas-pro';
+// @ts-ignore
+import { jsPDF } from 'jspdf';
 import { Button } from '@/components/ui/button';
 import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
     ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
-    CreditCard, TrendingUp, FileText, Banknote, Link2
+    CreditCard, TrendingUp, FileText, Banknote, Link2, List, Star
 } from 'lucide-react';
+
+const DUTY_STATUS_META: Record<string, { label: string; color: string }> = {
+    on_duty: { label: 'On Duty', color: 'bg-green-100 text-green-800' },
+    off_duty: { label: 'Off Duty', color: 'bg-gray-100 text-gray-600' },
+    on_leave: { label: 'On Leave', color: 'bg-amber-100 text-amber-800' },
+    suspended: { label: 'Suspended', color: 'bg-red-100 text-red-800' },
+};
+
+const TRIP_STATUS_STYLE: Record<string, string> = {
+    pending: 'bg-gray-100 text-gray-600',
+    quote_sent: 'bg-gray-100 text-gray-600',
+    confirmed: 'bg-blue-100 text-blue-700',
+    in_progress: 'bg-amber-100 text-amber-700',
+    completed: 'bg-green-100 text-green-700',
+    cancelled: 'bg-red-100 text-red-700',
+};
 
 const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
     fuel: { label: 'Fuel', color: 'bg-blue-100 text-blue-800', icon: Fuel },
@@ -65,6 +85,30 @@ const emptyDocumentForm = () => ({
     document_number: '',
     expiry_date: '',
     file: null as File | null,
+});
+
+const MAINTENANCE_TYPE_META: Record<MaintenanceServiceType, string> = {
+    oil_change: 'Oil Change',
+    tire_rotation: 'Tire Rotation',
+    inspection: 'Inspection',
+    general: 'General Service',
+    other: 'Other',
+};
+
+const getDueStatus = (dueDate?: string): { label: string; color: string } | null => {
+    if (!dueDate) return null;
+    const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (days < 0) return { label: `Overdue ${Math.abs(days)}d`, color: 'bg-red-100 text-red-800' };
+    if (days <= 14) return { label: `Due in ${days}d`, color: 'bg-amber-100 text-amber-800' };
+    return { label: 'On track', color: 'bg-green-100 text-green-800' };
+};
+
+const emptyMaintenanceForm = () => ({
+    service_type: 'oil_change' as MaintenanceServiceType,
+    service_date: new Date().toISOString().slice(0, 10),
+    next_due_date: '',
+    odometer_km: '',
+    notes: '',
 });
 
 const emptyRepaymentForm = () => ({
@@ -130,6 +174,17 @@ export default function AdminDriversPage() {
     const [savingDocument, setSavingDocument] = useState(false);
     const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
 
+    // Vehicle service history per driver
+    const [expandedMaintenanceId, setExpandedMaintenanceId] = useState<string | null>(null);
+    const [maintenanceRecords, setMaintenanceRecords] = useState<{ [driverId: string]: DriverVehicleMaintenance[] }>({});
+    const [allMaintenanceRecords, setAllMaintenanceRecords] = useState<DriverVehicleMaintenance[]>([]);
+    const [allDriverReviews, setAllDriverReviews] = useState<{ driver_id: string; rating: number }[]>([]);
+    const [printingStatementId, setPrintingStatementId] = useState<string | null>(null);
+    const [loadingMaintenance, setLoadingMaintenance] = useState<string | null>(null);
+    const [maintenanceForm, setMaintenanceForm] = useState(emptyMaintenanceForm());
+    const [savingMaintenance, setSavingMaintenance] = useState(false);
+    const [deletingMaintenanceId, setDeletingMaintenanceId] = useState<string | null>(null);
+
     // Outstanding advance balance (advances given minus repaid) + logged payouts per period
     const [expandedSettlementId, setExpandedSettlementId] = useState<string | null>(null);
     const [advanceRepayments, setAdvanceRepayments] = useState<{ [driverId: string]: DriverAdvanceRepayment[] }>({});
@@ -142,6 +197,12 @@ export default function AdminDriversPage() {
     const [savingSettlement, setSavingSettlement] = useState(false);
     const [deletingSettlementId, setDeletingSettlementId] = useState<string | null>(null);
     const [allAdvanceRepayments, setAllAdvanceRepayments] = useState<DriverAdvanceRepayment[]>([]);
+
+    // Trip history — the detail list behind the Finance tab's earned/spent totals
+    const [expandedTripsId, setExpandedTripsId] = useState<string | null>(null);
+    type DriverTrip = Awaited<ReturnType<typeof driverService.getDriverTrips>>[number];
+    const [driverTrips, setDriverTrips] = useState<{ [driverId: string]: DriverTrip[] }>({});
+    const [loadingTrips, setLoadingTrips] = useState<string | null>(null);
 
     // Add-to-roster + edit-profile (name/phone/vehicle/plate) — for company-owned drivers,
     // not just WhatsApp applications
@@ -161,6 +222,8 @@ export default function AdminDriversPage() {
             loadAllBookingSummaries();
             loadAllDocuments();
             loadAllAdvanceRepayments();
+            loadAllMaintenanceRecords();
+            driverService.getAllDriverReviews().then(setAllDriverReviews).catch(err => console.error('Failed to load driver reviews:', err));
         });
     }, [router]);
 
@@ -244,6 +307,69 @@ export default function AdminDriversPage() {
             setAllDocuments(data);
         } catch (error) {
             console.error('Error loading fleet documents:', error);
+        }
+    };
+
+    const loadAllMaintenanceRecords = async () => {
+        try {
+            const data = await driverService.getAllMaintenanceRecords();
+            setAllMaintenanceRecords(data);
+        } catch (error) {
+            console.error('Error loading fleet maintenance records:', error);
+        }
+    };
+
+    const toggleMaintenance = async (driverId: string) => {
+        if (expandedMaintenanceId === driverId) { setExpandedMaintenanceId(null); return; }
+        setExpandedMaintenanceId(driverId);
+        setMaintenanceForm(emptyMaintenanceForm());
+        if (!maintenanceRecords[driverId]) {
+            setLoadingMaintenance(driverId);
+            try {
+                const data = await driverService.getMaintenanceRecords(driverId);
+                setMaintenanceRecords(prev => ({ ...prev, [driverId]: data }));
+            } catch (error) {
+                console.error('Error loading maintenance records:', error);
+            } finally {
+                setLoadingMaintenance(null);
+            }
+        }
+    };
+
+    const handleAddMaintenance = async (driverId: string) => {
+        setSavingMaintenance(true);
+        try {
+            const newRecord = await driverService.addMaintenanceRecord({
+                driver_id: driverId,
+                service_type: maintenanceForm.service_type,
+                service_date: maintenanceForm.service_date,
+                next_due_date: maintenanceForm.next_due_date || undefined,
+                odometer_km: maintenanceForm.odometer_km ? parseInt(maintenanceForm.odometer_km, 10) : undefined,
+                notes: maintenanceForm.notes || undefined,
+            });
+            setMaintenanceRecords(prev => ({ ...prev, [driverId]: [newRecord, ...(prev[driverId] || [])] }));
+            setAllMaintenanceRecords(prev => [newRecord, ...prev]);
+            setMaintenanceForm(emptyMaintenanceForm());
+        } catch (error) {
+            console.error('Error adding maintenance record:', error);
+            alert('Failed to add maintenance record');
+        } finally {
+            setSavingMaintenance(false);
+        }
+    };
+
+    const handleDeleteMaintenance = async (driverId: string, recordId: string) => {
+        if (!confirm('Delete this maintenance record?')) return;
+        setDeletingMaintenanceId(recordId);
+        try {
+            await driverService.deleteMaintenanceRecord(recordId);
+            setMaintenanceRecords(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(m => m.id !== recordId) }));
+            setAllMaintenanceRecords(prev => prev.filter(m => m.id !== recordId));
+        } catch (error) {
+            console.error('Error deleting maintenance record:', error);
+            alert('Failed to delete maintenance record');
+        } finally {
+            setDeletingMaintenanceId(null);
         }
     };
 
@@ -371,6 +497,32 @@ export default function AdminDriversPage() {
         }
     };
 
+    const handleUpdateDutyStatus = async (id: string, duty_status: 'on_duty' | 'off_duty' | 'on_leave' | 'suspended') => {
+        try {
+            const updated = await driverService.updateDutyStatus(id, duty_status);
+            setDrivers(prev => prev.map(d => d.id === id ? updated : d));
+        } catch (error) {
+            console.error('Error updating duty status:', error);
+            alert('Failed to update duty status');
+        }
+    };
+
+    const toggleTrips = async (driverId: string) => {
+        if (expandedTripsId === driverId) { setExpandedTripsId(null); return; }
+        setExpandedTripsId(driverId);
+        if (!driverTrips[driverId]) {
+            setLoadingTrips(driverId);
+            try {
+                const data = await driverService.getDriverTrips(driverId);
+                setDriverTrips(prev => ({ ...prev, [driverId]: data }));
+            } catch (error) {
+                console.error('Error loading driver trips:', error);
+            } finally {
+                setLoadingTrips(null);
+            }
+        }
+    };
+
     const handleAddRepayment = async (driverId: string) => {
         const amountNum = parseFloat(repaymentForm.amount);
         if (!amountNum || amountNum <= 0) { alert('Enter a valid amount'); return; }
@@ -444,6 +596,26 @@ export default function AdminDriversPage() {
             alert('Failed to delete settlement');
         } finally {
             setDeletingSettlementId(null);
+        }
+    };
+
+    const handlePrintStatement = async (driver: Driver) => {
+        setPrintingStatementId(driver.id);
+        try {
+            const element = document.getElementById(`statement-print-${driver.id}`);
+            if (!element) return;
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, scrollY: 0 });
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const pageWidth = 210;
+            const pageHeight = (canvas.height * pageWidth) / canvas.width;
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+            pdf.save(`Statement-${driver.full_name.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
+        } catch (error) {
+            console.error('Error generating statement PDF:', error);
+            alert('Failed to generate statement PDF');
+        } finally {
+            setPrintingStatementId(null);
         }
     };
 
@@ -577,6 +749,10 @@ export default function AdminDriversPage() {
     const expiringDocs = allDocuments
         .filter(doc => doc.expiry_date && Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 30)
         .sort((a, b) => new Date(a.expiry_date!).getTime() - new Date(b.expiry_date!).getTime());
+
+    const dueMaintenance = allMaintenanceRecords
+        .filter(m => m.next_due_date && Math.ceil((new Date(m.next_due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 14)
+        .sort((a, b) => new Date(a.next_due_date!).getTime() - new Date(b.next_due_date!).getTime());
 
     // At-a-glance comparison across the whole roster — earned/spent/net/advance owed per driver
     const overviewRows = drivers
@@ -734,6 +910,29 @@ export default function AdminDriversPage() {
                     </div>
                 )}
 
+                {/* Vehicle service due soon or overdue, across the whole fleet */}
+                {dueMaintenance.length > 0 && (
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 sm:p-6 mb-8">
+                        <p className="text-sm font-bold text-amber-700 mb-3 flex items-center gap-1.5">
+                            <Wrench className="w-4 h-4" /> {dueMaintenance.length} vehicle service{dueMaintenance.length === 1 ? '' : 's'} due soon or overdue
+                        </p>
+                        <div className="space-y-1.5">
+                            {dueMaintenance.map(m => {
+                                const driver = driversById[m.driver_id];
+                                const status = getDueStatus(m.next_due_date);
+                                return (
+                                    <div key={m.id} className="flex items-center justify-between gap-2 text-sm bg-white rounded-lg px-3 py-2 border border-amber-100">
+                                        <span className="text-gray-700 truncate">
+                                            <span className="font-semibold">{driver?.full_name || 'Unknown driver'}</span> — {MAINTENANCE_TYPE_META[m.service_type]}
+                                        </span>
+                                        {status && <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold ${status.color}`}>{status.label}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Fleet-wide finance overview: earned (completed bookings) vs spent (expenses) */}
                 {(allExpenses.length > 0 || allBookingSummaries.length > 0) && (
                     <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-gray-900 mb-8">
@@ -852,6 +1051,28 @@ export default function AdminDriversPage() {
                                             }`}>
                                                 {driver.status}
                                             </span>
+                                            {driver.status === 'approved' && (
+                                                <select
+                                                    value={driver.duty_status || 'off_duty'}
+                                                    onChange={e => handleUpdateDutyStatus(driver.id, e.target.value as 'on_duty' | 'off_duty' | 'on_leave' | 'suspended')}
+                                                    className={`px-2.5 py-1 rounded-full text-xs font-semibold border-0 focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer ${DUTY_STATUS_META[driver.duty_status || 'off_duty'].color}`}
+                                                >
+                                                    {Object.entries(DUTY_STATUS_META).map(([key, meta]) => (
+                                                        <option key={key} value={key}>{meta.label}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                            {(() => {
+                                                const driverReviews = allDriverReviews.filter(r => r.driver_id === driver.id);
+                                                if (driverReviews.length === 0) return null;
+                                                const avg = driverReviews.reduce((sum, r) => sum + r.rating, 0) / driverReviews.length;
+                                                return (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                                                        {avg.toFixed(1)} ({driverReviews.length})
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
                                         <p className="text-xs text-gray-400 flex items-center gap-1.5">
                                             <Calendar className="w-3.5 h-3.5" />
@@ -1038,6 +1259,17 @@ export default function AdminDriversPage() {
                                             : <ChevronDown className="w-4 h-4 ml-2" />}
                                     </Button>
                                     <Button
+                                        onClick={() => toggleMaintenance(driver.id)}
+                                        variant="outline"
+                                        className="text-orange-700 border-orange-300 hover:bg-orange-50"
+                                    >
+                                        <Wrench className="w-4 h-4 mr-2" />
+                                        Maintenance{maintenanceRecords[driver.id] ? ` (${maintenanceRecords[driver.id].length})` : ''}
+                                        {expandedMaintenanceId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
+                                    <Button
                                         onClick={() => toggleSettlement(driver.id)}
                                         variant="outline"
                                         className="text-amber-700 border-amber-300 hover:bg-amber-50"
@@ -1048,7 +1280,49 @@ export default function AdminDriversPage() {
                                             ? <ChevronUp className="w-4 h-4 ml-2" />
                                             : <ChevronDown className="w-4 h-4 ml-2" />}
                                     </Button>
+                                    <Button
+                                        onClick={() => toggleTrips(driver.id)}
+                                        variant="outline"
+                                        className="text-slate-700 border-slate-300 hover:bg-slate-50"
+                                    >
+                                        <List className="w-4 h-4 mr-2" />
+                                        Trips{driverTrips[driver.id] ? ` (${driverTrips[driver.id].length})` : ''}
+                                        {expandedTripsId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
                                 </div>
+
+                                {/* Trip history — every booking assigned to this driver */}
+                                {expandedTripsId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        {loadingTrips === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading trips...</div>
+                                        ) : (driverTrips[driver.id] || []).length === 0 ? (
+                                            <div className="text-center py-6 text-sm text-gray-400">No trips assigned yet</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(driverTrips[driver.id] || []).map(trip => (
+                                                    <div key={trip.id} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                                                            <span className="text-xs text-gray-400">
+                                                                {new Date(trip.pickup_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · {trip.pickup_time}
+                                                            </span>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${TRIP_STATUS_STYLE[trip.status] || 'bg-gray-100 text-gray-600'}`}>
+                                                                {trip.status.replace('_', ' ')}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-900 font-medium">{trip.pickup_location} → {trip.destination}</p>
+                                                        <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
+                                                            <span>{trip.customer_name} · {trip.customer_phone}</span>
+                                                            {trip.total_price ? <span className="font-semibold text-gray-700">{trip.currency || 'SAR'} {trip.total_price}</span> : null}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Finance — earnings from completed bookings vs fuel/maintenance/advance/penalty spend */}
                                 {expandedId === driver.id && (
@@ -1304,6 +1578,102 @@ export default function AdminDriversPage() {
                                     </div>
                                 )}
 
+                                {/* Vehicle maintenance history */}
+                                {expandedMaintenanceId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
+                                            <p className="text-xs font-bold text-orange-700 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                                                <Wrench className="w-3.5 h-3.5" /> Log a Service
+                                            </p>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                                                <select
+                                                    value={maintenanceForm.service_type}
+                                                    onChange={e => setMaintenanceForm({ ...maintenanceForm, service_type: e.target.value as MaintenanceServiceType })}
+                                                    className="text-sm border border-orange-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                                >
+                                                    {Object.entries(MAINTENANCE_TYPE_META).map(([key, label]) => (
+                                                        <option key={key} value={key}>{label}</option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="date"
+                                                    value={maintenanceForm.service_date}
+                                                    onChange={e => setMaintenanceForm({ ...maintenanceForm, service_date: e.target.value })}
+                                                    className="text-sm border border-orange-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    value={maintenanceForm.next_due_date}
+                                                    onChange={e => setMaintenanceForm({ ...maintenanceForm, next_due_date: e.target.value })}
+                                                    placeholder="Next due"
+                                                    className="text-sm border border-orange-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={maintenanceForm.odometer_km}
+                                                    onChange={e => setMaintenanceForm({ ...maintenanceForm, odometer_km: e.target.value })}
+                                                    placeholder="Odometer (km)"
+                                                    className="text-sm border border-orange-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                                />
+                                            </div>
+                                            <textarea
+                                                value={maintenanceForm.notes}
+                                                onChange={e => setMaintenanceForm({ ...maintenanceForm, notes: e.target.value })}
+                                                placeholder="Notes (optional)"
+                                                rows={1}
+                                                className="w-full text-sm bg-white border border-orange-200 rounded-lg p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-orange-300 text-gray-700 mb-2"
+                                            />
+                                            <Button
+                                                onClick={() => handleAddMaintenance(driver.id)}
+                                                disabled={savingMaintenance}
+                                                className="bg-orange-600 text-white hover:bg-orange-700"
+                                            >
+                                                {savingMaintenance ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                                                Log Service
+                                            </Button>
+                                        </div>
+
+                                        {loadingMaintenance === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading service history...</div>
+                                        ) : (maintenanceRecords[driver.id] || []).length === 0 ? (
+                                            <div className="text-center py-6 text-sm text-gray-400">No service records yet</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(maintenanceRecords[driver.id] || []).map(record => {
+                                                    const status = getDueStatus(record.next_due_date);
+                                                    return (
+                                                        <div key={record.id} className="flex items-start justify-between gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-sm font-bold text-gray-900">{MAINTENANCE_TYPE_META[record.service_type]}</span>
+                                                                    {status && <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${status.color}`}>{status.label}</span>}
+                                                                </div>
+                                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                                    Serviced {new Date(record.service_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                    {record.odometer_km ? ` · ${record.odometer_km.toLocaleString()} km` : ''}
+                                                                    {record.next_due_date ? ` · Next due ${new Date(record.next_due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}
+                                                                </p>
+                                                                {record.notes && <p className="text-xs text-gray-500 mt-0.5">{record.notes}</p>}
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteMaintenance(driver.id, record.id)}
+                                                                disabled={deletingMaintenanceId === record.id}
+                                                                className="shrink-0 text-gray-300 hover:text-red-600 transition-colors p-1"
+                                                                title="Delete"
+                                                            >
+                                                                {deletingMaintenanceId === record.id
+                                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    : <Trash2 className="w-4 h-4" />}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 {/* Settlement — outstanding advance balance, repayments, logged payouts */}
                                 {expandedSettlementId === driver.id && (
                                     <div className="mt-4 pt-4 border-t border-gray-200">
@@ -1454,6 +1824,16 @@ export default function AdminDriversPage() {
                                                     </Button>
                                                 </div>
 
+                                                <Button
+                                                    onClick={() => handlePrintStatement(driver)}
+                                                    disabled={printingStatementId === driver.id}
+                                                    variant="outline"
+                                                    className="mb-4 text-gray-700 border-gray-300 hover:bg-gray-50"
+                                                >
+                                                    {printingStatementId === driver.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                                                    Download Statement (PDF)
+                                                </Button>
+
                                                 {(settlements[driver.id] || []).length === 0 ? (
                                                     <div className="text-center py-4 text-sm text-gray-400">No settlements logged yet</div>
                                                 ) : (
@@ -1476,6 +1856,114 @@ export default function AdminDriversPage() {
                                                         ))}
                                                     </div>
                                                 )}
+
+                                                {/* Off-screen printable statement — captured by html2canvas-pro into the downloaded PDF */}
+                                                <div
+                                                    id={`statement-print-${driver.id}`}
+                                                    style={{ position: 'fixed', left: '-9999px', top: 0, width: '780px' }}
+                                                    className="bg-white p-10 font-sans text-gray-900"
+                                                >
+                                                    {(() => {
+                                                        const bookingRows = bookingSummaries[driver.id] || [];
+                                                        const expenseRows = expenses[driver.id] || [];
+                                                        const earned = sumEarningsByCurrency(bookingRows);
+                                                        const spent = sumByCurrency(expenseRows);
+                                                        const currencies = Array.from(new Set([...Object.keys(earned), ...Object.keys(spent)]));
+                                                        const advancesGiven = sumByCurrency(expenseRows.filter(e => e.category === 'advance'));
+                                                        const repaidByCur = sumByCurrency(advanceRepayments[driver.id] || []);
+                                                        const advanceCurrencies = Array.from(new Set([...Object.keys(advancesGiven), ...Object.keys(repaidByCur)]));
+                                                        const outstanding = advanceCurrencies
+                                                            .map(cur => [cur, (advancesGiven[cur] || 0) - (repaidByCur[cur] || 0)] as const)
+                                                            .filter(([, amt]) => Math.abs(amt) > 0.001);
+                                                        const statementSettlements = settlements[driver.id] || [];
+
+                                                        return (
+                                                            <>
+                                                                <div className="flex items-center justify-between border-b-2 border-gray-900 pb-4 mb-6">
+                                                                    <div>
+                                                                        <h1 className="text-xl font-black uppercase tracking-tight">Taxi Bahrain to Dammam</h1>
+                                                                        <p className="text-xs text-gray-500">Manama, Bahrain · +973 3501 4335</p>
+                                                                    </div>
+                                                                    <div className="text-right">
+                                                                        <p className="text-sm font-bold uppercase tracking-widest text-gray-400">Driver Statement</p>
+                                                                        <p className="text-xs text-gray-500">Issued {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                                                                    <div>
+                                                                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Driver</p>
+                                                                        <p className="font-bold">{driver.full_name}</p>
+                                                                        <p className="text-gray-600">{driver.phone_number}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Vehicle</p>
+                                                                        <p className="font-bold">{driver.vehicle_model}</p>
+                                                                        {driver.vehicle_plate && <p className="text-gray-600">{driver.vehicle_plate}</p>}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-3 gap-3 mb-6">
+                                                                    <div className="bg-emerald-50 rounded-xl p-4">
+                                                                        <p className="text-xs text-emerald-700 uppercase tracking-wide font-bold mb-1">Earned</p>
+                                                                        {currencies.length === 0 ? <p className="text-sm text-gray-400">—</p> : currencies.map(c => (
+                                                                            <p key={c} className="text-sm font-bold text-emerald-800">{formatAmount(earned[c] || 0, c)}</p>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="bg-blue-50 rounded-xl p-4">
+                                                                        <p className="text-xs text-blue-700 uppercase tracking-wide font-bold mb-1">Spent</p>
+                                                                        {currencies.length === 0 ? <p className="text-sm text-gray-400">—</p> : currencies.map(c => (
+                                                                            <p key={c} className="text-sm font-bold text-blue-800">{formatAmount(spent[c] || 0, c)}</p>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="bg-gray-900 rounded-xl p-4">
+                                                                        <p className="text-xs text-gray-300 uppercase tracking-wide font-bold mb-1">Net Profit</p>
+                                                                        {currencies.length === 0 ? <p className="text-sm text-gray-400">—</p> : currencies.map(c => (
+                                                                            <p key={c} className="text-sm font-bold text-white">{formatAmount((earned[c] || 0) - (spent[c] || 0), c)}</p>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                {outstanding.length > 0 && (
+                                                                    <div className="mb-6">
+                                                                        <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-2">Outstanding Advance</p>
+                                                                        {outstanding.map(([cur, amt]) => (
+                                                                            <span key={cur} className="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-bold mr-2">{formatAmount(amt, cur)}</span>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+
+                                                                <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-2">Settlement History</p>
+                                                                {statementSettlements.length === 0 ? (
+                                                                    <p className="text-sm text-gray-400 mb-6">No settlements logged</p>
+                                                                ) : (
+                                                                    <table className="w-full text-sm mb-6 border-collapse">
+                                                                        <thead>
+                                                                            <tr className="border-b border-gray-200 text-left text-xs text-gray-400 uppercase">
+                                                                                <th className="py-2">Period</th>
+                                                                                <th className="py-2">Amount Paid</th>
+                                                                                <th className="py-2">Note</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {statementSettlements.map(s => (
+                                                                                <tr key={s.id} className="border-b border-gray-100">
+                                                                                    <td className="py-2">{new Date(s.period_start).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} – {new Date(s.period_end).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                                                                                    <td className="py-2 font-bold">{formatAmount(s.amount_paid, s.currency)}</td>
+                                                                                    <td className="py-2 text-gray-500">{s.note || '—'}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                )}
+
+                                                                <p className="text-xs text-gray-400 text-center mt-8 pt-4 border-t border-gray-200">
+                                                                    This is a system-generated statement for internal record-keeping.
+                                                                </p>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
                                             </>
                                         )}
                                     </div>

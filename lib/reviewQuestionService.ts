@@ -13,6 +13,7 @@ export interface Review {
     service?: string;
     status: 'pending' | 'approved' | 'rejected';
     admin_response?: string;
+    driver_id?: string;
     created_at: string;
     approved_at?: string;
     responded_at?: string;
@@ -92,6 +93,19 @@ export const reviewService = {
         const { data, error } = await supabase
             .from('reviews')
             .update({ status: 'rejected' })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Review;
+    },
+
+    // Tag a review as being about a specific roster driver, or clear it (admin)
+    async assignDriver(id: string, driverId: string | null) {
+        const { data, error } = await supabase
+            .from('reviews')
+            .update({ driver_id: driverId })
             .eq('id', id)
             .select()
             .single();

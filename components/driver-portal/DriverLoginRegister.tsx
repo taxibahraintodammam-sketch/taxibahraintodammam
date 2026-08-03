@@ -29,6 +29,48 @@ export default function DriverLoginRegister() {
     const [registering, setRegistering] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const [registered, setRegistered] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [otp, setOtp] = useState('');
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const validateRegForm = () => {
+        if (!reg.full_name || !reg.phone_number || !reg.password || !reg.email || !reg.city || !reg.vehicle_model) {
+            setRegisterError('Please fill in all required fields');
+            return false;
+        }
+        if (!EMAIL_RE.test(reg.email)) {
+            setRegisterError('Enter a valid email address');
+            return false;
+        }
+        if (reg.password.length < 6) {
+            setRegisterError('Password must be at least 6 characters');
+            return false;
+        }
+        return true;
+    };
+
+    const handleSendOtp = async () => {
+        setRegisterError('');
+        if (!validateRegForm()) return;
+
+        setSendingOtp(true);
+        try {
+            const res = await fetch('/api/driver-auth/send-otp/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: reg.email }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to send code');
+            setOtpSent(true);
+        } catch (err) {
+            setRegisterError(err instanceof Error ? err.message : 'Failed to send code');
+        } finally {
+            setSendingOtp(false);
+        }
+    };
 
     const handleLogin = async () => {
         setLoginError('');
@@ -53,12 +95,8 @@ export default function DriverLoginRegister() {
 
     const handleRegister = async () => {
         setRegisterError('');
-        if (!reg.full_name || !reg.phone_number || !reg.password || !reg.city || !reg.vehicle_model) {
-            setRegisterError('Please fill in all required fields');
-            return;
-        }
-        if (reg.password.length < 6) {
-            setRegisterError('Password must be at least 6 characters');
+        if (!otp || otp.length < 6) {
+            setRegisterError('Enter the 6-digit code sent to your email');
             return;
         }
 
@@ -67,7 +105,7 @@ export default function DriverLoginRegister() {
             const res = await fetch('/api/driver-auth/register/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reg),
+                body: JSON.stringify({ ...reg, otp }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Registration failed');
@@ -99,7 +137,7 @@ export default function DriverLoginRegister() {
                             Login
                         </button>
                         <button
-                            onClick={() => { setMode('register'); setRegistered(false); }}
+                            onClick={() => { setMode('register'); setRegistered(false); setOtpSent(false); setOtp(''); setRegisterError(''); }}
                             className={`flex-1 text-sm font-semibold py-2 rounded-lg transition-colors ${mode === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
                         >
                             Register
@@ -141,6 +179,36 @@ export default function DriverLoginRegister() {
                                 Back to Login
                             </button>
                         </div>
+                    ) : otpSent ? (
+                        <div className="space-y-3">
+                            <p className="text-sm text-gray-600">
+                                We sent a 6-digit code to <strong>{reg.email}</strong>. Enter it below to finish registering.
+                            </p>
+                            <input
+                                value={otp}
+                                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="6-digit code"
+                                inputMode="numeric"
+                                className="w-full text-center text-2xl tracking-[0.5em] font-bold border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                            {registerError && <p className="text-sm text-red-600">{registerError}</p>}
+                            <button
+                                onClick={handleRegister}
+                                disabled={registering}
+                                className="w-full bg-black text-white font-bold py-3 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
+                            >
+                                {registering ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                Verify &amp; Register
+                            </button>
+                            <div className="flex justify-between text-xs">
+                                <button onClick={() => { setOtpSent(false); setOtp(''); setRegisterError(''); }} className="font-semibold text-gray-500 underline">
+                                    Change details
+                                </button>
+                                <button onClick={handleSendOtp} disabled={sendingOtp} className="font-semibold text-primary underline disabled:opacity-40">
+                                    Resend code
+                                </button>
+                            </div>
+                        </div>
                     ) : (
                         <div className="space-y-3">
                             <input
@@ -163,9 +231,10 @@ export default function DriverLoginRegister() {
                                 className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                             <input
+                                type="email"
                                 value={reg.email}
                                 onChange={e => setReg({ ...reg, email: e.target.value })}
-                                placeholder="Email (optional)"
+                                placeholder="Email *"
                                 className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                             <input
@@ -188,12 +257,12 @@ export default function DriverLoginRegister() {
                             />
                             {registerError && <p className="text-sm text-red-600">{registerError}</p>}
                             <button
-                                onClick={handleRegister}
-                                disabled={registering}
+                                onClick={handleSendOtp}
+                                disabled={sendingOtp}
                                 className="w-full bg-black text-white font-bold py-3 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
                             >
-                                {registering ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                                Register
+                                {sendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                Send Verification Code
                             </button>
                         </div>
                     )}

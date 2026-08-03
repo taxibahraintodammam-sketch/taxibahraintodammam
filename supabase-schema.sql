@@ -270,6 +270,9 @@ CREATE INDEX IF NOT EXISTS drivers_access_token_idx ON drivers (access_token);
 ALTER TABLE drivers ADD COLUMN IF NOT EXISTS password_hash text;
 CREATE UNIQUE INDEX IF NOT EXISTS drivers_phone_number_password_idx
   ON drivers (phone_number) WHERE password_hash IS NOT NULL;
+-- Day-to-day availability, separate from the approval `status` above.
+ALTER TABLE drivers ADD COLUMN IF NOT EXISTS duty_status text NOT NULL DEFAULT 'off_duty'
+  CHECK (duty_status IN ('on_duty','off_duty','on_leave','suspended'));
 CREATE INDEX IF NOT EXISTS drivers_status_idx ON drivers (status);
 
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
@@ -316,6 +319,12 @@ CREATE POLICY "Admin full access" ON driver_expenses
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS driver_id uuid REFERENCES drivers(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS bookings_driver_id_idx ON bookings (driver_id);
 
+-- Optional link from a customer review to the roster driver it's about, so
+-- the admin panel can show a per-driver average rating. Same ordering
+-- reason as bookings.driver_id above — drivers must already exist.
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS driver_id uuid REFERENCES drivers(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS reviews_driver_id_idx ON reviews (driver_id);
+
 -- ----------------------------------------------------------------------------
 -- driver_documents — license, Iqama/ID, vehicle registration, insurance scans
 -- per driver, with an expiry_date so the admin panel can flag what's about to
@@ -328,14 +337,39 @@ CREATE TABLE IF NOT EXISTS driver_documents (
   document_number text,
   expiry_date   date,
   file_url      text,
+  reminder_sent boolean NOT NULL DEFAULT false,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
+-- Safe to re-run on a table created before reminder_sent existed.
+ALTER TABLE driver_documents ADD COLUMN IF NOT EXISTS reminder_sent boolean NOT NULL DEFAULT false;
 CREATE INDEX IF NOT EXISTS driver_documents_driver_id_idx ON driver_documents (driver_id);
 CREATE INDEX IF NOT EXISTS driver_documents_expiry_idx ON driver_documents (expiry_date);
 
 ALTER TABLE driver_documents ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admin full access" ON driver_documents;
 CREATE POLICY "Admin full access" ON driver_documents
+  FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
+-- driver_vehicle_maintenance — service history per driver's vehicle, with a
+-- next_due_date so the admin panel can flag what's coming up.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_vehicle_maintenance (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id     uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  service_type  text NOT NULL DEFAULT 'general' CHECK (service_type IN ('oil_change','tire_rotation','inspection','general','other')),
+  service_date  date NOT NULL DEFAULT current_date,
+  next_due_date date,
+  odometer_km   integer,
+  notes         text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_vehicle_maintenance_driver_id_idx ON driver_vehicle_maintenance (driver_id);
+CREATE INDEX IF NOT EXISTS driver_vehicle_maintenance_due_idx ON driver_vehicle_maintenance (next_due_date);
+
+ALTER TABLE driver_vehicle_maintenance ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_vehicle_maintenance;
+CREATE POLICY "Admin full access" ON driver_vehicle_maintenance
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------------------------
@@ -381,6 +415,22 @@ ALTER TABLE driver_settlements ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admin full access" ON driver_settlements;
 CREATE POLICY "Admin full access" ON driver_settlements
   FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
+-- driver_otp_verifications — short-lived email verification codes for
+-- self-registration (app/driver/login). Only ever read/written by API
+-- routes using the service-role key, so no public/authenticated policy is
+-- needed — RLS with zero policies denies everything else by default.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_otp_verifications (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      text NOT NULL,
+  otp_code   text NOT NULL,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_otp_verifications_email_idx ON driver_otp_verifications (email);
+ALTER TABLE driver_otp_verifications ENABLE ROW LEVEL SECURITY;
 
 -- ----------------------------------------------------------------------------
 -- Admin-only utility tables (no public access at all) — every one of these

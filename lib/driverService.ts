@@ -8,6 +8,7 @@ export interface Driver {
     city: string;
     vehicle_model: string;
     vehicle_plate?: string;
+    duty_status?: 'on_duty' | 'off_duty' | 'on_leave' | 'suspended';
     status: 'pending' | 'approved' | 'rejected';
     admin_notes?: string;
     access_token?: string;
@@ -60,6 +61,19 @@ export interface DriverSettlement {
     amount_paid: number;
     currency: string;
     note?: string;
+    created_at: string;
+}
+
+export type MaintenanceServiceType = 'oil_change' | 'tire_rotation' | 'inspection' | 'general' | 'other';
+
+export interface DriverVehicleMaintenance {
+    id: string;
+    driver_id: string;
+    service_type: MaintenanceServiceType;
+    service_date: string;
+    next_due_date?: string;
+    odometer_km?: number;
+    notes?: string;
     created_at: string;
 }
 
@@ -143,6 +157,19 @@ export const driverService = {
         const { data, error } = await supabase
             .from('drivers')
             .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Driver;
+    },
+
+    // Update a driver's day-to-day availability (admin)
+    async updateDutyStatus(id: string, duty_status: 'on_duty' | 'off_duty' | 'on_leave' | 'suspended') {
+        const { data, error } = await supabase
+            .from('drivers')
+            .update({ duty_status })
             .eq('id', id)
             .select()
             .single();
@@ -327,6 +354,29 @@ export const driverService = {
         return data as { total_price: number | null; currency: string | null; status: string }[];
     },
 
+    // Full trip list for a driver (admin) — the detail view behind the earned/spent totals
+    async getDriverTrips(driverId: string) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('id, pickup_location, destination, pickup_date, pickup_time, customer_name, customer_phone, status, total_price, currency')
+            .eq('driver_id', driverId)
+            .order('pickup_date', { ascending: false });
+
+        if (error) throw error;
+        return data as {
+            id: string;
+            pickup_location: string;
+            destination: string;
+            pickup_date: string;
+            pickup_time: string;
+            customer_name: string;
+            customer_phone: string;
+            status: string;
+            total_price: number | null;
+            currency: string | null;
+        }[];
+    },
+
     // Fleet-wide version of the above — every booking that has a driver assigned
     async getAllDriverBookingSummaries() {
         const { data, error } = await supabase
@@ -410,5 +460,60 @@ export const driverService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    // Vehicle service history — per driver and fleet-wide (for the upcoming-due banner)
+    async getMaintenanceRecords(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_vehicle_maintenance')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('service_date', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverVehicleMaintenance[];
+    },
+
+    async getAllMaintenanceRecords() {
+        const { data, error } = await supabase
+            .from('driver_vehicle_maintenance')
+            .select('*')
+            .order('next_due_date', { ascending: true });
+
+        if (error) throw error;
+        return data as DriverVehicleMaintenance[];
+    },
+
+    async addMaintenanceRecord(record: Omit<DriverVehicleMaintenance, 'id' | 'created_at'>) {
+        const { data, error } = await supabase
+            .from('driver_vehicle_maintenance')
+            .insert(record)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as DriverVehicleMaintenance;
+    },
+
+    async deleteMaintenanceRecord(id: string) {
+        const { error } = await supabase
+            .from('driver_vehicle_maintenance')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    // Approved, driver-tagged reviews across the fleet — used to show each
+    // driver's average rating without an extra round trip per card.
+    async getAllDriverReviews() {
+        const { data, error } = await supabase
+            .from('reviews')
+            .select('driver_id, rating')
+            .eq('status', 'approved')
+            .not('driver_id', 'is', null);
+
+        if (error) throw error;
+        return data as { driver_id: string; rating: number }[];
     },
 };

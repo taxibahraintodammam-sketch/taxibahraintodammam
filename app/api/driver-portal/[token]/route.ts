@@ -42,6 +42,7 @@ export async function GET(
             city: driver.city,
             vehicle_model: driver.vehicle_model,
             vehicle_plate: driver.vehicle_plate,
+            duty_status: driver.duty_status,
         },
         earnings: {
             completedTrips: completed.length,
@@ -68,6 +69,25 @@ export async function PATCH(
         }
 
         const body = await request.json();
+
+        // A quick duty-status toggle carries just this one field; a profile
+        // save carries the rest. Handle both through the same endpoint.
+        if (body.duty_status !== undefined && Object.keys(body).length === 1) {
+            const DUTY_STATUSES = ['on_duty', 'off_duty', 'on_leave', 'suspended'];
+            if (!DUTY_STATUSES.includes(body.duty_status)) {
+                return NextResponse.json({ error: 'Invalid duty status' }, { status: 400 });
+            }
+            const { error: dutyError } = await supabaseAdmin
+                .from('drivers')
+                .update({ duty_status: body.duty_status })
+                .eq('id', driver.id);
+            if (dutyError) {
+                console.error('driver-portal duty status update error:', dutyError);
+                return NextResponse.json({ error: 'Failed to update duty status' }, { status: 500 });
+            }
+            return NextResponse.json({ success: true });
+        }
+
         const full_name = String(body.full_name || '').trim();
         const phone_number = String(body.phone_number || '').trim();
         const city = String(body.city || '').trim();
