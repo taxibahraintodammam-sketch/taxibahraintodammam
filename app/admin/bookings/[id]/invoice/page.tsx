@@ -21,7 +21,10 @@ import {
     Trash2,
     Repeat,
     Landmark,
-    Languages
+    Languages,
+    Save,
+    Check,
+    Loader2
 } from 'lucide-react';
 
 type DocLang = 'en' | 'ar';
@@ -109,6 +112,19 @@ interface Booking {
     currency?: string;
     payment_status?: string;
     payment_method?: string;
+    invoice_data?: {
+        stops?: Stop[];
+        quickNote?: string;
+        bankDetails?: {
+            showOnDocument: boolean;
+            bankName: string;
+            accountName: string;
+            accountNumber: string;
+            iban: string;
+            swiftCode: string;
+            notes: string;
+        };
+    };
 }
 
 export default function InvoicePage() {
@@ -151,6 +167,26 @@ export default function InvoicePage() {
     const updateStop = (i: number, field: keyof Stop, value: string) =>
         setStops(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: value } : s));
 
+    const [savingDraft, setSavingDraft] = useState(false);
+    const [draftSaved, setDraftSaved] = useState(false);
+    const saveInvoiceDraft = async (silent = false) => {
+        if (!booking) return;
+        if (!silent) setSavingDraft(true);
+        try {
+            await supabase.from('bookings').update({
+                invoice_data: { stops, quickNote, bankDetails },
+            }).eq('id', booking.id);
+            if (!silent) {
+                setDraftSaved(true);
+                setTimeout(() => setDraftSaved(false), 2500);
+            }
+        } catch (error) {
+            console.error('Error saving invoice draft:', error);
+        } finally {
+            if (!silent) setSavingDraft(false);
+        }
+    };
+
     useEffect(() => {
         const fetchBooking = async () => {
             try {
@@ -171,6 +207,13 @@ export default function InvoicePage() {
                 if (data.has_return_trip) {
                     setIsRoundTrip(true);
                     setReturnDestination(data.pickup_location || '');
+                }
+                // Restore invoice-only customizations (stops/note/bank details)
+                // saved from a previous visit — these used to reset every time.
+                if (data.invoice_data) {
+                    if (data.invoice_data.stops) setStops(data.invoice_data.stops);
+                    if (data.invoice_data.quickNote) setQuickNote(data.invoice_data.quickNote);
+                    if (data.invoice_data.bankDetails) setBankDetails(data.invoice_data.bankDetails);
                 }
             } catch (error) {
                 console.error('Error fetching booking:', error);
@@ -204,6 +247,7 @@ export default function InvoicePage() {
 
     const handlePrint = async () => {
         if (!booking) return;
+        saveInvoiceDraft(true);
         const customerName = booking.customer_name ? booking.customer_name.replace(/\s+/g, '-') : 'Client';
         const refId = booking.id.slice(0, 8).toUpperCase();
         const dateStr = booking.pickup_date || new Date().toISOString().split('T')[0];
@@ -240,6 +284,7 @@ export default function InvoicePage() {
 
     const handleSendEmail = async () => {
         if (!booking) return;
+        saveInvoiceDraft(true);
         setSendingEmail(true);
         setEmailSent(false);
 
@@ -457,6 +502,16 @@ export default function InvoicePage() {
                             ))}
                         </div>
                     </div>
+
+                    <Button
+                        onClick={() => saveInvoiceDraft(false)}
+                        disabled={savingDraft}
+                        variant="outline"
+                        className={`font-bold h-10 px-6 ${draftSaved ? 'text-green-600 border-green-300' : ''}`}
+                    >
+                        {savingDraft ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : draftSaved ? <Check className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                        {draftSaved ? 'Saved' : 'Save Draft'}
+                    </Button>
 
                     <Button onClick={handlePrint} className="bg-primary text-black hover:bg-black hover:text-white font-bold h-10 px-6">
                         <Printer className="w-4 h-4 mr-2" /> Download PDF

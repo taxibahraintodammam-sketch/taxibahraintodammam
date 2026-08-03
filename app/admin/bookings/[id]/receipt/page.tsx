@@ -167,8 +167,10 @@ export default function ReceiptPage() {
             for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
             const base64 = btoa(bin);
 
+            const amountPaidNum = parseFloat(amountPaid) || 0;
+            const isFullyPaid = !booking.total_price || amountPaidNum >= booking.total_price - 0.01;
             await supabase.from('bookings')
-                .update({ currency, payment_status: 'paid', payment_method: paymentMethod })
+                .update({ currency, payment_status: isFullyPaid ? 'paid' : 'partial', payment_method: paymentMethod })
                 .eq('id', booking.id);
 
             const res = await adminFetch('/api/send-receipt-email', {

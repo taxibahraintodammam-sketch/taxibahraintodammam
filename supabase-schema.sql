@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   customer_phone   text NOT NULL,
   customer_email   text NOT NULL,
   status           text NOT NULL DEFAULT 'pending'
-                     CHECK (status IN ('pending','quote_sent','confirmed','in_progress','cancelled','completed')),
+                     CHECK (status IN ('pending','quote_sent','confirmed','in_progress','no_show','cancelled','completed')),
   special_requests text,
   total_price      numeric,
   currency         text,
@@ -54,6 +54,16 @@ CREATE TABLE IF NOT EXISTS bookings (
   deleted_at       timestamptz,
   deleted_by       text
 );
+-- Widen the status CHECK to include no_show (added after this table already
+-- shipped). Default Postgres constraint name for an inline column CHECK.
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+ALTER TABLE bookings ADD CONSTRAINT bookings_status_check
+  CHECK (status IN ('pending','quote_sent','confirmed','in_progress','no_show','cancelled','completed'));
+-- Invoice-page-only customization (extra stops, a quick note, which bank
+-- details to show) that used to live in component state and vanish on
+-- reopen. Free-form since it's presentation data for one document, not
+-- booking facts anything else queries.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_data jsonb;
 CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
 CREATE INDEX IF NOT EXISTS bookings_pickup_date_idx ON bookings (pickup_date);
 CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC);

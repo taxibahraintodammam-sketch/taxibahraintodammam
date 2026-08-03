@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
+import { absoluteUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
 import {
     Calendar,
@@ -105,7 +106,7 @@ interface Booking {
     customer_name: string;
     customer_phone: string;
     customer_email: string;
-    status: 'pending' | 'quote_sent' | 'confirmed' | 'in_progress' | 'cancelled' | 'completed';
+    status: 'pending' | 'quote_sent' | 'confirmed' | 'in_progress' | 'no_show' | 'cancelled' | 'completed';
     special_requests?: string;
     total_price?: number;
     payment_status?: string;
@@ -203,7 +204,7 @@ export default function BookingsPage() {
     // Auto-fill & Duplicate State
     const [duplicateFound, setDuplicateFound] = useState<Booking | null>(null);
 
-    const [newBooking, setNewBooking] = useState<Partial<Booking>>({
+    const emptyNewBooking = (): Partial<Booking> => ({
         customer_name: '',
         customer_email: '',
         customer_phone: '',
@@ -220,6 +221,7 @@ export default function BookingsPage() {
         tags: '',
         actual_vehicle: '',
         payment_status: 'unpaid',
+        driver_id: undefined,
         driver_name: '',
         driver_phone: '',
         driver_plate: '',
@@ -228,6 +230,8 @@ export default function BookingsPage() {
         payment_method: 'Cash to Driver',
         has_return_trip: false
     });
+
+    const [newBooking, setNewBooking] = useState<Partial<Booking>>(emptyNewBooking());
 
     const router = useRouter();
 
@@ -566,25 +570,7 @@ export default function BookingsPage() {
                 }
 
                 // Reset new booking state
-                setNewBooking({
-                    customer_name: '',
-                    customer_email: '',
-                    customer_phone: '',
-                    pickup_location: '',
-                    destination: '',
-                    pickup_date: new Date().toISOString().split('T')[0],
-                    pickup_time: '12:00',
-                    vehicle_type: 'Sedan',
-                    passengers: 1,
-                    luggage: 0,
-                    status: 'pending',
-                    total_price: 0,
-                    special_requests: '',
-                    internal_notes: '',
-                    tags: '',
-                    actual_vehicle: '',
-                    payment_status: 'unpaid'
-                });
+                setNewBooking(emptyNewBooking());
                 alert('Booking created successfully!');
             }
         } catch (error) {
@@ -606,7 +592,8 @@ export default function BookingsPage() {
             booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             booking.customer_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             booking.tags?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            booking.customer_phone?.toLowerCase().includes(searchTerm.toLowerCase());
+            booking.customer_phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            booking.driver_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
         // Status Filter
         let matchesStatus = true;
@@ -676,6 +663,38 @@ export default function BookingsPage() {
         }
     };
 
+    const bulkReassignDriver = async (driverId: string) => {
+        if (!selectedIds.length || !driverId) return;
+        const driver = approvedDrivers.find(d => d.id === driverId);
+        if (!driver) return;
+        if (!confirm(`Reassign ${selectedIds.length} bookings to ${driver.full_name}?`)) return;
+
+        try {
+            const { error } = await supabase
+                .from('bookings')
+                .update({
+                    driver_id: driver.id,
+                    driver_name: driver.full_name,
+                    driver_phone: driver.phone_number,
+                    driver_plate: driver.vehicle_plate || null,
+                })
+                .in('id', selectedIds);
+
+            if (error) throw error;
+
+            setBookings(bookings.map(b =>
+                selectedIds.includes(b.id)
+                    ? { ...b, driver_id: driver.id, driver_name: driver.full_name, driver_phone: driver.phone_number, driver_plate: driver.vehicle_plate }
+                    : b
+            ));
+            setSelectedIds([]);
+            alert(`Reassigned ${selectedIds.length} bookings to ${driver.full_name}.`);
+        } catch (error) {
+            console.error('Error in bulk reassign:', error);
+            alert('Failed to reassign driver.');
+        }
+    };
+
     const bulkDelete = async () => {
         if (!selectedIds.length) return;
         if (!confirm(`CAUTION: Are you sure you want to DELETE ${selectedIds.length} bookings? This cannot be undone.`)) return;
@@ -705,6 +724,7 @@ export default function BookingsPage() {
             case 'confirmed':   return 'bg-emerald-100 text-emerald-800 border-emerald-200';
             case 'in_progress': return 'bg-purple-100 text-purple-800 border-purple-200';
             case 'completed':   return 'bg-sky-100 text-sky-800 border-sky-200';
+            case 'no_show':     return 'bg-orange-100 text-orange-800 border-orange-200';
             case 'cancelled':   return 'bg-rose-100 text-rose-800 border-rose-200';
             default:            return 'bg-gray-100 text-gray-800 border-gray-200';
         }
@@ -967,7 +987,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
         if (dataToExport.length === 0) return;
         
-        const headers = ["ID", "Customer", "Phone", "From", "To", "Date", "Time", "Vehicle", "Price", "Status", "Payment"];
+        const headers = ["ID", "Customer", "Phone", "From", "To", "Date", "Time", "Vehicle", "Price", "Currency", "Status", "Payment", "Driver"];
         const rows = dataToExport.map(b => [
             b.id,
             b.customer_name,
@@ -978,11 +998,15 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
             b.pickup_time,
             b.vehicle_type,
             b.total_price || 0,
+            b.currency || 'SAR',
             b.status,
-            b.payment_status
+            b.payment_status,
+            b.driver_name || ''
         ]);
-        
-        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+
+        // Quote every field so a comma inside a name/location can't corrupt the row.
+        const escapeCsvField = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+        const csvContent = [headers, ...rows].map(row => row.map(escapeCsvField).join(",")).join("\n");
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -1144,7 +1168,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                         <Input
-                            placeholder="Search by Name, Phone, Email, or ID..."
+                            placeholder="Search by Name, Phone, Email, Driver, or ID..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary shadow-sm h-11"
@@ -1193,6 +1217,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                             <SelectItem value="quote_sent">Quote Sent</SelectItem>
                             <SelectItem value="confirmed">Confirmed</SelectItem>
                             <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="no_show">No Show</SelectItem>
                             <SelectItem value="completed">Completed</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
@@ -1258,9 +1283,22 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                         <Button size="sm" onClick={() => bulkUpdateStatus('cancelled')} className="bg-slate-700 hover:bg-slate-800 text-white h-9 px-4 text-[11px] font-bold rounded-lg border-b-2 border-slate-900 transition-all active:translate-y-0.5">
                             <X className="w-3.5 h-3.5 mr-1.5" /> Cancel All
                         </Button>
-                        <Button 
-                            variant="destructive" 
-                            size="sm" 
+                        <Button size="sm" onClick={() => bulkUpdateStatus('no_show')} className="bg-orange-600 hover:bg-orange-700 text-white h-9 px-4 text-[11px] font-bold rounded-lg border-b-2 border-orange-800 transition-all active:translate-y-0.5">
+                            <X className="w-3.5 h-3.5 mr-1.5" /> No Show
+                        </Button>
+                        <select
+                            value=""
+                            onChange={e => bulkReassignDriver(e.target.value)}
+                            className="h-9 px-3 text-[11px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white border-b-2 border-indigo-800 cursor-pointer focus:outline-none"
+                        >
+                            <option value="" disabled>Reassign Driver...</option>
+                            {approvedDrivers.map(d => (
+                                <option key={d.id} value={d.id} className="text-gray-900">{d.full_name}</option>
+                            ))}
+                        </select>
+                        <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={bulkDelete}
                             className="bg-red-600 hover:bg-red-700 text-white h-9 px-4 text-[11px] font-bold rounded-lg border-b-2 border-red-800 transition-all active:translate-y-0.5"
                         >
@@ -1447,6 +1485,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                     <SelectItem value="quote_sent">Quote Sent</SelectItem>
                                                     <SelectItem value="confirmed">Confirmed</SelectItem>
                                                     <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="no_show">No Show</SelectItem>
                                                     <SelectItem value="completed">Completed</SelectItem>
                                                     <SelectItem value="cancelled">Cancelled</SelectItem>
                                                 </SelectContent>
@@ -1476,7 +1515,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => {
-                                                        const url = `https://taxiksa.com/booking/${booking.id}`;
+                                                        const url = absoluteUrl(`/track-booking/${booking.id}`);
                                                         navigator.clipboard.writeText(url);
                                                         alert('Journey link copied to clipboard!');
                                                     }}
@@ -1618,6 +1657,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                             <SelectItem value="quote_sent">Quote Sent</SelectItem>
                                             <SelectItem value="confirmed">Confirmed</SelectItem>
                                             <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="no_show">No Show</SelectItem>
                                             <SelectItem value="completed">Completed</SelectItem>
                                             <SelectItem value="cancelled">Cancelled</SelectItem>
                                         </SelectContent>
@@ -1755,6 +1795,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                             <SelectItem value="quote_sent">Quote Sent</SelectItem>
                                             <SelectItem value="confirmed">Confirmed</SelectItem>
                                             <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="no_show">No Show</SelectItem>
                                             <SelectItem value="completed">Completed</SelectItem>
                                             <SelectItem value="cancelled">Cancelled</SelectItem>
                                         </SelectContent>

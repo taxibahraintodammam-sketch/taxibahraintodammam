@@ -385,6 +385,22 @@ export default function UniversalInvoiceGenerator() {
                                     <p className="text-[10px] text-gray-400 uppercase">Subtotal</p>
                                     <p className="font-bold text-gray-900">{meta.currency} {subtotal.toLocaleString()}</p>
                                 </div>
+                                <div>
+                                    <Label className="text-[10px] text-gray-400 uppercase ml-1">Tax / VAT Rate (%)</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.1"
+                                        value={meta.taxRate}
+                                        onChange={(e) => setMeta({ ...meta, taxRate: parseFloat(e.target.value) || 0 })}
+                                        className="h-8 font-bold text-xs w-full"
+                                        placeholder="e.g. 15"
+                                    />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-gray-400 uppercase">Tax Amount</p>
+                                    <p className="font-bold text-gray-900">{meta.currency} {taxAmount.toLocaleString()}</p>
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -645,6 +661,12 @@ export default function UniversalInvoiceGenerator() {
                                                 <span>Subtotal</span>
                                                 <span className="text-gray-900">{subtotal.toLocaleString()}</span>
                                             </div>
+                                            {meta.taxRate > 0 && (
+                                                <div className="flex justify-between w-48 text-[10px] font-bold text-gray-400 uppercase">
+                                                    <span>VAT ({meta.taxRate}%)</span>
+                                                    <span className="text-gray-900">{taxAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                </div>
+                                            )}
                                             <div className="flex justify-between w-48 pt-4 items-center">
                                                 <span className="text-xs font-bold text-gray-900 uppercase">Total Payable</span>
                                                 <span className="text-2xl font-black text-gray-900 underline decoration-blue-500 underline-offset-8">

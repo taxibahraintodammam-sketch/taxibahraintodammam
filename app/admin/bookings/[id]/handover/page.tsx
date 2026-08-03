@@ -2,21 +2,26 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { 
-    Printer, 
-    ArrowLeft, 
-    MapPin, 
-    Phone, 
-    Calendar, 
-    Clock, 
+import {
+    Printer,
+    ArrowLeft,
+    MapPin,
+    Phone,
+    Calendar,
+    Clock,
     Car,
     User,
     ClipboardCheck,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+// @ts-ignore
+import html2canvas from 'html2canvas-pro';
+// @ts-ignore
+import { jsPDF } from 'jspdf';
 
 interface Booking {
     id: string;
@@ -36,6 +41,8 @@ interface Booking {
     total_price?: number;
     flight_number?: string;
     driver_name?: string;
+    driver_phone?: string;
+    driver_plate?: string;
     actual_vehicle?: string;
 }
 
@@ -86,8 +93,26 @@ export default function HandoverPage() {
         }
     };
 
-    const handlePrint = () => {
-        window.print();
+    const [downloading, setDownloading] = useState(false);
+    const handleDownloadPdf = async () => {
+        if (!booking) return;
+        setDownloading(true);
+        try {
+            const element = document.getElementById('handover-sheet');
+            if (!element) return;
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, scrollY: 0 });
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const pageWidth = 210;
+            const pageHeight = (canvas.height * pageWidth) / canvas.width;
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+            pdf.save(`Handover-${booking.id.slice(0, 8).toUpperCase()}.pdf`);
+        } catch (error) {
+            console.error('Error generating handover PDF:', error);
+            window.print();
+        } finally {
+            setDownloading(false);
+        }
     };
 
     if (loading) {
@@ -114,13 +139,19 @@ export default function HandoverPage() {
                 <Button variant="outline" onClick={() => router.back()} className="bg-white">
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={handlePrint} className="bg-slate-900 text-white hover:bg-black font-bold">
-                    <Printer className="w-4 h-4 mr-2" /> Print Handover Sheet
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={() => window.print()} variant="outline" className="bg-white font-bold">
+                        <Printer className="w-4 h-4 mr-2" /> Print
+                    </Button>
+                    <Button onClick={handleDownloadPdf} disabled={downloading} className="bg-slate-900 text-white hover:bg-black font-bold">
+                        {downloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Printer className="w-4 h-4 mr-2" />}
+                        Download PDF
+                    </Button>
+                </div>
             </div>
 
             {/* Handover Sheet */}
-            <div className="max-w-3xl mx-auto bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden print:shadow-none print:border-none print:max-w-none print:w-full">
+            <div id="handover-sheet" className="max-w-3xl mx-auto bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden print:shadow-none print:border-none print:max-w-none print:w-full">
                 {/* Header */}
                 <div className="bg-slate-900 text-white p-6 flex justify-between items-center print:text-black print:bg-gray-50 print:border-b">
                     <div>
@@ -189,6 +220,18 @@ export default function HandoverPage() {
                                 <p className="text-lg font-black text-slate-900 uppercase">
                                     {booking.driver_name || "__________________"}
                                 </p>
+                                {(booking.driver_phone || booking.driver_plate) && (
+                                    <div className="flex items-center gap-3 mt-1">
+                                        {booking.driver_phone && (
+                                            <p className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                                                <Phone className="w-3 h-3 text-slate-400" /> {booking.driver_phone}
+                                            </p>
+                                        )}
+                                        {booking.driver_plate && (
+                                            <p className="text-xs font-bold text-slate-600">{booking.driver_plate}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
