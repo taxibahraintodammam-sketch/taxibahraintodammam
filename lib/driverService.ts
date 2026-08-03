@@ -346,6 +346,16 @@ export const driverService = {
         return data as DriverAdvanceRepayment;
     },
 
+    // Fleet-wide repayments — used for the all-drivers overview table
+    async getAllAdvanceRepayments() {
+        const { data, error } = await supabase
+            .from('driver_advance_repayments')
+            .select('*');
+
+        if (error) throw error;
+        return data as DriverAdvanceRepayment[];
+    },
+
     async deleteAdvanceRepayment(id: string) {
         const { error } = await supabase
             .from('driver_advance_repayments')

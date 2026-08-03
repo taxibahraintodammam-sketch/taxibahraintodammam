@@ -140,6 +140,7 @@ export default function AdminDriversPage() {
     const [settlementForm, setSettlementForm] = useState(emptySettlementForm());
     const [savingSettlement, setSavingSettlement] = useState(false);
     const [deletingSettlementId, setDeletingSettlementId] = useState<string | null>(null);
+    const [allAdvanceRepayments, setAllAdvanceRepayments] = useState<DriverAdvanceRepayment[]>([]);
 
     // Add-to-roster + edit-profile (name/phone/vehicle/plate) — for company-owned drivers,
     // not just WhatsApp applications
@@ -157,6 +158,7 @@ export default function AdminDriversPage() {
             loadAllExpenses();
             loadAllBookingSummaries();
             loadAllDocuments();
+            loadAllAdvanceRepayments();
         });
     }, [router]);
 
@@ -240,6 +242,15 @@ export default function AdminDriversPage() {
             setAllDocuments(data);
         } catch (error) {
             console.error('Error loading fleet documents:', error);
+        }
+    };
+
+    const loadAllAdvanceRepayments = async () => {
+        try {
+            const data = await driverService.getAllAdvanceRepayments();
+            setAllAdvanceRepayments(data);
+        } catch (error) {
+            console.error('Error loading fleet advance repayments:', error);
         }
     };
 
@@ -371,6 +382,7 @@ export default function AdminDriversPage() {
                 note: repaymentForm.note || undefined,
             });
             setAdvanceRepayments(prev => ({ ...prev, [driverId]: [newRepayment, ...(prev[driverId] || [])] }));
+            setAllAdvanceRepayments(prev => [newRepayment, ...prev]);
             setRepaymentForm({ ...emptyRepaymentForm(), currency: repaymentForm.currency });
         } catch (error) {
             console.error('Error adding repayment:', error);
@@ -386,6 +398,7 @@ export default function AdminDriversPage() {
         try {
             await driverService.deleteAdvanceRepayment(repaymentId);
             setAdvanceRepayments(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(r => r.id !== repaymentId) }));
+            setAllAdvanceRepayments(prev => prev.filter(r => r.id !== repaymentId));
         } catch (error) {
             console.error('Error deleting repayment:', error);
             alert('Failed to delete repayment');
@@ -541,6 +554,39 @@ export default function AdminDriversPage() {
     const expiringDocs = allDocuments
         .filter(doc => doc.expiry_date && Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 30)
         .sort((a, b) => new Date(a.expiry_date!).getTime() - new Date(b.expiry_date!).getTime());
+
+    // At-a-glance comparison across the whole roster — earned/spent/net/advance owed per driver
+    const overviewRows = drivers
+        .filter(d => d.status === 'approved')
+        .map(driver => {
+            const driverExpensesAll = allExpenses.filter(e => e.driver_id === driver.id);
+            const driverBookings = allBookingSummaries.filter(b => b.driver_id === driver.id);
+            const driverRepayments = allAdvanceRepayments.filter(r => r.driver_id === driver.id);
+
+            const spent = sumByCurrency(driverExpensesAll);
+            const earned = sumEarningsByCurrency(driverBookings);
+            const netCurrencies = Array.from(new Set([...Object.keys(spent), ...Object.keys(earned)]));
+            const netByCur = Object.fromEntries(netCurrencies.map(cur => [cur, (earned[cur] || 0) - (spent[cur] || 0)]));
+
+            const advancesGiven = sumByCurrency(driverExpensesAll.filter(e => e.category === 'advance'));
+            const repaid = sumByCurrency(driverRepayments);
+            const advanceCurrencies = Array.from(new Set([...Object.keys(advancesGiven), ...Object.keys(repaid)]));
+            const outstandingByCur = advanceCurrencies
+                .map(cur => [cur, (advancesGiven[cur] || 0) - (repaid[cur] || 0)] as const)
+                .filter(([, amt]) => Math.abs(amt) > 0.001);
+
+            return {
+                driver,
+                completedTrips: driverBookings.filter(b => b.status === 'completed').length,
+                earnedText: Object.entries(earned).map(([c, a]) => formatAmount(a, c)).join(', '),
+                spentText: Object.entries(spent).map(([c, a]) => formatAmount(a, c)).join(', '),
+                netText: netCurrencies.map(c => formatAmount(netByCur[c], c)).join(', '),
+                netNegative: Object.values(netByCur).some(v => v < 0),
+                advanceText: outstandingByCur.map(([c, a]) => formatAmount(a, c)).join(', '),
+                netSortKey: Object.values(netByCur).reduce((a, b) => a + b, 0),
+            };
+        })
+        .sort((a, b) => b.netSortKey - a.netSortKey);
 
     const stats = {
         total: drivers.length,
@@ -705,6 +751,38 @@ export default function AdminDriversPage() {
                                 });
                             })()}
                         </div>
+                    </div>
+                )}
+
+                {/* Fleet overview table — compare all approved drivers at a glance */}
+                {overviewRows.length > 0 && (
+                    <div className="bg-white rounded-lg border-2 border-gray-200 mb-8 overflow-x-auto">
+                        <table className="w-full text-sm whitespace-nowrap">
+                            <thead>
+                                <tr className="border-b border-gray-200 text-left text-xs text-gray-500 uppercase tracking-wide">
+                                    <th className="px-4 py-3">Driver</th>
+                                    <th className="px-4 py-3">Vehicle</th>
+                                    <th className="px-4 py-3">Trips</th>
+                                    <th className="px-4 py-3">Earned</th>
+                                    <th className="px-4 py-3">Spent</th>
+                                    <th className="px-4 py-3">Net</th>
+                                    <th className="px-4 py-3">Advance Owed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {overviewRows.map(row => (
+                                    <tr key={row.driver.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                                        <td className="px-4 py-3 font-medium text-gray-900">{row.driver.full_name}</td>
+                                        <td className="px-4 py-3 text-gray-600">{row.driver.vehicle_model}</td>
+                                        <td className="px-4 py-3 text-gray-600">{row.completedTrips}</td>
+                                        <td className="px-4 py-3 text-emerald-700">{row.earnedText || '—'}</td>
+                                        <td className="px-4 py-3 text-blue-700">{row.spentText || '—'}</td>
+                                        <td className={`px-4 py-3 font-semibold ${row.netNegative ? 'text-red-600' : 'text-gray-900'}`}>{row.netText || '—'}</td>
+                                        <td className="px-4 py-3 text-amber-700">{row.advanceText || '—'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 
