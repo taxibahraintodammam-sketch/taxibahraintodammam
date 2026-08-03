@@ -254,12 +254,8 @@ export default function HandoverPage() {
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Client Signature</p>
                         </div>
                         <div className="text-center space-y-2">
-                             <div className="flex gap-4 items-center justify-center h-12">
-                                <div className="h-full relative w-16">
-                                    <Image src="/fahed-signature.png" alt="Fahed Irshad" fill className="object-contain grayscale" />
-                                </div>
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Company Approval</p>
+                            <div className="h-12 border-b border-slate-300 mx-auto w-4/5 pt-8"></div>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Company Approval (Fahed Irshad)</p>
                         </div>
                     </div>
                 </div>

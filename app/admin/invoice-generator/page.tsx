@@ -723,8 +723,7 @@ export default function UniversalInvoiceGenerator() {
                                 <div className="text-right min-w-[200px]">
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Authorized Signature</p>
                                     <div className="flex items-end justify-end gap-6 h-12">
-                                        <div className="text-center">
-                                            <img src="/fahed-signature.png" alt="Fahed Irshad" className="h-full w-auto object-contain select-none" />
+                                        <div className="text-center border-t border-gray-300 pt-1">
                                             <p className="text-[7px] font-bold text-gray-300 mt-1 uppercase italic tracking-widest">Fahed Irshad</p>
                                         </div>
                                     </div>

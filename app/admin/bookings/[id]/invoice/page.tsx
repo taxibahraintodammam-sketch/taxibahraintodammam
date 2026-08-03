@@ -886,8 +886,7 @@ export default function InvoicePage() {
                             <div className={lang === 'ar' ? 'text-left' : 'text-right'}>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">{t.authorizedSignature}</p>
                                 <div className={`flex items-end gap-6 ${lang === 'ar' ? 'justify-start' : 'justify-end'}`}>
-                                    <div className="text-center">
-                                        <img src="/fahed-signature.png" alt="Fahed Irshad" className="h-8 w-auto object-contain mx-auto" />
+                                    <div className="text-center pt-8">
                                         <p className="text-[10px] font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-1 min-w-[70px]">Fahed Irshad</p>
                                         <p className="text-[8px] text-gray-400">{t.director}</p>
                                     </div>

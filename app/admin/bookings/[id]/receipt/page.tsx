@@ -391,8 +391,7 @@ export default function ReceiptPage() {
 
                             {/* Signature */}
                             <div className="flex gap-10">
-                                <div className="text-center">
-                                    <img src="/fahed-signature.png" alt="Fahed Irshad" className="h-10 w-auto max-w-[90px] object-contain select-none mx-auto" />
+                                <div className="text-center pt-10">
                                     <div className="border-t border-gray-800 mt-1 pt-1 w-28">
                                         <p className="text-xs font-black text-gray-700">Fahed Irshad</p>
                                         <p className="text-[10px] text-gray-400">{t.director}</p>

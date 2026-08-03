@@ -51,8 +51,7 @@ export async function POST(request: NextRequest) {
                 <table role="presentation" style="margin-top: 28px; border-top: 1px solid #eee; padding-top: 18px;">
                     <tr>
                         <td style="padding-right: 16px;">
-                            <img src="https://taxibahraintodammam.com/fahed-signature.png" alt="Fahed Irshad" style="height: 36px; display: block;" />
-                            <p style="margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #111;">Fahed Irshad</p>
+                            <p style="margin: 0; font-size: 13px; font-weight: bold; color: #111;">Fahed Irshad</p>
                             <p style="margin: 0; font-size: 11px; color: #888;">Director, Taxi Bahrain to Dammam</p>
                         </td>
                     </tr>
