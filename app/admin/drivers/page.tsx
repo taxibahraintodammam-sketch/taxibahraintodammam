@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { driverService, Driver, DriverExpense, DriverExpenseCategory } from '@/lib/driverService';
+import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
 import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
     ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
-    CreditCard
+    CreditCard, TrendingUp, FileText
 } from 'lucide-react';
 
 const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
@@ -29,6 +29,42 @@ const sumByCurrency = (list: DriverExpense[]) =>
         acc[e.currency] = (acc[e.currency] || 0) + e.amount;
         return acc;
     }, {} as Record<string, number>);
+
+interface BookingSummaryRow {
+    total_price: number | null;
+    currency: string | null;
+    status: string;
+}
+
+const sumEarningsByCurrency = (rows: BookingSummaryRow[]) =>
+    rows.filter(r => r.status === 'completed').reduce((acc, r) => {
+        const cur = r.currency || 'SAR';
+        acc[cur] = (acc[cur] || 0) + (r.total_price || 0);
+        return acc;
+    }, {} as Record<string, number>);
+
+const DOC_TYPE_META: Record<DriverDocType, string> = {
+    license: 'Driving License',
+    iqama_id: 'Iqama / ID',
+    vehicle_registration: 'Vehicle Registration',
+    insurance: 'Insurance',
+    other: 'Other',
+};
+
+const getExpiryStatus = (expiryDate?: string): { label: string; color: string } | null => {
+    if (!expiryDate) return null;
+    const days = Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (days < 0) return { label: `Expired ${Math.abs(days)}d ago`, color: 'bg-red-100 text-red-800' };
+    if (days <= 30) return { label: `Expires in ${days}d`, color: 'bg-amber-100 text-amber-800' };
+    return { label: 'Valid', color: 'bg-green-100 text-green-800' };
+};
+
+const emptyDocumentForm = () => ({
+    doc_type: 'license' as DriverDocType,
+    document_number: '',
+    expiry_date: '',
+    file: null as File | null,
+});
 
 const emptyProfileForm = () => ({
     full_name: '',
@@ -57,14 +93,26 @@ export default function AdminDriversPage() {
     const [savingNotes, setSavingNotes] = useState<string | null>(null);
     const [notesSaved, setNotesSaved] = useState<string | null>(null);
 
-    // Fuel / maintenance / advance / penalty expense ledger per driver
+    // Fuel / maintenance / advance / penalty expense ledger per driver, plus the
+    // earnings side (completed bookings) so we can show a net profit per driver
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [expenses, setExpenses] = useState<{ [driverId: string]: DriverExpense[] }>({});
     const [allExpenses, setAllExpenses] = useState<DriverExpense[]>([]);
+    const [bookingSummaries, setBookingSummaries] = useState<{ [driverId: string]: BookingSummaryRow[] }>({});
+    const [allBookingSummaries, setAllBookingSummaries] = useState<(BookingSummaryRow & { driver_id: string })[]>([]);
     const [loadingExpenses, setLoadingExpenses] = useState<string | null>(null);
     const [expenseForm, setExpenseForm] = useState(emptyExpenseForm());
     const [savingExpense, setSavingExpense] = useState(false);
     const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+
+    // License / Iqama / registration / insurance documents per driver
+    const [expandedDocsId, setExpandedDocsId] = useState<string | null>(null);
+    const [documents, setDocuments] = useState<{ [driverId: string]: DriverDocument[] }>({});
+    const [allDocuments, setAllDocuments] = useState<DriverDocument[]>([]);
+    const [loadingDocuments, setLoadingDocuments] = useState<string | null>(null);
+    const [documentForm, setDocumentForm] = useState(emptyDocumentForm());
+    const [savingDocument, setSavingDocument] = useState(false);
+    const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
 
     // Add-to-roster + edit-profile (name/phone/vehicle/plate) — for company-owned drivers,
     // not just WhatsApp applications
@@ -80,6 +128,8 @@ export default function AdminDriversPage() {
             if (!session) { router.push('/admin/login'); return; }
             loadDrivers();
             loadAllExpenses();
+            loadAllBookingSummaries();
+            loadAllDocuments();
         });
     }, [router]);
 
@@ -148,20 +198,109 @@ export default function AdminDriversPage() {
         }
     };
 
+    const loadAllBookingSummaries = async () => {
+        try {
+            const data = await driverService.getAllDriverBookingSummaries();
+            setAllBookingSummaries(data);
+        } catch (error) {
+            console.error('Error loading fleet booking summaries:', error);
+        }
+    };
+
+    const loadAllDocuments = async () => {
+        try {
+            const data = await driverService.getAllDocuments();
+            setAllDocuments(data);
+        } catch (error) {
+            console.error('Error loading fleet documents:', error);
+        }
+    };
+
     const toggleExpenses = async (driverId: string) => {
         if (expandedId === driverId) { setExpandedId(null); return; }
         setExpandedId(driverId);
         setExpenseForm(emptyExpenseForm());
-        if (!expenses[driverId]) {
+        const needsExpenses = !expenses[driverId];
+        const needsBookings = !bookingSummaries[driverId];
+        if (needsExpenses || needsBookings) {
             setLoadingExpenses(driverId);
             try {
-                const data = await driverService.getExpenses(driverId);
-                setExpenses(prev => ({ ...prev, [driverId]: data }));
+                const [expenseData, bookingData] = await Promise.all([
+                    needsExpenses ? driverService.getExpenses(driverId) : Promise.resolve(expenses[driverId]),
+                    needsBookings ? driverService.getDriverBookingSummary(driverId) : Promise.resolve(bookingSummaries[driverId]),
+                ]);
+                if (needsExpenses) setExpenses(prev => ({ ...prev, [driverId]: expenseData }));
+                if (needsBookings) setBookingSummaries(prev => ({ ...prev, [driverId]: bookingData }));
             } catch (error) {
-                console.error('Error loading expenses:', error);
+                console.error('Error loading driver finance data:', error);
             } finally {
                 setLoadingExpenses(null);
             }
+        }
+    };
+
+    const toggleDocuments = async (driverId: string) => {
+        if (expandedDocsId === driverId) { setExpandedDocsId(null); return; }
+        setExpandedDocsId(driverId);
+        setDocumentForm(emptyDocumentForm());
+        if (!documents[driverId]) {
+            setLoadingDocuments(driverId);
+            try {
+                const data = await driverService.getDocuments(driverId);
+                setDocuments(prev => ({ ...prev, [driverId]: data }));
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            } finally {
+                setLoadingDocuments(null);
+            }
+        }
+    };
+
+    const handleAddDocument = async (driverId: string) => {
+        setSavingDocument(true);
+        try {
+            let file_url: string | undefined;
+            if (documentForm.file) {
+                const url = await driverService.uploadDocumentFile(documentForm.file);
+                if (!url) {
+                    alert('File upload failed. Ensure the "driver-receipts" bucket exists in Supabase Storage.');
+                    setSavingDocument(false);
+                    return;
+                }
+                file_url = url;
+            }
+
+            const newDoc = await driverService.addDocument({
+                driver_id: driverId,
+                doc_type: documentForm.doc_type,
+                document_number: documentForm.document_number || undefined,
+                expiry_date: documentForm.expiry_date || undefined,
+                file_url,
+            });
+
+            setDocuments(prev => ({ ...prev, [driverId]: [newDoc, ...(prev[driverId] || [])] }));
+            setAllDocuments(prev => [newDoc, ...prev]);
+            setDocumentForm(emptyDocumentForm());
+        } catch (error) {
+            console.error('Error adding document:', error);
+            alert('Failed to add document');
+        } finally {
+            setSavingDocument(false);
+        }
+    };
+
+    const handleDeleteDocument = async (driverId: string, docId: string) => {
+        if (!confirm('Delete this document?')) return;
+        setDeletingDocumentId(docId);
+        try {
+            await driverService.deleteDocument(docId);
+            setDocuments(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(d => d.id !== docId) }));
+            setAllDocuments(prev => prev.filter(d => d.id !== docId));
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            alert('Failed to delete document');
+        } finally {
+            setDeletingDocumentId(null);
         }
     };
 
@@ -269,6 +408,12 @@ export default function AdminDriversPage() {
 
     const filteredDrivers = drivers.filter(d => filter === 'all' || d.status === filter);
 
+    const driversById = Object.fromEntries(drivers.map(d => [d.id, d]));
+
+    const expiringDocs = allDocuments
+        .filter(doc => doc.expiry_date && Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) <= 30)
+        .sort((a, b) => new Date(a.expiry_date!).getTime() - new Date(b.expiry_date!).getTime());
+
     const stats = {
         total: drivers.length,
         pending: drivers.filter(d => d.status === 'pending').length,
@@ -369,17 +514,69 @@ export default function AdminDriversPage() {
                     </div>
                 </div>
 
-                {/* Fleet-wide expense total */}
-                {allExpenses.length > 0 && (
-                    <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-blue-200 mb-8 flex flex-wrap items-center gap-3">
-                        <span className="text-sm font-semibold text-gray-600 flex items-center gap-1.5">
-                            <Wallet className="w-4 h-4 text-blue-600" /> Total Fleet Spend:
-                        </span>
-                        {Object.entries(sumByCurrency(allExpenses)).map(([cur, amt]) => (
-                            <span key={cur} className="px-3 py-1 rounded-full bg-blue-600 text-white text-sm font-bold">
-                                {formatAmount(amt, cur)}
-                            </span>
-                        ))}
+                {/* Documents expiring soon or already expired, across the whole fleet */}
+                {expiringDocs.length > 0 && (
+                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 sm:p-6 mb-8">
+                        <p className="text-sm font-bold text-red-700 mb-3 flex items-center gap-1.5">
+                            <AlertTriangle className="w-4 h-4" /> {expiringDocs.length} document{expiringDocs.length === 1 ? '' : 's'} expiring soon or expired
+                        </p>
+                        <div className="space-y-1.5">
+                            {expiringDocs.map(doc => {
+                                const driver = driversById[doc.driver_id];
+                                const status = getExpiryStatus(doc.expiry_date);
+                                return (
+                                    <div key={doc.id} className="flex items-center justify-between gap-2 text-sm bg-white rounded-lg px-3 py-2 border border-red-100">
+                                        <span className="text-gray-700 truncate">
+                                            <span className="font-semibold">{driver?.full_name || 'Unknown driver'}</span> — {DOC_TYPE_META[doc.doc_type]}
+                                        </span>
+                                        {status && <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold ${status.color}`}>{status.label}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Fleet-wide finance overview: earned (completed bookings) vs spent (expenses) */}
+                {(allExpenses.length > 0 || allBookingSummaries.length > 0) && (
+                    <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-gray-900 mb-8">
+                        <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                            <TrendingUp className="w-4 h-4" /> Fleet Finance Overview
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="text-xs font-semibold text-gray-500 mr-1">Earned:</span>
+                            {Object.entries(sumEarningsByCurrency(allBookingSummaries)).length === 0 ? (
+                                <span className="text-xs text-gray-400">—</span>
+                            ) : Object.entries(sumEarningsByCurrency(allBookingSummaries)).map(([cur, amt]) => (
+                                <span key={cur} className="px-3 py-1 rounded-full bg-emerald-600 text-white text-sm font-bold">{formatAmount(amt, cur)}</span>
+                            ))}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="text-xs font-semibold text-gray-500 mr-1">Spent:</span>
+                            {Object.entries(sumByCurrency(allExpenses)).length === 0 ? (
+                                <span className="text-xs text-gray-400">—</span>
+                            ) : Object.entries(sumByCurrency(allExpenses)).map(([cur, amt]) => (
+                                <span key={cur} className="px-3 py-1 rounded-full bg-blue-600 text-white text-sm font-bold">{formatAmount(amt, cur)}</span>
+                            ))}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-semibold text-gray-500 mr-1">Net Profit:</span>
+                            {(() => {
+                                const earned = sumEarningsByCurrency(allBookingSummaries);
+                                const spent = sumByCurrency(allExpenses);
+                                const currencies = Array.from(new Set([...Object.keys(earned), ...Object.keys(spent)]));
+                                return currencies.length === 0 ? (
+                                    <span className="text-xs text-gray-400">—</span>
+                                ) : currencies.map(cur => {
+                                    const net = (earned[cur] || 0) - (spent[cur] || 0);
+                                    return (
+                                        <span key={cur} className={`px-3 py-1 rounded-full text-white text-sm font-bold ${net >= 0 ? 'bg-slate-900' : 'bg-red-600'}`}>
+                                            {formatAmount(net, cur)}
+                                        </span>
+                                    );
+                                });
+                            })()}
+                        </div>
                     </div>
                 )}
 
@@ -582,28 +779,63 @@ export default function AdminDriversPage() {
                                         className="text-blue-700 border-blue-300 hover:bg-blue-50"
                                     >
                                         <Wallet className="w-4 h-4 mr-2" />
-                                        Expenses{expenses[driver.id] ? ` (${expenses[driver.id].length})` : ''}
+                                        Finance{expenses[driver.id] ? ` (${expenses[driver.id].length})` : ''}
                                         {expandedId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
+                                    <Button
+                                        onClick={() => toggleDocuments(driver.id)}
+                                        variant="outline"
+                                        className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                                    >
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        Documents{documents[driver.id] ? ` (${documents[driver.id].length})` : ''}
+                                        {expandedDocsId === driver.id
                                             ? <ChevronUp className="w-4 h-4 ml-2" />
                                             : <ChevronDown className="w-4 h-4 ml-2" />}
                                     </Button>
                                 </div>
 
-                                {/* Expense ledger — fuel, maintenance, advance, penalty */}
+                                {/* Finance — earnings from completed bookings vs fuel/maintenance/advance/penalty spend */}
                                 {expandedId === driver.id && (
                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                         {(() => {
                                             const list = expenses[driver.id] || [];
-                                            const totals = Object.entries(sumByCurrency(list));
-                                            return totals.length > 0 ? (
-                                                <div className="flex flex-wrap gap-2 mb-4">
-                                                    {totals.map(([cur, amt]) => (
-                                                        <span key={cur} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-bold">
-                                                            Total spent: {formatAmount(amt, cur)}
-                                                        </span>
-                                                    ))}
+                                            const bookingRows = bookingSummaries[driver.id] || [];
+                                            const spent = sumByCurrency(list);
+                                            const earned = sumEarningsByCurrency(bookingRows);
+                                            const currencies = Array.from(new Set([...Object.keys(spent), ...Object.keys(earned)]));
+                                            const completedTrips = bookingRows.filter(r => r.status === 'completed').length;
+                                            return (
+                                                <div className="mb-4">
+                                                    {completedTrips > 0 && (
+                                                        <p className="text-xs text-gray-500 mb-1.5">{completedTrips} completed trip{completedTrips === 1 ? '' : 's'} on record</p>
+                                                    )}
+                                                    {currencies.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {Object.entries(earned).map(([cur, amt]) => (
+                                                                <span key={`earn-${cur}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold">
+                                                                    Earned: {formatAmount(amt, cur)}
+                                                                </span>
+                                                            ))}
+                                                            {Object.entries(spent).map(([cur, amt]) => (
+                                                                <span key={`spent-${cur}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-bold">
+                                                                    Spent: {formatAmount(amt, cur)}
+                                                                </span>
+                                                            ))}
+                                                            {currencies.map(cur => {
+                                                                const net = (earned[cur] || 0) - (spent[cur] || 0);
+                                                                return (
+                                                                    <span key={`net-${cur}`} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-bold ${net >= 0 ? 'bg-slate-900' : 'bg-red-600'}`}>
+                                                                        Net: {formatAmount(net, cur)}
+                                                                    </span>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ) : null;
+                                            );
                                         })()}
 
                                         {/* Add expense */}
@@ -716,6 +948,95 @@ export default function AdminDriversPage() {
                                                                 title="Delete"
                                                             >
                                                                 {deletingExpenseId === expense.id
+                                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    : <Trash2 className="w-4 h-4" />}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Documents — license, Iqama/ID, vehicle registration, insurance */}
+                                {expandedDocsId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 mb-4">
+                                            <p className="text-xs font-bold text-purple-700 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                                                <FileText className="w-3.5 h-3.5" /> Add Document
+                                            </p>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                                                <select
+                                                    value={documentForm.doc_type}
+                                                    onChange={e => setDocumentForm({ ...documentForm, doc_type: e.target.value as DriverDocType })}
+                                                    className="text-sm border border-purple-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                                                >
+                                                    {Object.entries(DOC_TYPE_META).map(([key, label]) => (
+                                                        <option key={key} value={key}>{label}</option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    value={documentForm.document_number}
+                                                    onChange={e => setDocumentForm({ ...documentForm, document_number: e.target.value })}
+                                                    placeholder="Document # (optional)"
+                                                    className="text-sm border border-purple-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    value={documentForm.expiry_date}
+                                                    onChange={e => setDocumentForm({ ...documentForm, expiry_date: e.target.value })}
+                                                    className="text-sm border border-purple-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*,.pdf"
+                                                    onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })}
+                                                    className="text-xs text-purple-700 file:mr-2 file:py-2 file:px-2.5 file:rounded-lg file:border-0 file:bg-purple-200 file:text-purple-800 file:text-xs file:font-semibold"
+                                                />
+                                            </div>
+                                            <Button
+                                                onClick={() => handleAddDocument(driver.id)}
+                                                disabled={savingDocument}
+                                                className="bg-purple-600 text-white hover:bg-purple-700"
+                                            >
+                                                {savingDocument ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                                                Add Document
+                                            </Button>
+                                        </div>
+
+                                        {loadingDocuments === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading documents...</div>
+                                        ) : (documents[driver.id] || []).length === 0 ? (
+                                            <div className="text-center py-6 text-sm text-gray-400">No documents on file</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(documents[driver.id] || []).map(doc => {
+                                                    const status = getExpiryStatus(doc.expiry_date);
+                                                    return (
+                                                        <div key={doc.id} className="flex items-start justify-between gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-sm font-bold text-gray-900">{DOC_TYPE_META[doc.doc_type]}</span>
+                                                                    {status && <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${status.color}`}>{status.label}</span>}
+                                                                </div>
+                                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                                    {doc.document_number && <span>#{doc.document_number} · </span>}
+                                                                    {doc.expiry_date ? `Expires ${new Date(doc.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'No expiry set'}
+                                                                </p>
+                                                                {doc.file_url && (
+                                                                    <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">
+                                                                        <ImageIcon className="w-3 h-3" /> View file
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteDocument(driver.id, doc.id)}
+                                                                disabled={deletingDocumentId === doc.id}
+                                                                className="shrink-0 text-gray-300 hover:text-red-600 transition-colors p-1"
+                                                                title="Delete"
+                                                            >
+                                                                {deletingDocumentId === doc.id
                                                                     ? <Loader2 className="w-4 h-4 animate-spin" />
                                                                     : <Trash2 className="w-4 h-4" />}
                                                             </button>

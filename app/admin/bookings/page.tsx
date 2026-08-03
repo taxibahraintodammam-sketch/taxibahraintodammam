@@ -109,6 +109,7 @@ interface Booking {
     special_requests?: string;
     total_price?: number;
     payment_status?: string;
+    driver_id?: string;
     driver_name?: string;
     driver_phone?: string;
     driver_plate?: string;
@@ -2062,6 +2063,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Service 
                                                             if (d) {
                                                                 setEditedBooking({
                                                                     ...editedBooking,
+                                                                    driver_id: d.id,
                                                                     driver_name: d.full_name,
                                                                     driver_phone: d.phone_number,
                                                                     driver_plate: d.vehicle_plate || editedBooking.driver_plate,
@@ -2659,6 +2661,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Service 
                                             if (d) {
                                                 setNewBooking({
                                                     ...newBooking,
+                                                    driver_id: d.id,
                                                     driver_name: d.full_name,
                                                     driver_phone: d.phone_number,
                                                     driver_plate: d.vehicle_plate || newBooking.driver_plate,

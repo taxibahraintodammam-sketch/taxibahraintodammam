@@ -28,6 +28,43 @@ export interface DriverExpense {
     created_at: string;
 }
 
+export type DriverDocType = 'license' | 'iqama_id' | 'vehicle_registration' | 'insurance' | 'other';
+
+export interface DriverDocument {
+    id: string;
+    driver_id: string;
+    doc_type: DriverDocType;
+    document_number?: string;
+    expiry_date?: string;
+    file_url?: string;
+    created_at: string;
+}
+
+async function uploadToDriverBucket(file: File): Promise<string | null> {
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('driver-receipts')
+            .upload(fileName, file);
+
+        if (uploadError) {
+            console.error('Error uploading file:', uploadError);
+            return null;
+        }
+
+        const { data } = supabase.storage
+            .from('driver-receipts')
+            .getPublicUrl(fileName);
+
+        return data.publicUrl;
+    } catch (error) {
+        console.error('Exception uploading file:', error);
+        return null;
+    }
+}
+
 export const driverService = {
     // Get all driver applications (admin)
     async getAllDrivers() {
@@ -190,27 +227,78 @@ export const driverService = {
 
     // Upload a receipt/fuel-slip photo to the 'driver-receipts' Supabase Storage bucket
     async uploadReceipt(file: File): Promise<string | null> {
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+        return uploadToDriverBucket(file);
+    },
 
-            const { error: uploadError } = await supabase.storage
-                .from('driver-receipts')
-                .upload(fileName, file);
+    // Get every document across all drivers (admin) — used for the fleet-wide expiry banner
+    async getAllDocuments() {
+        const { data, error } = await supabase
+            .from('driver_documents')
+            .select('*')
+            .order('expiry_date', { ascending: true });
 
-            if (uploadError) {
-                console.error('Error uploading receipt:', uploadError);
-                return null;
-            }
+        if (error) throw error;
+        return data as DriverDocument[];
+    },
 
-            const { data } = supabase.storage
-                .from('driver-receipts')
-                .getPublicUrl(fileName);
+    // Get documents for one driver (admin)
+    async getDocuments(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_documents')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('expiry_date', { ascending: true });
 
-            return data.publicUrl;
-        } catch (error) {
-            console.error('Exception uploading receipt:', error);
-            return null;
-        }
+        if (error) throw error;
+        return data as DriverDocument[];
+    },
+
+    // Add a document (license, Iqama/ID, vehicle registration, insurance, other) for a driver
+    async addDocument(doc: Omit<DriverDocument, 'id' | 'created_at'>) {
+        const { data, error } = await supabase
+            .from('driver_documents')
+            .insert(doc)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as DriverDocument;
+    },
+
+    // Delete a document entry (admin)
+    async deleteDocument(id: string) {
+        const { error } = await supabase
+            .from('driver_documents')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    // Upload a document scan/photo to the 'driver-receipts' Supabase Storage bucket
+    async uploadDocumentFile(file: File): Promise<string | null> {
+        return uploadToDriverBucket(file);
+    },
+
+    // Bookings completed by a driver — the earnings side of the per-driver profit view
+    async getDriverBookingSummary(driverId: string) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('total_price, currency, status')
+            .eq('driver_id', driverId);
+
+        if (error) throw error;
+        return data as { total_price: number | null; currency: string | null; status: string }[];
+    },
+
+    // Fleet-wide version of the above — every booking that has a driver assigned
+    async getAllDriverBookingSummaries() {
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('driver_id, total_price, currency, status')
+            .not('driver_id', 'is', null);
+
+        if (error) throw error;
+        return data as { driver_id: string; total_price: number | null; currency: string | null; status: string }[];
     },
 };

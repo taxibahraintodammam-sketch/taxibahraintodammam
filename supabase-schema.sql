@@ -293,6 +293,35 @@ DROP POLICY IF EXISTS "Admin full access" ON driver_expenses;
 CREATE POLICY "Admin full access" ON driver_expenses
   FOR ALL USING (auth.role() = 'authenticated');
 
+-- Link a booking to a roster driver (drivers must already exist above for this
+-- FK to resolve, so it's added here rather than inline on the bookings table).
+-- driver_name/driver_phone/driver_plate on bookings stay as a point-in-time
+-- text snapshot for print/email even if the driver's profile changes later.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS driver_id uuid REFERENCES drivers(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS bookings_driver_id_idx ON bookings (driver_id);
+
+-- ----------------------------------------------------------------------------
+-- driver_documents — license, Iqama/ID, vehicle registration, insurance scans
+-- per driver, with an expiry_date so the admin panel can flag what's about to
+-- lapse. Admin-only, same Storage bucket as driver_expenses ('driver-receipts').
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_documents (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id     uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  doc_type      text NOT NULL DEFAULT 'license' CHECK (doc_type IN ('license','iqama_id','vehicle_registration','insurance','other')),
+  document_number text,
+  expiry_date   date,
+  file_url      text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_documents_driver_id_idx ON driver_documents (driver_id);
+CREATE INDEX IF NOT EXISTS driver_documents_expiry_idx ON driver_documents (expiry_date);
+
+ALTER TABLE driver_documents ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_documents;
+CREATE POLICY "Admin full access" ON driver_documents
+  FOR ALL USING (auth.role() = 'authenticated');
+
 -- ----------------------------------------------------------------------------
 -- Admin-only utility tables (no public access at all) — every one of these
 -- already shipped a matching CREATE TABLE snippet inline in its admin page;
