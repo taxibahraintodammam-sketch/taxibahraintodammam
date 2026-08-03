@@ -511,6 +511,7 @@ export default function AdminDriversPage() {
             setDrivers(prev => [created, ...prev]);
             setAddDriverForm(emptyProfileForm());
             setShowAddDriver(false);
+            setFilter('approved');
         } catch (error) {
             console.error('Error adding driver:', error);
             alert('Failed to add driver');
