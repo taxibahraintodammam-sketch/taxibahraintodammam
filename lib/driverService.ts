@@ -10,6 +10,7 @@ export interface Driver {
     vehicle_plate?: string;
     status: 'pending' | 'approved' | 'rejected';
     admin_notes?: string;
+    access_token?: string;
     created_at: string;
     reviewed_at?: string;
 }
@@ -25,6 +26,7 @@ export interface DriverExpense {
     expense_date: string;
     description?: string;
     receipt_url?: string;
+    source?: 'admin' | 'driver';
     created_at: string;
 }
 
@@ -180,6 +182,19 @@ export const driverService = {
         const { data, error } = await supabase
             .from('drivers')
             .update({ status: 'pending', reviewed_at: null })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Driver;
+    },
+
+    // Generate/save the driver's self-service portal token (admin, lazy — only when first shared)
+    async setAccessToken(id: string, token: string) {
+        const { data, error } = await supabase
+            .from('drivers')
+            .update({ access_token: token })
             .eq('id', id)
             .select()
             .single();

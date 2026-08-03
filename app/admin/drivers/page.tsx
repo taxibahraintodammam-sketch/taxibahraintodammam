@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement } from '@/lib/driverService';
+import { absoluteUrl } from '@/lib/url';
 import { Button } from '@/components/ui/button';
 import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
     ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
-    CreditCard, TrendingUp, FileText, Banknote
+    CreditCard, TrendingUp, FileText, Banknote, Link2
 } from 'lucide-react';
 
 const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
@@ -150,6 +151,7 @@ export default function AdminDriversPage() {
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
     const [profileForm, setProfileForm] = useState(emptyProfileForm());
     const [savingProfile, setSavingProfile] = useState(false);
+    const [sendingPortalLinkId, setSendingPortalLinkId] = useState<string | null>(null);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -544,6 +546,26 @@ export default function AdminDriversPage() {
             alert('Failed to update driver');
         } finally {
             setSavingProfile(false);
+        }
+    };
+
+    const handleSendPortalLink = async (driver: Driver) => {
+        setSendingPortalLinkId(driver.id);
+        try {
+            let token = driver.access_token;
+            if (!token) {
+                token = crypto.randomUUID();
+                const updated = await driverService.setAccessToken(driver.id, token);
+                setDrivers(prev => prev.map(d => d.id === driver.id ? updated : d));
+            }
+            const url = absoluteUrl(`/driver/${token}`);
+            const message = `Hi ${driver.full_name}, use this link to submit your fuel/expense receipts directly to the office: ${url}`;
+            window.open(`https://wa.me/${driver.phone_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+        } catch (error) {
+            console.error('Error generating portal link:', error);
+            alert('Failed to generate upload link');
+        } finally {
+            setSendingPortalLinkId(null);
         }
     };
 
@@ -979,6 +1001,19 @@ export default function AdminDriversPage() {
                                     >
                                         <MessageCircle className="w-4 h-4" /> WhatsApp
                                     </a>
+                                    {driver.status === 'approved' && (
+                                        <Button
+                                            onClick={() => handleSendPortalLink(driver)}
+                                            disabled={sendingPortalLinkId === driver.id}
+                                            variant="outline"
+                                            className="text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                                        >
+                                            {sendingPortalLinkId === driver.id
+                                                ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                : <Link2 className="w-4 h-4 mr-2" />}
+                                            Upload Link
+                                        </Button>
+                                    )}
                                     <Button
                                         onClick={() => toggleExpenses(driver.id)}
                                         variant="outline"
@@ -1142,6 +1177,9 @@ export default function AdminDriversPage() {
                                                                         <span className="text-xs text-gray-400">
                                                                             {new Date(expense.expense_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                                         </span>
+                                                                        {expense.source === 'driver' && (
+                                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">via driver</span>
+                                                                        )}
                                                                     </div>
                                                                     {expense.description && (
                                                                         <p className="text-xs text-gray-500 mt-0.5 truncate">{expense.description}</p>

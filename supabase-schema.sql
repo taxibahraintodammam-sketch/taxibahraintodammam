@@ -257,6 +257,10 @@ CREATE TABLE IF NOT EXISTS drivers (
 );
 -- Safe to re-run on a table created before vehicle_plate existed.
 ALTER TABLE drivers ADD COLUMN IF NOT EXISTS vehicle_plate text;
+-- Unique token for the driver's own no-login self-service link (app/driver/[token]).
+-- Generated lazily by the admin panel the first time it's shared, not at signup.
+ALTER TABLE drivers ADD COLUMN IF NOT EXISTS access_token text UNIQUE;
+CREATE INDEX IF NOT EXISTS drivers_access_token_idx ON drivers (access_token);
 CREATE INDEX IF NOT EXISTS drivers_status_idx ON drivers (status);
 
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
@@ -284,8 +288,11 @@ CREATE TABLE IF NOT EXISTS driver_expenses (
   expense_date  date NOT NULL DEFAULT current_date,
   description   text,
   receipt_url   text,
+  source        text NOT NULL DEFAULT 'admin' CHECK (source IN ('admin','driver')),
   created_at    timestamptz NOT NULL DEFAULT now()
 );
+-- Safe to re-run on a table created before source existed.
+ALTER TABLE driver_expenses ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'admin' CHECK (source IN ('admin','driver'));
 CREATE INDEX IF NOT EXISTS driver_expenses_driver_id_idx ON driver_expenses (driver_id);
 
 ALTER TABLE driver_expenses ENABLE ROW LEVEL SECURITY;

@@ -19,13 +19,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /admin and /api live outside app/[locale]/** (they're the booking
-  // backend, not the public bilingual marketing site) and must never be
-  // rewritten onto the /en/... segment.
+  // /admin, /api and /driver live outside app/[locale]/** (they're the
+  // booking backend and the driver self-service portal, not the public
+  // bilingual marketing site) and must never be rewritten onto /en/...
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/driver") ||
     /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();
