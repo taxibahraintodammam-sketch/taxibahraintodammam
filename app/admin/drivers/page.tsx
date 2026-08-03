@@ -3,12 +3,40 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { driverService, Driver } from '@/lib/driverService';
+import { driverService, Driver, DriverExpense, DriverExpenseCategory } from '@/lib/driverService';
 import { Button } from '@/components/ui/button';
 import {
     CheckCircle, XCircle, RotateCcw, Phone, Mail, MapPin, Car,
-    Calendar, MessageCircle, StickyNote, Save, Loader2, Check
+    Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
+    Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
+    ChevronUp, Plus, Trash2, Image as ImageIcon
 } from 'lucide-react';
+
+const CATEGORY_META: Record<DriverExpenseCategory, { label: string; color: string; icon: typeof Fuel }> = {
+    fuel: { label: 'Fuel', color: 'bg-blue-100 text-blue-800', icon: Fuel },
+    maintenance: { label: 'Maintenance', color: 'bg-purple-100 text-purple-800', icon: Wrench },
+    advance: { label: 'Advance', color: 'bg-emerald-100 text-emerald-800', icon: Wallet },
+    penalty: { label: 'Penalty', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
+    other: { label: 'Other', color: 'bg-gray-100 text-gray-800', icon: MoreHorizontal },
+};
+
+const formatAmount = (amount: number, currency: string) =>
+    `${currency} ${amount.toFixed(currency === 'BHD' ? 3 : 2)}`;
+
+const sumByCurrency = (list: DriverExpense[]) =>
+    list.reduce((acc, e) => {
+        acc[e.currency] = (acc[e.currency] || 0) + e.amount;
+        return acc;
+    }, {} as Record<string, number>);
+
+const emptyExpenseForm = () => ({
+    category: 'fuel' as DriverExpenseCategory,
+    amount: '',
+    currency: 'BHD',
+    expense_date: new Date().toISOString().slice(0, 10),
+    description: '',
+    file: null as File | null,
+});
 
 export default function AdminDriversPage() {
     const router = useRouter();
@@ -19,10 +47,20 @@ export default function AdminDriversPage() {
     const [savingNotes, setSavingNotes] = useState<string | null>(null);
     const [notesSaved, setNotesSaved] = useState<string | null>(null);
 
+    // Fuel / maintenance / advance / penalty expense ledger per driver
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [expenses, setExpenses] = useState<{ [driverId: string]: DriverExpense[] }>({});
+    const [allExpenses, setAllExpenses] = useState<DriverExpense[]>([]);
+    const [loadingExpenses, setLoadingExpenses] = useState<string | null>(null);
+    const [expenseForm, setExpenseForm] = useState(emptyExpenseForm());
+    const [savingExpense, setSavingExpense] = useState(false);
+    const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) { router.push('/admin/login'); return; }
             loadDrivers();
+            loadAllExpenses();
         });
     }, [router]);
 
@@ -82,6 +120,85 @@ export default function AdminDriversPage() {
         }
     };
 
+    const loadAllExpenses = async () => {
+        try {
+            const data = await driverService.getAllExpenses();
+            setAllExpenses(data);
+        } catch (error) {
+            console.error('Error loading fleet expenses:', error);
+        }
+    };
+
+    const toggleExpenses = async (driverId: string) => {
+        if (expandedId === driverId) { setExpandedId(null); return; }
+        setExpandedId(driverId);
+        setExpenseForm(emptyExpenseForm());
+        if (!expenses[driverId]) {
+            setLoadingExpenses(driverId);
+            try {
+                const data = await driverService.getExpenses(driverId);
+                setExpenses(prev => ({ ...prev, [driverId]: data }));
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+            } finally {
+                setLoadingExpenses(null);
+            }
+        }
+    };
+
+    const handleAddExpense = async (driverId: string) => {
+        const amountNum = parseFloat(expenseForm.amount);
+        if (!amountNum || amountNum <= 0) { alert('Enter a valid amount'); return; }
+
+        setSavingExpense(true);
+        try {
+            let receipt_url: string | undefined;
+            if (expenseForm.file) {
+                const url = await driverService.uploadReceipt(expenseForm.file);
+                if (!url) {
+                    alert('Receipt upload failed. Ensure the "driver-receipts" bucket exists in Supabase Storage.');
+                    setSavingExpense(false);
+                    return;
+                }
+                receipt_url = url;
+            }
+
+            const newExpense = await driverService.addExpense({
+                driver_id: driverId,
+                category: expenseForm.category,
+                amount: amountNum,
+                currency: expenseForm.currency,
+                expense_date: expenseForm.expense_date,
+                description: expenseForm.description || undefined,
+                receipt_url,
+            });
+
+            setExpenses(prev => ({ ...prev, [driverId]: [newExpense, ...(prev[driverId] || [])] }));
+            setAllExpenses(prev => [newExpense, ...prev]);
+            setExpenseForm({ ...emptyExpenseForm(), currency: expenseForm.currency });
+        } catch (error) {
+            console.error('Error adding expense:', error);
+            alert('Failed to add expense');
+        } finally {
+            setSavingExpense(false);
+        }
+    };
+
+    const handleDeleteExpense = async (driverId: string, expenseId: string) => {
+        if (!confirm('Delete this expense entry?')) return;
+        setDeletingExpenseId(expenseId);
+        try {
+            await driverService.deleteExpense(expenseId);
+            setExpenses(prev => ({ ...prev, [driverId]: (prev[driverId] || []).filter(e => e.id !== expenseId) }));
+            setAllExpenses(prev => prev.filter(e => e.id !== expenseId));
+        } catch (error) {
+            console.error('Error deleting expense:', error);
+            alert('Failed to delete expense');
+        } finally {
+            setDeletingExpenseId(null);
+        }
+    };
+
     const filteredDrivers = drivers.filter(d => filter === 'all' || d.status === filter);
 
     const stats = {
@@ -119,6 +236,20 @@ export default function AdminDriversPage() {
                         <div className="text-2xl sm:text-3xl font-bold text-red-600">{stats.rejected}</div>
                     </div>
                 </div>
+
+                {/* Fleet-wide expense total */}
+                {allExpenses.length > 0 && (
+                    <div className="bg-white rounded-lg p-4 sm:p-6 border-2 border-blue-200 mb-8 flex flex-wrap items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-600 flex items-center gap-1.5">
+                            <Wallet className="w-4 h-4 text-blue-600" /> Total Fleet Spend:
+                        </span>
+                        {Object.entries(sumByCurrency(allExpenses)).map(([cur, amt]) => (
+                            <span key={cur} className="px-3 py-1 rounded-full bg-blue-600 text-white text-sm font-bold">
+                                {formatAmount(amt, cur)}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
                 {/* Filters */}
                 <div className="bg-white rounded-lg p-4 mb-6 border-2 border-gray-200">
@@ -243,7 +374,156 @@ export default function AdminDriversPage() {
                                     >
                                         <MessageCircle className="w-4 h-4" /> WhatsApp
                                     </a>
+                                    <Button
+                                        onClick={() => toggleExpenses(driver.id)}
+                                        variant="outline"
+                                        className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                                    >
+                                        <Wallet className="w-4 h-4 mr-2" />
+                                        Expenses{expenses[driver.id] ? ` (${expenses[driver.id].length})` : ''}
+                                        {expandedId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
                                 </div>
+
+                                {/* Expense ledger — fuel, maintenance, advance, penalty */}
+                                {expandedId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        {(() => {
+                                            const list = expenses[driver.id] || [];
+                                            const totals = Object.entries(sumByCurrency(list));
+                                            return totals.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {totals.map(([cur, amt]) => (
+                                                        <span key={cur} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-bold">
+                                                            Total spent: {formatAmount(amt, cur)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : null;
+                                        })()}
+
+                                        {/* Add expense */}
+                                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4">
+                                            <p className="text-xs font-bold text-blue-700 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                                                <Fuel className="w-3.5 h-3.5" /> Add Expense
+                                            </p>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                                                <select
+                                                    value={expenseForm.category}
+                                                    onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value as DriverExpenseCategory })}
+                                                    className="text-sm border border-blue-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                >
+                                                    {Object.entries(CATEGORY_META).map(([key, meta]) => (
+                                                        <option key={key} value={key}>{meta.label}</option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.001"
+                                                    placeholder="Amount"
+                                                    value={expenseForm.amount}
+                                                    onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                                                    className="text-sm border border-blue-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                />
+                                                <select
+                                                    value={expenseForm.currency}
+                                                    onChange={e => setExpenseForm({ ...expenseForm, currency: e.target.value })}
+                                                    className="text-sm border border-blue-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                >
+                                                    <option value="BHD">BHD</option>
+                                                    <option value="SAR">SAR</option>
+                                                </select>
+                                                <input
+                                                    type="date"
+                                                    value={expenseForm.expense_date}
+                                                    onChange={e => setExpenseForm({ ...expenseForm, expense_date: e.target.value })}
+                                                    className="text-sm border border-blue-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                                <textarea
+                                                    value={expenseForm.description}
+                                                    onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                                                    placeholder="Note (e.g. full tank at ADNOC, Manama)"
+                                                    rows={1}
+                                                    className="flex-1 text-sm bg-white border border-blue-200 rounded-lg p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder:text-blue-300 text-gray-700"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={e => setExpenseForm({ ...expenseForm, file: e.target.files?.[0] || null })}
+                                                    className="text-xs text-blue-700 file:mr-2 file:py-2 file:px-2.5 file:rounded-lg file:border-0 file:bg-blue-200 file:text-blue-800 file:text-xs file:font-semibold"
+                                                />
+                                            </div>
+                                            <Button
+                                                onClick={() => handleAddExpense(driver.id)}
+                                                disabled={savingExpense || !expenseForm.amount}
+                                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                            >
+                                                {savingExpense ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                                                Add Expense
+                                            </Button>
+                                        </div>
+
+                                        {/* Expense history */}
+                                        {loadingExpenses === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading expenses...</div>
+                                        ) : (expenses[driver.id] || []).length === 0 ? (
+                                            <div className="text-center py-6 text-sm text-gray-400">No expenses recorded yet</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(expenses[driver.id] || []).map(expense => {
+                                                    const meta = CATEGORY_META[expense.category];
+                                                    const Icon = meta.icon;
+                                                    return (
+                                                        <div key={expense.id} className="flex items-start justify-between gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                            <div className="flex items-start gap-3 min-w-0">
+                                                                <span className={`shrink-0 p-1.5 rounded-lg ${meta.color}`}>
+                                                                    <Icon className="w-3.5 h-3.5" />
+                                                                </span>
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                        <span className="text-sm font-bold text-gray-900">{formatAmount(expense.amount, expense.currency)}</span>
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${meta.color}`}>{meta.label}</span>
+                                                                        <span className="text-xs text-gray-400">
+                                                                            {new Date(expense.expense_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                        </span>
+                                                                    </div>
+                                                                    {expense.description && (
+                                                                        <p className="text-xs text-gray-500 mt-0.5 truncate">{expense.description}</p>
+                                                                    )}
+                                                                    {expense.receipt_url && (
+                                                                        <a
+                                                                            href={expense.receipt_url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1"
+                                                                        >
+                                                                            <ImageIcon className="w-3 h-3" /> View receipt
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteExpense(driver.id, expense.id)}
+                                                                disabled={deletingExpenseId === expense.id}
+                                                                className="shrink-0 text-gray-300 hover:text-red-600 transition-colors p-1"
+                                                                title="Delete"
+                                                            >
+                                                                {deletingExpenseId === expense.id
+                                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    : <Trash2 className="w-4 h-4" />}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

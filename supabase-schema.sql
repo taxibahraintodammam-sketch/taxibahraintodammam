@@ -265,6 +265,32 @@ CREATE POLICY "Admin full access" ON drivers
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------------------------
+-- driver_expenses — company-side money-out ledger per driver (fuel,
+-- maintenance, salary advance, penalty deductions). Admin-only: no public
+-- access, since it's internal financials. Receipt/fuel-slip photos are
+-- uploaded to the 'driver-receipts' Storage bucket (create it manually in
+-- the Supabase Dashboard -> Storage -> New bucket -> public, same as
+-- 'blog-images') and only the resulting public URL is stored here.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_expenses (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id     uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  category      text NOT NULL DEFAULT 'fuel' CHECK (category IN ('fuel','maintenance','advance','penalty','other')),
+  amount        numeric NOT NULL,
+  currency      text NOT NULL DEFAULT 'BHD',
+  expense_date  date NOT NULL DEFAULT current_date,
+  description   text,
+  receipt_url   text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_expenses_driver_id_idx ON driver_expenses (driver_id);
+
+ALTER TABLE driver_expenses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_expenses;
+CREATE POLICY "Admin full access" ON driver_expenses
+  FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
 -- Admin-only utility tables (no public access at all) — every one of these
 -- already shipped a matching CREATE TABLE snippet inline in its admin page;
 -- collected here verbatim so the whole schema lives in one file.

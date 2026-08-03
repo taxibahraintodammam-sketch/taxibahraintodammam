@@ -13,6 +13,20 @@ export interface Driver {
     reviewed_at?: string;
 }
 
+export type DriverExpenseCategory = 'fuel' | 'maintenance' | 'advance' | 'penalty' | 'other';
+
+export interface DriverExpense {
+    id: string;
+    driver_id: string;
+    category: DriverExpenseCategory;
+    amount: number;
+    currency: string;
+    expense_date: string;
+    description?: string;
+    receipt_url?: string;
+    created_at: string;
+}
+
 export const driverService = {
     // Get all driver applications (admin)
     async getAllDrivers() {
@@ -75,5 +89,76 @@ export const driverService = {
 
         if (error) throw error;
         return data as Driver;
+    },
+
+    // Get every expense entry across all drivers (admin) — used for fleet-wide totals
+    async getAllExpenses() {
+        const { data, error } = await supabase
+            .from('driver_expenses')
+            .select('*')
+            .order('expense_date', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverExpense[];
+    },
+
+    // Get expense history for one driver (admin)
+    async getExpenses(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_expenses')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('expense_date', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverExpense[];
+    },
+
+    // Log a new expense (fuel, maintenance, advance, penalty, other) against a driver (admin)
+    async addExpense(expense: Omit<DriverExpense, 'id' | 'created_at'>) {
+        const { data, error } = await supabase
+            .from('driver_expenses')
+            .insert(expense)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as DriverExpense;
+    },
+
+    // Delete an expense entry (admin)
+    async deleteExpense(id: string) {
+        const { error } = await supabase
+            .from('driver_expenses')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    // Upload a receipt/fuel-slip photo to the 'driver-receipts' Supabase Storage bucket
+    async uploadReceipt(file: File): Promise<string | null> {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('driver-receipts')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                console.error('Error uploading receipt:', uploadError);
+                return null;
+            }
+
+            const { data } = supabase.storage
+                .from('driver-receipts')
+                .getPublicUrl(fileName);
+
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Exception uploading receipt:', error);
+            return null;
+        }
     },
 };
