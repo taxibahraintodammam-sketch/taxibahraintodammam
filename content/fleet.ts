@@ -30,16 +30,16 @@ export const FLEET: FleetVehicle[] = [
   {
     slug: "sedan-camry-sonata",
     vehicle: "sedan",
-    name: "Sedan — Camry / Sonata class",
+    name: "Sedan — Toyota Camry",
     tagline: "The standard corridor car: quiet, air-conditioned, built for the causeway run.",
     passengers: "1–3 passengers",
     luggage: "2 large suitcases + hand luggage",
     bestFor: "Solo travellers, couples, and standard business trips",
-    metaTitle: "Sedan Taxi (Camry / Sonata Class) | Bahrain–Saudi Arabia",
+    metaTitle: "Sedan Taxi (Toyota Camry) | Bahrain–Saudi Arabia",
     metaDescription:
-      "Toyota Camry or Hyundai Sonata class sedan for cross-border trips between Bahrain and Saudi Arabia. 1–3 passengers, fixed fare. Book on WhatsApp.",
+      "Toyota Camry sedan for cross-border trips between Bahrain and Saudi Arabia. 1–3 passengers, fixed fare. Book on WhatsApp.",
     intro: [
-      "Our sedan class runs on a Toyota Camry or Hyundai Sonata standard — a comfortable, air-conditioned four-door car that covers the large majority of our corridor bookings. It's the default choice for one to three passengers with normal luggage, on every route from the standard Bahrain–Dammam run through to the Riyadh long-haul.",
+      "Our sedan class is the Toyota Camry — a comfortable, air-conditioned four-door car that covers the large majority of our corridor bookings. It's the default choice for one to three passengers with normal luggage, on every route from the standard Bahrain–Dammam run through to the Riyadh long-haul.",
       "Every sedan on our fleet is maintained to a standard suited for several hours on the road, not just short city trips, since a number of our routes run well beyond an hour each way.",
     ],
     sections: [
@@ -71,7 +71,7 @@ export const FLEET: FleetVehicle[] = [
       {
         question: "Can I request a specific sedan model?",
         answer:
-          "We assign from our Camry/Sonata-class fleet based on availability rather than guaranteeing a specific model, though both offer a comparable standard of comfort for this route type.",
+          "Our sedan class runs on the Toyota Camry specifically, so what you book is what you get for this vehicle class.",
       },
     ],
     commonRoutes: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "taxi-bahrain-to-qatif"],
@@ -79,16 +79,16 @@ export const FLEET: FleetVehicle[] = [
   {
     slug: "suv-gmc-tahoe",
     vehicle: "suv",
-    name: "SUV — GMC Tahoe class",
+    name: "SUV — GMC Yukon / Hyundai Staria VIP",
     tagline: "Extra space and ground clearance for families or extra luggage.",
     passengers: "1–4 passengers",
     luggage: "3 large suitcases + hand luggage",
     bestFor: "Families, golf bags, and airport runs with extra bags",
-    metaTitle: "SUV Taxi (GMC Tahoe Class) | Bahrain–Saudi Arabia",
+    metaTitle: "SUV Taxi (GMC Yukon / Hyundai Staria) | Bahrain–Saudi Arabia",
     metaDescription:
-      "GMC Tahoe class SUV for cross-border family and business trips between Bahrain and Saudi Arabia. 1–4 passengers, extra luggage space. Book on WhatsApp.",
+      "GMC Yukon XL or Hyundai Staria VIP SUV for cross-border family and business trips between Bahrain and Saudi Arabia. 1–4 passengers, extra luggage space. Book on WhatsApp.",
     intro: [
-      "Our SUV class runs on a GMC Tahoe standard, offering the same one-to-four passenger capacity as a sedan with meaningfully more boot space — a third large suitcase's worth of room, plus better ground clearance and a higher driving position that some passengers simply prefer for a longer trip.",
+      "Our SUV class runs on a GMC Yukon XL or Hyundai Staria VIP standard, offering the same one-to-four passenger capacity as a sedan with meaningfully more boot space — a third large suitcase's worth of room, plus better ground clearance and a higher driving position that some passengers simply prefer for a longer trip.",
       "It's the vehicle most families choose for the standard corridor routes and airport transfers when a couple of extra bags push past what a sedan comfortably carries.",
     ],
     sections: [
@@ -127,16 +127,16 @@ export const FLEET: FleetVehicle[] = [
   {
     slug: "van-hiace-hyundai-h1",
     vehicle: "van",
-    name: "Van — Hiace / Hyundai H1 class",
+    name: "Van — Hiace / Starex / Sprinter class",
     tagline: "Group transfers without splitting the party across two cars.",
     passengers: "Up to 7 passengers",
     luggage: "6 large suitcases",
     bestFor: "Groups, extended families, and crew transfers",
-    metaTitle: "Van Taxi (Hiace / Hyundai H1 Class) | Bahrain–Saudi Arabia",
+    metaTitle: "Van Taxi (Hiace / Starex / Sprinter) | Bahrain–Saudi Arabia",
     metaDescription:
-      "Toyota Hiace or Hyundai H1 class van for group and family transfers between Bahrain and Saudi Arabia. Up to 7 passengers, 6 suitcases. Book on WhatsApp.",
+      "Toyota Hiace, Hyundai Starex, or Mercedes Sprinter van for group and family transfers between Bahrain and Saudi Arabia. Up to 7 passengers, 6 suitcases. Book on WhatsApp.",
     intro: [
-      "Our van class runs on a Toyota Hiace or Hyundai H1 standard, seating up to seven passengers with room for six large suitcases — enough for a full family or small group to travel together in one vehicle rather than splitting across two sedans.",
+      "Our van class runs on a Toyota Hiace, Hyundai Starex, or Mercedes Sprinter standard, seating up to seven passengers with room for six large suitcases — enough for a full family or small group to travel together in one vehicle rather than splitting across two sedans.",
       "It's the vehicle of choice for larger family visits, colleague groups travelling together, and any booking where keeping everyone in one car through both immigration posts matters as much as the seating itself.",
     ],
     sections: [
@@ -175,16 +175,16 @@ export const FLEET: FleetVehicle[] = [
   {
     slug: "luxury-mercedes-s-class",
     vehicle: "luxury",
-    name: "Luxury — Mercedes S-Class",
+    name: "Luxury — Mercedes S-Class / BMW 7 Series",
     tagline: "A chauffeur-grade cabin for executive travel and VIP arrivals.",
     passengers: "1–3 passengers",
     luggage: "2 large suitcases",
     bestFor: "Executives, VIP airport meet-and-greet, and special occasions",
-    metaTitle: "Luxury Mercedes S-Class Taxi | Bahrain–Saudi Arabia",
+    metaTitle: "Luxury Mercedes S-Class / BMW 7 Series Taxi | Bahrain–Saudi Arabia",
     metaDescription:
-      "Mercedes S-Class chauffeur vehicle for executive and VIP cross-border transfers between Bahrain and Saudi Arabia. Fixed fare. Book on WhatsApp.",
+      "Mercedes S-Class or BMW 7 Series chauffeur vehicle for executive and VIP cross-border transfers between Bahrain and Saudi Arabia. Fixed fare. Book on WhatsApp.",
     intro: [
-      "Our luxury class is a Mercedes S-Class chauffeur vehicle, used for executive travel, VIP airport meet-and-greet, and any trip where the standard of the vehicle and driver presentation matters as much as the route itself.",
+      "Our luxury class is a Mercedes S-Class or BMW 7 Series chauffeur vehicle, used for executive travel, VIP airport meet-and-greet, and any trip where the standard of the vehicle and driver presentation matters as much as the route itself.",
       "It's available on every corridor route at the same fixed-fare, tolls-included structure as our other vehicle classes, simply at the higher price point that reflects the vehicle standard.",
     ],
     sections: [
@@ -233,7 +233,7 @@ export const FLEET: FleetVehicle[] = [
       "30-seat coaster bus for large group transfers between Bahrain and Saudi Arabia via the King Fahd Causeway. Underfloor luggage hold, fixed fare. Contact us on WhatsApp.",
     intro: [
       "Our 30-seat coaster bus covers large group transfers across the King Fahd Causeway — corporate delegations, school and sports teams, and event groups who need one vehicle and one fare rather than coordinating several smaller cars.",
-      "It includes an underfloor luggage hold separate from the passenger cabin, and runs the same fixed-fare, tolls-included structure as our other vehicle classes, scaled for the larger vehicle.",
+      "It includes an underfloor luggage hold separate from the passenger cabin, and runs the same fixed-fare, tolls-included structure as our other vehicle classes, scaled for the larger vehicle. A premium Luxurious Bus is also available in this class for groups wanting a higher standard of coach.",
     ],
     sections: [
       {

@@ -1,5 +1,17 @@
 import { BUSINESS, SITE_URL } from "@/content/business";
+import { ROUTE_FARES } from "@/content/fares";
+import { SERVICES } from "@/content/services";
 import { absoluteUrl } from "@/lib/url";
+
+// Derived from the real fare data instead of a hand-typed literal, so this
+// never drifts from content/fares.ts / content/services.ts again the way
+// the old hardcoded "BHD 10 - BHD 60" range did.
+const ALL_PRICES_BHD = [
+  ...Object.values(ROUTE_FARES).flatMap((fares) => fares.map((f) => f.bhd)),
+  ...SERVICES.map((s) => s.minPriceBhd),
+];
+const MIN_PRICE_BHD = Math.min(...ALL_PRICES_BHD);
+const MAX_PRICE_BHD = Math.max(...ALL_PRICES_BHD);
 
 /** JSON-LD is data we build ourselves (no raw user input), but we still
  * escape "<" so a value can never prematurely close the </script> tag. */
@@ -20,10 +32,13 @@ export function localBusinessSchema() {
     url: absoluteUrl("/"),
     image: absoluteUrl("/opengraph-image"),
     telephone: BUSINESS.phoneE164,
-    priceRange: "BHD 10 - BHD 60",
+    priceRange: `BHD ${MIN_PRICE_BHD} - BHD ${MAX_PRICE_BHD}`,
     address: {
       "@type": "PostalAddress",
-      streetAddress: BUSINESS.addressLine,
+      // Street-level address is still an unconfirmed FILL_ME placeholder
+      // (see content/business.ts) — omit it rather than publish that literal
+      // text as structured data until the owner supplies the real address.
+      ...(BUSINESS.addressLine.startsWith("FILL_ME") ? {} : { streetAddress: BUSINESS.addressLine }),
       addressLocality: BUSINESS.addressLocality,
       addressCountry: BUSINESS.addressCountry,
     },

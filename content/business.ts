@@ -9,7 +9,7 @@ export const SITE_URL = "https://taxibahraintodammam.com";
 export const BUSINESS = {
   legalName: "Taxi Bahrain to Dammam", // FILL_ME: confirm registered trade name
   brandName: "Taxi Bahrain to Dammam",
-  founderName: "Fahad",
+  founderName: "Fahed Irshad",
   founderExperienceYears: 15,
   phoneDisplay: "+973 3501 4335",
   phoneE164: "+97335014335",

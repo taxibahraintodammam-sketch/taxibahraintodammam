@@ -33,7 +33,7 @@ const COPY: Record<
       {
         heading: "Meet the Founder",
         paragraphs: [
-          "Taxi Bahrain to Dammam was founded by Fahad, who spent 15 years working in the transportation industry before building this operator around the Bahrain–Saudi Arabia corridor specifically.",
+          "Taxi Bahrain to Dammam was founded by Fahed Irshad, who spent 15 years working in the transportation industry before building this operator around the Bahrain–Saudi Arabia corridor specifically.",
           "That background — knowing how the King Fahd Causeway crossing actually runs, day to day, in both directions — is why the service is built around fixed fares, licensed drivers, and one corridor done properly, rather than a general taxi operation that also happens to cross the border.",
         ],
       },
@@ -77,7 +77,7 @@ const COPY: Record<
       {
         heading: "تعرف على المؤسس",
         paragraphs: [
-          "تأسست شركة تاكسي البحرين إلى الدمام على يد فهد، الذي أمضى 15 عامًا في العمل بقطاع النقل قبل أن يبني هذه الشركة حول ممر البحرين–السعودية تحديدًا.",
+          "تأسست شركة تاكسي البحرين إلى الدمام على يد فهد إرشاد، الذي أمضى 15 عامًا في العمل بقطاع النقل قبل أن يبني هذه الشركة حول ممر البحرين–السعودية تحديدًا.",
           "هذه الخبرة — معرفة كيف يسير عبور جسر الملك فهد فعليًا، يومًا بعد يوم وفي الاتجاهين — هي سبب بناء الخدمة حول أسعار ثابتة وسائقين مرخّصين وممر واحد يُنفَّذ باحتراف، بدلًا من شركة تاكسي عامة تصادف أنها تعبر الحدود أيضًا.",
         ],
       },
