@@ -3,6 +3,7 @@ import type { PickupArea } from "@/content/pickup-areas";
 export const PICKUP_AREAS_AR: PickupArea[] = [
   {
     slug: "manama",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "corporate-accounts"],
     name: "المنامة",
     metaTitle: "استلام تاكسي من المنامة | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -54,6 +55,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "juffair",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "hourly-chauffeur-hire"],
     name: "الجفير",
     metaTitle: "استلام تاكسي من الجفير | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -99,6 +101,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "seef",
+    related: ["taxi-bahrain-to-khobar", "taxi-bahrain-to-dammam", "family-van-transfer"],
     name: "السيف",
     metaTitle: "استلام تاكسي من السيف | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -144,6 +147,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "muharraq",
+    related: ["bahrain-airport-to-dammam-taxi", "airport-transfers", "taxi-bahrain-to-dammam"],
     name: "المحرق",
     metaTitle: "استلام تاكسي من المحرق | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -189,6 +193,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "riffa",
+    related: ["taxi-bahrain-to-dammam", "family-van-transfer", "taxi-bahrain-to-khobar"],
     name: "الرفاع",
     metaTitle: "استلام تاكسي من الرفاع | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -234,6 +239,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "adliya",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "hourly-chauffeur-hire"],
     name: "العدلية",
     metaTitle: "استلام تاكسي من العدلية | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -279,6 +285,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "amwaj-islands",
+    related: ["taxi-bahrain-to-dammam", "family-van-transfer", "airport-transfers"],
     name: "جزر أمواج",
     metaTitle: "استلام تاكسي من جزر أمواج | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -324,6 +331,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "budaiya",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "fleet"],
     name: "البديع",
     metaTitle: "استلام تاكسي من البديع | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -369,6 +377,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "isa-town",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "family-van-transfer"],
     name: "مدينة عيسى",
     metaTitle: "استلام تاكسي من مدينة عيسى | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -414,6 +423,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "hamad-town",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "family-van-transfer"],
     name: "مدينة حمد",
     metaTitle: "استلام تاكسي من مدينة حمد | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -459,6 +469,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "sitra",
+    related: ["taxi-bahrain-to-dammam", "corporate-accounts", "taxi-bahrain-to-khobar"],
     name: "سترة",
     metaTitle: "استلام تاكسي من سترة | البحرين إلى الدمام وما بعدها",
     metaDescription:
@@ -504,6 +515,7 @@ export const PICKUP_AREAS_AR: PickupArea[] = [
   },
   {
     slug: "bahrain-airport",
+    related: ["bahrain-airport-to-dammam-taxi", "airport-transfers", "vip-luxury-transfer"],
     name: "مطار البحرين",
     metaTitle: "استلام تاكسي من مطار البحرين | BAH إلى الدمام وما بعدها",
     metaDescription:

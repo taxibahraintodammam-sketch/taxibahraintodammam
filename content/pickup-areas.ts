@@ -17,12 +17,14 @@ export type PickupArea = {
   sections: PickupSection[];
   faqs: PickupFaq[];
   causewayTimeLabel: string;
+  related: string[];
 };
 
 export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "manama",
     name: "Manama",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "corporate-accounts"],
     metaTitle: "Taxi Pickup in Manama | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Manama for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -76,6 +78,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "juffair",
     name: "Juffair",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "hourly-chauffeur-hire"],
     metaTitle: "Taxi Pickup in Juffair | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Juffair for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -129,6 +132,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "seef",
     name: "Seef",
+    related: ["taxi-bahrain-to-khobar", "taxi-bahrain-to-dammam", "family-van-transfer"],
     metaTitle: "Taxi Pickup in Seef | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Seef for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -182,6 +186,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "muharraq",
     name: "Muharraq",
+    related: ["bahrain-airport-to-dammam-taxi", "airport-transfers", "taxi-bahrain-to-dammam"],
     metaTitle: "Taxi Pickup in Muharraq | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Muharraq for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -235,6 +240,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "riffa",
     name: "Riffa",
+    related: ["taxi-bahrain-to-dammam", "family-van-transfer", "taxi-bahrain-to-khobar"],
     metaTitle: "Taxi Pickup in Riffa | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Riffa for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -288,6 +294,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "adliya",
     name: "Adliya",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "hourly-chauffeur-hire"],
     metaTitle: "Taxi Pickup in Adliya | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Adliya for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -341,6 +348,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "amwaj-islands",
     name: "Amwaj Islands",
+    related: ["taxi-bahrain-to-dammam", "family-van-transfer", "airport-transfers"],
     metaTitle: "Taxi Pickup in Amwaj Islands | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Amwaj Islands for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -394,6 +402,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "budaiya",
     name: "Budaiya",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "fleet"],
     metaTitle: "Taxi Pickup in Budaiya | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Budaiya for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -447,6 +456,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "isa-town",
     name: "Isa Town",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "family-van-transfer"],
     metaTitle: "Taxi Pickup in Isa Town | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Isa Town for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -500,6 +510,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "hamad-town",
     name: "Hamad Town",
+    related: ["taxi-bahrain-to-dammam", "taxi-bahrain-to-khobar", "family-van-transfer"],
     metaTitle: "Taxi Pickup in Hamad Town | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Hamad Town for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -553,6 +564,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "sitra",
     name: "Sitra",
+    related: ["taxi-bahrain-to-dammam", "corporate-accounts", "taxi-bahrain-to-khobar"],
     metaTitle: "Taxi Pickup in Sitra | Bahrain to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup in Sitra for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Fixed fare, causeway crossing included.",
@@ -606,6 +618,7 @@ export const PICKUP_AREAS: PickupArea[] = [
   {
     slug: "bahrain-airport",
     name: "Bahrain Airport",
+    related: ["bahrain-airport-to-dammam-taxi", "airport-transfers", "vip-luxury-transfer"],
     metaTitle: "Taxi Pickup at Bahrain Airport | BAH to Dammam & Beyond",
     metaDescription:
       "Book a taxi pickup at Bahrain International Airport (BAH) for Dammam, Khobar, and the rest of the Bahrain–Saudi Arabia corridor. Flight tracking included.",

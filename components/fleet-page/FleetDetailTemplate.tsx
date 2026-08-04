@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { FleetVehicle } from "@/content/fleet";
+import { minFareForVehicleClass } from "@/content/fares";
 import { resolveRelatedLink } from "@/lib/related-links";
 import { withSlash } from "@/lib/url";
 import { serviceSchema, faqPageSchema, breadcrumbSchema } from "@/lib/schema";
@@ -36,7 +37,7 @@ export function FleetDetailTemplate({
           description: vehicle.metaDescription,
           serviceType: "Vehicle hire",
           areaServed: ["Bahrain", "Saudi Arabia"],
-          minPriceBhd: 0,
+          minPriceBhd: minFareForVehicleClass(vehicle.vehicle) ?? 0,
         })}
       />
       {vehicle.faqs.length > 0 && <SchemaScript data={faqPageSchema(vehicle.faqs)} />}

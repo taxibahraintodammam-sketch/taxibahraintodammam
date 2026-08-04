@@ -144,6 +144,16 @@ export function lowestFare(slug: string): RouteFare | undefined {
   return fares.reduce((min, f) => (f.bhd < min.bhd ? f : min), fares[0]);
 }
 
+// Cheapest published fare for a vehicle class across every route — used for
+// "starting from" figures on fleet pages instead of a hand-typed number.
+export function minFareForVehicleClass(vehicle: VehicleClass): number | undefined {
+  const prices = Object.values(ROUTE_FARES)
+    .flat()
+    .filter((f) => f.vehicle === vehicle)
+    .map((f) => f.bhd);
+  return prices.length > 0 ? Math.min(...prices) : undefined;
+}
+
 export function fareWithSar(fare: RouteFare) {
   return { ...fare, sar: sarFromBhd(fare.bhd) };
 }

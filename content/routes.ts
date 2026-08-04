@@ -576,7 +576,7 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: ["bahrain-airport"],
     faqs: [
       {
         question: "Do you meet me inside the terminal at BAH?",
@@ -910,7 +910,20 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "Is Bahrain to Riyadh really doable in one taxi ride?",
@@ -1014,7 +1027,20 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "Can you drop off directly at my compound gate in Jubail?",
@@ -1117,7 +1143,20 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "Can you drop us at a specific family address in Hofuf?",
@@ -1220,7 +1259,20 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "Can you drop off at my residential compound in Ras Tanura?",
@@ -1328,7 +1380,20 @@ export const ROUTES: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "Can you drop off directly at my compound in Abqaiq?",

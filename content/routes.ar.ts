@@ -434,7 +434,7 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: ["bahrain-airport"],
     faqs: [
       {
         question: "هل تستقبلونني داخل محطة BAH؟",
@@ -684,7 +684,20 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "هل يمكن فعلًا قطع البحرين إلى الرياض برحلة تاكسي واحدة؟",
@@ -769,7 +782,20 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "هل يمكنكم التوصيل مباشرة عند بوابة مجمعي في الجبيل؟",
@@ -848,7 +874,20 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "هل يمكنكم التوصيل عند عنوان عائلي محدد في الهفوف؟",
@@ -927,7 +966,20 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "هل يمكنكم التوصيل عند مجمعي السكني في رأس تنورة؟",
@@ -1006,7 +1058,20 @@ export const ROUTES_AR: RouteContent[] = [
         ],
       },
     ],
-    pickupAreas: [],
+    pickupAreas: [
+      "manama",
+      "juffair",
+      "seef",
+      "muharraq",
+      "riffa",
+      "adliya",
+      "amwaj-islands",
+      "budaiya",
+      "isa-town",
+      "hamad-town",
+      "sitra",
+      "bahrain-airport",
+    ],
     faqs: [
       {
         question: "هل يمكنكم التوصيل مباشرة عند مجمعي في بقيق؟",

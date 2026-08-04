@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/content/business";
 import { PICKUP_AREAS } from "@/content/pickup-areas";
 import { FLEET } from "@/content/fleet";
-import { getPostSlugs } from "@/lib/posts";
+import { getAllPostsMeta } from "@/lib/posts";
 
 // Static page folders under app/[locale]/** (excluding dynamic segments,
 // which are enumerated separately below from their content source).
@@ -24,7 +24,6 @@ const STATIC_PATHS = [
   "fleet",
   "hourly-chauffeur-hire",
   "king-fahd-causeway-taxi",
-  "pickup",
   "privacy-policy",
   "reviews",
   "taxi-bahrain-to-abqaiq",
@@ -53,10 +52,17 @@ function priorityFor(path: string): number {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // Only blog posts carry a real per-page "last modified" fact (frontmatter
+  // dateModified). Stamping every other page with `new Date()` on every
+  // build made lastmod meaningless, so those are left unset instead.
+  const postLastModified = new Map(
+    getAllPostsMeta("en").map((post) => [`blog/${post.slug}`, post.dateModified])
+  );
+
   const dynamicPaths = [
     ...PICKUP_AREAS.map((area) => `pickup/${area.slug}`),
     ...FLEET.map((vehicle) => `fleet/${vehicle.slug}`),
-    ...getPostSlugs("en").map((slug) => `blog/${slug}`),
+    ...[...postLastModified.keys()],
   ];
 
   const allPaths = [...STATIC_PATHS, ...dynamicPaths];
@@ -65,17 +71,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const enUrl = path ? `${SITE_URL}/${path}/` : `${SITE_URL}/`;
     const arUrl = `${SITE_URL}/ar/${path}${path ? "/" : ""}`;
     const priority = priorityFor(path);
+    const lastModified = postLastModified.get(path);
 
     return [
       {
         url: enUrl,
-        lastModified: new Date(),
+        ...(lastModified ? { lastModified } : {}),
         priority,
         alternates: { languages: { en: enUrl, ar: arUrl } },
       },
       {
         url: arUrl,
-        lastModified: new Date(),
+        ...(lastModified ? { lastModified } : {}),
         priority,
         alternates: { languages: { en: enUrl, ar: arUrl } },
       },

@@ -8,6 +8,7 @@ import { serviceSchema, faqPageSchema, breadcrumbSchema } from "@/lib/schema";
 import { SchemaScript } from "@/components/schema/SchemaScript";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { QuoteForm } from "@/components/ui/QuoteForm";
+import { RelatedLinksSection } from "@/components/route-page/RelatedLinksSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { getDictionary, fillTemplate, type Dictionary } from "@/content/dictionary";
@@ -126,6 +127,8 @@ export function PickupPageTemplate({
           </div>
         </div>
       </section>
+
+      <RelatedLinksSection slugs={area.related} dict={dict} locale={locale} />
 
       {area.faqs.length > 0 && (
         <FaqSection
