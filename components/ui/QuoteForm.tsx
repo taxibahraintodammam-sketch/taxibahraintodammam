@@ -4,7 +4,7 @@ import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { Circle, MapPin, CalendarDays, Users, Car, Search } from "lucide-react";
 import { BUSINESS } from "@/content/business";
 
-const FROM_TO_OPTIONS = [
+export const FROM_TO_OPTIONS = [
   "Bahrain (Manama / Juffair / Seef / Riffa / Muharraq)",
   "Dammam",
   "Khobar",

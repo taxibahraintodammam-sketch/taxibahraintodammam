@@ -58,7 +58,13 @@ export function useBookingFlow() {
         if (!selectedVehicle) return;
         setLoading(true);
         try {
+            // Public visitors can only INSERT bookings (RLS has no public SELECT
+            // policy — that would let anyone read every customer's details), so
+            // chaining .select() to read the row back would fail. Generate the id
+            // client-side instead; we already know it without needing it returned.
+            const bookingId = crypto.randomUUID();
             const finalFormData = {
+                id: bookingId,
                 customer_name: customerName,
                 customer_email: customerEmail,
                 customer_phone: `${countryCode}${customerPhone}`,
@@ -77,15 +83,15 @@ export function useBookingFlow() {
                 status: 'pending' as const,
             };
 
-            const { data, error } = await supabase.from('bookings').insert([finalFormData]).select();
+            const { error } = await supabase.from('bookings').insert([finalFormData]);
             if (error) throw error;
 
-            setLastBookingId(data?.[0]?.id ?? null);
+            setLastBookingId(bookingId);
 
             fetch('/api/send-booking-emails', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ booking: data?.[0], price: 'Need Quote' }),
+                body: JSON.stringify({ booking: finalFormData, price: 'Need Quote' }),
             }).catch((err) => console.error('Email fetch failed:', err));
 
             setStep(4);
@@ -115,6 +121,7 @@ export function useBookingFlow() {
         countryCode, setCountryCode,
         openCountry, setOpenCountry,
         loading,
+        lastBookingId,
         handleBack,
         handleSubmitBooking,
         sendWhatsAppAgain,

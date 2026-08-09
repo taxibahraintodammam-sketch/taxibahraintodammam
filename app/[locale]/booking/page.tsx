@@ -4,7 +4,7 @@ import { BUSINESS, telHref, whatsappHref } from "@/content/business";
 import { breadcrumbSchema, faqPageSchema } from "@/lib/schema";
 import { SchemaScript } from "@/components/schema/SchemaScript";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { QuoteForm } from "@/components/ui/QuoteForm";
+import BookingTabs from "@/components/booking/BookingTabs";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { getDictionary } from "@/content/dictionary";
 import type { Locale } from "@/lib/locale";
@@ -158,7 +158,7 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
             </div>
           </div>
           <div className="flex items-center">
-            <QuoteForm />
+            <BookingTabs locale={locale} />
           </div>
         </div>
       </section>
