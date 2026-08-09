@@ -37,6 +37,7 @@ export function AdminShell({
         '/admin/support',
         '/admin/settings',
         '/admin/reports',
+        '/admin/fleet-expenses',
         '/admin/pricing',
         '/admin/notifications',
         '/admin/whatsapp-templates'

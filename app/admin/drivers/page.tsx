@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement, DriverVehicleMaintenance, MaintenanceServiceType } from '@/lib/driverService';
+import { driverService, Driver, DriverExpense, DriverExpenseCategory, DriverDocument, DriverDocType, DriverAdvanceRepayment, DriverSettlement, DriverVehicleMaintenance, MaintenanceServiceType, DriverVehicleChange } from '@/lib/driverService';
 import { absoluteUrl } from '@/lib/url';
 // @ts-ignore
 import html2canvas from 'html2canvas-pro';
@@ -15,7 +15,7 @@ import {
     Calendar, MessageCircle, StickyNote, Save, Loader2, Check,
     Wallet, Fuel, Wrench, AlertTriangle, MoreHorizontal, ChevronDown,
     ChevronUp, Plus, Trash2, Image as ImageIcon, UserPlus, Pencil, X,
-    CreditCard, TrendingUp, FileText, Banknote, Link2, List, Star
+    CreditCard, TrendingUp, FileText, Banknote, Link2, List, Star, History
 } from 'lucide-react';
 
 const DUTY_STATUS_META: Record<string, { label: string; color: string }> = {
@@ -185,6 +185,12 @@ export default function AdminDriversPage() {
     const [savingMaintenance, setSavingMaintenance] = useState(false);
     const [deletingMaintenanceId, setDeletingMaintenanceId] = useState<string | null>(null);
 
+    // Vehicle swap history per driver — auto-logged when a driver edits their
+    // own vehicle from the self-service portal
+    const [expandedVehicleHistoryId, setExpandedVehicleHistoryId] = useState<string | null>(null);
+    const [vehicleChanges, setVehicleChanges] = useState<{ [driverId: string]: DriverVehicleChange[] }>({});
+    const [loadingVehicleHistory, setLoadingVehicleHistory] = useState<string | null>(null);
+
     // Outstanding advance balance (advances given minus repaid) + logged payouts per period
     const [expandedSettlementId, setExpandedSettlementId] = useState<string | null>(null);
     const [advanceRepayments, setAdvanceRepayments] = useState<{ [driverId: string]: DriverAdvanceRepayment[] }>({});
@@ -332,6 +338,22 @@ export default function AdminDriversPage() {
                 console.error('Error loading maintenance records:', error);
             } finally {
                 setLoadingMaintenance(null);
+            }
+        }
+    };
+
+    const toggleVehicleHistory = async (driverId: string) => {
+        if (expandedVehicleHistoryId === driverId) { setExpandedVehicleHistoryId(null); return; }
+        setExpandedVehicleHistoryId(driverId);
+        if (!vehicleChanges[driverId]) {
+            setLoadingVehicleHistory(driverId);
+            try {
+                const data = await driverService.getVehicleChanges(driverId);
+                setVehicleChanges(prev => ({ ...prev, [driverId]: data }));
+            } catch (error) {
+                console.error('Error loading vehicle change history:', error);
+            } finally {
+                setLoadingVehicleHistory(null);
             }
         }
     };
@@ -1270,6 +1292,17 @@ export default function AdminDriversPage() {
                                             : <ChevronDown className="w-4 h-4 ml-2" />}
                                     </Button>
                                     <Button
+                                        onClick={() => toggleVehicleHistory(driver.id)}
+                                        variant="outline"
+                                        className="text-teal-700 border-teal-300 hover:bg-teal-50"
+                                    >
+                                        <History className="w-4 h-4 mr-2" />
+                                        Vehicle History{vehicleChanges[driver.id] ? ` (${vehicleChanges[driver.id].length})` : ''}
+                                        {expandedVehicleHistoryId === driver.id
+                                            ? <ChevronUp className="w-4 h-4 ml-2" />
+                                            : <ChevronDown className="w-4 h-4 ml-2" />}
+                                    </Button>
+                                    <Button
                                         onClick={() => toggleSettlement(driver.id)}
                                         variant="outline"
                                         className="text-amber-700 border-amber-300 hover:bg-amber-50"
@@ -1669,6 +1702,35 @@ export default function AdminDriversPage() {
                                                         </div>
                                                     );
                                                 })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Vehicle History — auto-logged whenever the driver edits their vehicle from the self-service portal */}
+                                {expandedVehicleHistoryId === driver.id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        {loadingVehicleHistory === driver.id ? (
+                                            <div className="text-center py-6 text-sm text-gray-500">Loading vehicle history...</div>
+                                        ) : (vehicleChanges[driver.id] || []).length === 0 ? (
+                                            <div className="text-center py-6 text-sm text-gray-400">No vehicle changes logged yet</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(vehicleChanges[driver.id] || []).map(change => (
+                                                    <div key={change.id} className="flex items-start gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                        <History className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm text-gray-900">
+                                                                <span className="text-gray-500">{change.old_vehicle_model || 'Unknown'}{change.old_vehicle_plate ? ` (${change.old_vehicle_plate})` : ''}</span>
+                                                                {' → '}
+                                                                <span className="font-bold">{change.new_vehicle_model}{change.new_vehicle_plate ? ` (${change.new_vehicle_plate})` : ''}</span>
+                                                            </p>
+                                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                                {new Date(change.changed_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>

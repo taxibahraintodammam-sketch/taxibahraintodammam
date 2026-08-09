@@ -98,6 +98,8 @@ export async function PATCH(
             return NextResponse.json({ error: 'Full name, phone, city and vehicle are required' }, { status: 400 });
         }
 
+        const vehicleChanged = vehicle_model !== driver.vehicle_model || vehicle_plate !== (driver.vehicle_plate || null);
+
         const { error } = await supabaseAdmin
             .from('drivers')
             .update({ full_name, phone_number, city, vehicle_model, vehicle_plate })
@@ -106,6 +108,19 @@ export async function PATCH(
         if (error) {
             console.error('driver-portal profile update error:', error);
             return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+        }
+
+        // Best-effort audit log — a failed insert here shouldn't undo the profile save.
+        if (vehicleChanged) {
+            supabaseAdmin.from('driver_vehicle_changes').insert({
+                driver_id: driver.id,
+                old_vehicle_model: driver.vehicle_model,
+                old_vehicle_plate: driver.vehicle_plate || null,
+                new_vehicle_model: vehicle_model,
+                new_vehicle_plate: vehicle_plate,
+            }).then(({ error: logError }) => {
+                if (logError) console.error('driver-portal vehicle change log error:', logError);
+            });
         }
 
         return NextResponse.json({ success: true });

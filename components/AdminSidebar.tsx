@@ -29,6 +29,7 @@ import {
     UserCog,
     Mail,
     Building2,
+    Fuel,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -42,6 +43,7 @@ const menuItems = [
     { name: 'Email Client',    href: '/admin/email-client',        icon: Mail },
     { name: 'B2B Leads',       href: '/admin/b2b-leads',           icon: Building2 },
     { name: 'Drivers',         href: '/admin/drivers',             icon: UserCog },
+    { name: 'Fleet Expenses',  href: '/admin/fleet-expenses',      icon: Fuel },
     { name: 'Reports',         href: '/admin/reports',             icon: BarChart2 },
     { name: 'Pricing',         href: '/admin/pricing',             icon: DollarSign },
     { name: 'WA Templates',    href: '/admin/whatsapp-templates',  icon: MessageSquare },

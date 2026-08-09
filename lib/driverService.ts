@@ -64,6 +64,16 @@ export interface DriverSettlement {
     created_at: string;
 }
 
+export interface DriverVehicleChange {
+    id: string;
+    driver_id: string;
+    old_vehicle_model?: string;
+    old_vehicle_plate?: string;
+    new_vehicle_model: string;
+    new_vehicle_plate?: string;
+    changed_at: string;
+}
+
 export type MaintenanceServiceType = 'oil_change' | 'tire_rotation' | 'inspection' | 'general' | 'other';
 
 export interface DriverVehicleMaintenance {
@@ -502,6 +512,31 @@ export const driverService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    // Vehicle swap history for one driver (admin) — logged automatically when
+    // the driver edits their own profile from the self-service portal.
+    async getVehicleChanges(driverId: string) {
+        const { data, error } = await supabase
+            .from('driver_vehicle_changes')
+            .select('*')
+            .eq('driver_id', driverId)
+            .order('changed_at', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverVehicleChange[];
+    },
+
+    // Fleet-wide vehicle swap history — used on the Notifications page so the
+    // admin sees a driver switching cars without opening each driver's profile.
+    async getAllVehicleChanges() {
+        const { data, error } = await supabase
+            .from('driver_vehicle_changes')
+            .select('*')
+            .order('changed_at', { ascending: false });
+
+        if (error) throw error;
+        return data as DriverVehicleChange[];
     },
 
     // Approved, driver-tagged reviews across the fleet — used to show each

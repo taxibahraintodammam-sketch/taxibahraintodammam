@@ -302,6 +302,29 @@ CREATE POLICY "Admin full access" ON drivers
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------------------------
+-- driver_vehicle_changes — audit trail of a driver's vehicle_model/plate
+-- changing. Written server-side (service role, bypasses RLS) by
+-- app/api/driver-portal/[token] whenever a driver edits their own profile —
+-- there's no public INSERT policy because drivers never write here directly.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS driver_vehicle_changes (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id          uuid NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+  old_vehicle_model  text,
+  old_vehicle_plate  text,
+  new_vehicle_model  text NOT NULL,
+  new_vehicle_plate  text,
+  changed_at         timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS driver_vehicle_changes_driver_id_idx ON driver_vehicle_changes (driver_id);
+CREATE INDEX IF NOT EXISTS driver_vehicle_changes_changed_at_idx ON driver_vehicle_changes (changed_at DESC);
+
+ALTER TABLE driver_vehicle_changes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admin full access" ON driver_vehicle_changes;
+CREATE POLICY "Admin full access" ON driver_vehicle_changes
+  FOR ALL USING (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------------------------
 -- driver_expenses — company-side money-out ledger per driver (fuel,
 -- maintenance, salary advance, penalty deductions). Admin-only: no public
 -- access, since it's internal financials. Receipt/fuel-slip photos are

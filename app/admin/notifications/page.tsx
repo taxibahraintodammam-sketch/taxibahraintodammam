@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
 import {
     Mail, Search, RefreshCw, Send, Loader2,
-    CheckCircle, FileText, Bell, Filter
+    CheckCircle, FileText, Bell, Filter, History, Car
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,17 @@ interface Booking {
     internal_notes?: string;
     total_price?: number;
     currency?: string;
+}
+
+interface VehicleChangeEntry {
+    id: string;
+    driver_id: string;
+    old_vehicle_model?: string;
+    old_vehicle_plate?: string;
+    new_vehicle_model: string;
+    new_vehicle_plate?: string;
+    changed_at: string;
+    drivers?: { full_name: string } | null;
 }
 
 const TYPE_CONFIG: Record<string, { color: string; icon: string }> = {
@@ -96,11 +107,14 @@ export default function NotificationsPage() {
     const [typeFilter, setTypeFilter] = useState('all');
     const [resending, setResending] = useState<string | null>(null);
     const [resent, setResent]       = useState<string | null>(null);
+    const [vehicleChanges, setVehicleChanges] = useState<VehicleChangeEntry[]>([]);
+    const [loadingVehicleChanges, setLoadingVehicleChanges] = useState(true);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) { router.push('/admin/login'); return; }
             fetchData();
+            fetchVehicleChanges();
         });
     }, [router]);
 
@@ -114,6 +128,21 @@ export default function NotificationsPage() {
             .order('created_at', { ascending: false });
         setBookings((data as Booking[]) || []);
         setLoading(false);
+    };
+
+    // Driver vehicle swaps — auto-logged when a driver edits their vehicle
+    // from the self-service portal, surfaced here so the admin doesn't have
+    // to open every driver's profile to notice a car change.
+    const fetchVehicleChanges = async () => {
+        setLoadingVehicleChanges(true);
+        const { data, error } = await supabase
+            .from('driver_vehicle_changes')
+            .select('id,driver_id,old_vehicle_model,old_vehicle_plate,new_vehicle_model,new_vehicle_plate,changed_at,drivers(full_name)')
+            .order('changed_at', { ascending: false })
+            .limit(20);
+        if (error) console.error('Error loading vehicle changes:', error);
+        setVehicleChanges((data as unknown as VehicleChangeEntry[]) || []);
+        setLoadingVehicleChanges(false);
     };
 
     // Parse all notifications from internal_notes
@@ -183,10 +212,41 @@ export default function NotificationsPage() {
                         All sent emails across every booking
                     </p>
                 </div>
-                <Button onClick={fetchData} variant="outline" className="border-neutral-600 text-neutral-300 hover:bg-neutral-800 gap-2">
+                <Button onClick={() => { fetchData(); fetchVehicleChanges(); }} variant="outline" className="border-neutral-600 text-neutral-300 hover:bg-neutral-800 gap-2">
                     <RefreshCw className="w-4 h-4" /> Refresh
                 </Button>
             </div>
+
+            {/* Driver vehicle swaps — separate from the booking-email log below */}
+            {!loadingVehicleChanges && vehicleChanges.length > 0 && (
+                <div className="bg-neutral-800 rounded-xl border border-neutral-700 overflow-hidden mb-7">
+                    <div className="px-5 py-3.5 border-b border-neutral-700 flex items-center gap-2">
+                        <History className="w-4 h-4 text-teal-400" />
+                        <h2 className="text-sm font-bold text-white">Driver Vehicle Updates</h2>
+                        <span className="text-xs text-neutral-500">({vehicleChanges.length})</span>
+                    </div>
+                    <div className="divide-y divide-neutral-700/50">
+                        {vehicleChanges.map(change => (
+                            <div key={change.id} className="flex items-center gap-4 px-5 py-3.5">
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-teal-500/15 text-teal-400">
+                                    <Car className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-white">{change.drivers?.full_name || 'Unknown driver'}</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5">
+                                        {change.old_vehicle_model || 'Unknown'}{change.old_vehicle_plate ? ` (${change.old_vehicle_plate})` : ''}
+                                        {' → '}
+                                        {change.new_vehicle_model}{change.new_vehicle_plate ? ` (${change.new_vehicle_plate})` : ''}
+                                    </p>
+                                </div>
+                                <p className="text-xs text-neutral-400 font-mono shrink-0">
+                                    {new Date(change.changed_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-7">
