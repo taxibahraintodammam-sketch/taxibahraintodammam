@@ -29,6 +29,7 @@ const STATIC_PATHS = [
   "taxi-bahrain-to-abqaiq",
   "taxi-bahrain-to-al-ahsa-hofuf",
   "taxi-bahrain-to-dammam",
+  "taxi-bahrain-to-dhahran",
   "taxi-bahrain-to-jubail",
   "taxi-bahrain-to-khobar",
   "taxi-bahrain-to-qatif",

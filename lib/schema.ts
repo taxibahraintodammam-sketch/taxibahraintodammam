@@ -128,7 +128,8 @@ export function serviceSchema(params: {
   description: string;
   serviceType: string;
   areaServed: string[];
-  minPriceBhd: number;
+  /** Omit when a route has no published fare — no offer is emitted rather than a made-up price. */
+  minPriceBhd?: number;
 }) {
   return {
     "@context": "https://schema.org",
@@ -139,16 +140,20 @@ export function serviceSchema(params: {
     serviceType: params.serviceType,
     provider: { "@id": BUSINESS_ID },
     areaServed: params.areaServed.map((name) => ({ "@type": "City", name })),
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "BHD",
-      priceSpecification: {
-        "@type": "PriceSpecification",
-        minPrice: params.minPriceBhd,
-        priceCurrency: "BHD",
-      },
-      availability: "https://schema.org/InStock",
-    },
+    ...(params.minPriceBhd === undefined
+      ? {}
+      : {
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "BHD",
+            priceSpecification: {
+              "@type": "PriceSpecification",
+              minPrice: params.minPriceBhd,
+              priceCurrency: "BHD",
+            },
+            availability: "https://schema.org/InStock",
+          },
+        }),
   };
 }
 

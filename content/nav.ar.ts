@@ -18,6 +18,7 @@ export const ROUTE_LINKS_AR: NavLink[] = [
   { label: "مطار البحرين إلى الدمام", href: "/ar/bahrain-airport-to-dammam-taxi/" },
   { label: "البحرين إلى الخبر", href: "/ar/taxi-bahrain-to-khobar/" },
   { label: "الخبر إلى البحرين", href: "/ar/taxi-khobar-to-bahrain/" },
+  { label: "البحرين إلى الظهران", href: "/ar/taxi-bahrain-to-dhahran/" },
   { label: "البحرين إلى الرياض", href: "/ar/taxi-bahrain-to-riyadh/" },
   { label: "البحرين إلى الجبيل", href: "/ar/taxi-bahrain-to-jubail/" },
   { label: "البحرين إلى الأحساء / الهفوف", href: "/ar/taxi-bahrain-to-al-ahsa-hofuf/" },

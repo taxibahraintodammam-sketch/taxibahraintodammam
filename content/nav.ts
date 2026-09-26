@@ -21,6 +21,7 @@ export const ROUTE_LINKS: NavLink[] = [
   { label: "Bahrain Airport to Dammam", href: "/bahrain-airport-to-dammam-taxi/" },
   { label: "Bahrain to Khobar", href: "/taxi-bahrain-to-khobar/" },
   { label: "Khobar to Bahrain", href: "/taxi-khobar-to-bahrain/" },
+  { label: "Bahrain to Dhahran", href: "/taxi-bahrain-to-dhahran/" },
   { label: "Bahrain to Riyadh", href: "/taxi-bahrain-to-riyadh/" },
   { label: "Bahrain to Jubail", href: "/taxi-bahrain-to-jubail/" },
   { label: "Bahrain to Al Ahsa / Hofuf", href: "/taxi-bahrain-to-al-ahsa-hofuf/" },
