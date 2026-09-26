@@ -45,19 +45,23 @@ export function FareTableTeaser({
         </div>
 
         <div className="mt-8 overflow-x-auto rounded-card border border-ink/10">
-          <table className="w-full min-w-[560px] border-collapse text-start text-sm">
+          <table className="w-full border-collapse sm:min-w-[560px] text-start text-sm">
             <thead>
               <tr className="border-b-2 border-ink text-ink">
                 <th className="px-4 py-3 font-semibold">{dict.vehicleHeader}</th>
-                <th className="px-4 py-3 font-semibold">{dict.capacityHeader}</th>
+                <th className="hidden px-4 py-3 font-semibold sm:table-cell">{dict.capacityHeader}</th>
                 <th className="px-4 py-3 font-semibold">{dict.startingFareHeader}</th>
               </tr>
             </thead>
             <tbody>
               {fares.map((fare, index) => (
                 <tr key={fare.vehicle} className={index % 2 === 1 ? "bg-ink/5" : undefined}>
-                  <td className="px-4 py-3 font-medium text-ink">{vehicleLabel[fare.vehicle]}</td>
-                  <td className="px-4 py-3 text-slate">{vehicleCapacity[fare.vehicle]}</td>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    {vehicleLabel[fare.vehicle]}
+                    {/* Capacity folds under the name on phones so the price column stays on screen. */}
+                    <span className="block text-xs font-normal text-slate sm:hidden">{vehicleCapacity[fare.vehicle]}</span>
+                  </td>
+                  <td className="hidden px-4 py-3 text-slate sm:table-cell">{vehicleCapacity[fare.vehicle]}</td>
                   <td className="px-4 py-3 font-[family-name:var(--font-display)] font-bold text-ink">
                     BHD {fare.bhd} <span className="text-slate font-normal">/ SAR {fare.sar}</span>
                   </td>

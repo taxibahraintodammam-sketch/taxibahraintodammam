@@ -1,6 +1,8 @@
+import { Fragment, type ReactNode } from "react";
 import type { RouteContent } from "@/content/routes";
 import { lowestFare } from "@/content/fares";
 import { tripSchema, serviceSchema, faqPageSchema, breadcrumbSchema } from "@/lib/schema";
+import { routeIntent, type RouteIntent } from "@/lib/route-intent";
 import { SchemaScript } from "@/components/schema/SchemaScript";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RouteHero } from "@/components/route-page/RouteHero";
@@ -9,11 +11,43 @@ import { RouteFareSection } from "@/components/route-page/RouteFareSection";
 import { RouteBody } from "@/components/route-page/RouteBody";
 import { VehicleOptionsSection } from "@/components/route-page/VehicleOptionsSection";
 import { PickupAreasSection } from "@/components/route-page/PickupAreasSection";
+import { ArrivalFlow, DepartureModule, LongHaulPlan, IndustrialPlan } from "@/components/route-page/RouteModules";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { RelatedLinksSection } from "@/components/route-page/RelatedLinksSection";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { getDictionary, fillTemplate, type Dictionary } from "@/content/dictionary";
 import type { Locale } from "@/lib/locale";
+
+type Block =
+  | "crossing"
+  | "fare"
+  | "body"
+  | "vehicles"
+  | "pickups"
+  | "arrival"
+  | "departure"
+  | "longHaul"
+  | "industrial";
+
+/**
+ * Section order per intent. Shared building blocks, but each kind of trip
+ * leads with what that traveller needs first:
+ * - core: the flagship corridor keeps the full picture, incl. the pickup-area index.
+ * - city: short hops lead with price; no duplicate 12-area pickup grid.
+ * - return: Saudi-side trips show the crossing in the right order, then fare.
+ * - airportArrival / airportDeparture: the flight comes first.
+ * - longHaul: planning the drive matters before price.
+ * - industrial: fare, then the rotation/site practicalities.
+ */
+const LAYOUT: Record<RouteIntent, Block[]> = {
+  core: ["crossing", "fare", "body", "vehicles", "pickups"],
+  city: ["fare", "body", "crossing", "vehicles"],
+  return: ["crossing", "fare", "body", "vehicles"],
+  airportArrival: ["arrival", "fare", "crossing", "body", "vehicles"],
+  airportDeparture: ["departure", "fare", "body", "crossing", "vehicles"],
+  longHaul: ["longHaul", "fare", "body", "vehicles"],
+  industrial: ["fare", "industrial", "body", "crossing", "vehicles"],
+};
 
 export function RoutePageTemplate({
   route,
@@ -26,6 +60,7 @@ export function RoutePageTemplate({
 }) {
   const fare = lowestFare(route.slug);
   const prefix = locale === "ar" ? "/ar" : "";
+  const intent = routeIntent(route.slug);
 
   const breadcrumbItems = [
     { name: dict.homeCrumb, path: `${prefix}/` },
@@ -35,6 +70,32 @@ export function RoutePageTemplate({
       path: `${prefix}/${route.slug}`,
     },
   ];
+
+  const blocks: Record<Block, () => ReactNode> = {
+    crossing: () => (
+      <CausewayStrip
+        fromLabel={`${dict.pickupPrefix} ${route.from}`}
+        toLabel={`${dict.dropoffPrefix} ${route.to}`}
+        heading={fillTemplate(dict.routeDurationHeading, {
+          from: route.from,
+          to: route.to,
+          duration: route.durationLabel,
+        })}
+        locale={locale}
+        reverse={route.fromCountry === "Saudi Arabia"}
+      />
+    ),
+    fare: () => <RouteFareSection route={route} dict={dict} locale={locale} />,
+    body: () => <RouteBody route={route} />,
+    vehicles: () => <VehicleOptionsSection vehicles={route.vehicles} dict={dict} locale={locale} />,
+    pickups: () => (
+      <PickupAreasSection areas={route.pickupAreas} fromLabel={route.from} dict={dict} locale={locale} />
+    ),
+    arrival: () => <ArrivalFlow locale={locale} />,
+    departure: () => <DepartureModule locale={locale} />,
+    longHaul: () => <LongHaulPlan route={route} locale={locale} />,
+    industrial: () => <IndustrialPlan locale={locale} />,
+  };
 
   return (
     <>
@@ -62,25 +123,9 @@ export function RoutePageTemplate({
 
       <Breadcrumbs items={breadcrumbItems} />
       <RouteHero route={route} dict={dict} locale={locale} />
-      <CausewayStrip
-        fromLabel={`${dict.pickupPrefix} ${route.from}`}
-        toLabel={`${dict.dropoffPrefix} ${route.to}`}
-        heading={fillTemplate(dict.routeDurationHeading, {
-          from: route.from,
-          to: route.to,
-          duration: route.durationLabel,
-        })}
-        locale={locale}
-      />
-      <RouteFareSection route={route} dict={dict} locale={locale} />
-      <RouteBody route={route} />
-      <VehicleOptionsSection vehicles={route.vehicles} dict={dict} locale={locale} />
-      <PickupAreasSection
-        areas={route.pickupAreas}
-        fromLabel={route.from}
-        dict={dict}
-        locale={locale}
-      />
+      {LAYOUT[intent].map((block) => (
+        <Fragment key={block}>{blocks[block]()}</Fragment>
+      ))}
       {route.faqs.length > 0 && (
         <FaqSection
           faqs={route.faqs}

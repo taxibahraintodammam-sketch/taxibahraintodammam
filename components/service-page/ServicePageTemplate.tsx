@@ -10,6 +10,12 @@ import { RelatedLinksSection } from "@/components/route-page/RelatedLinksSection
 import { CtaBand } from "@/components/sections/CtaBand";
 import { getDictionary, fillTemplate, type Dictionary } from "@/content/dictionary";
 import type { Locale } from "@/lib/locale";
+import { SERVICE_FLOWS } from "@/content/service-flows";
+import { ServiceFlowSection } from "@/components/service-page/ServiceFlowSection";
+
+// Services that are a fixed sequence lead with the process; the rest are
+// sets of considerations that read better after the explanation.
+const SEQUENCE_FIRST = new Set(["airport-transfers", "visa-u-turn-service", "corporate-accounts", "hourly-chauffeur-hire"]);
 
 export function ServicePageTemplate({
   service,
@@ -21,6 +27,8 @@ export function ServicePageTemplate({
   dict?: Dictionary;
 }) {
   const prefix = locale === "ar" ? "/ar" : "";
+  const flow = SERVICE_FLOWS[locale][service.slug];
+  const sequenceFirst = SEQUENCE_FIRST.has(service.slug);
   const breadcrumbItems = [
     { name: dict.homeCrumb, path: `${prefix}/` },
     { name: service.name, path: `${prefix}/${service.slug}` },
@@ -43,8 +51,13 @@ export function ServicePageTemplate({
 
       <Breadcrumbs items={breadcrumbItems} />
       <ServiceHero service={service} dict={dict} />
+      {flow && sequenceFirst && <ServiceFlowSection flow={flow} variant="sequence" />}
       <ServiceBody service={service} dict={dict} />
-      <VehicleOptionsSection vehicles={service.vehicles} dict={dict} locale={locale} />
+      {flow && !sequenceFirst && <ServiceFlowSection flow={flow} variant="checklist" />}
+      {/* The accessible vehicle is a different spec from the standard van, so don't show the standard fleet card. */}
+      {service.slug !== "wheelchair-accessible-transfer" && (
+        <VehicleOptionsSection vehicles={service.vehicles} dict={dict} locale={locale} />
+      )}
       {service.faqs.length > 0 && (
         <FaqSection
           faqs={service.faqs}

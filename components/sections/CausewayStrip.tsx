@@ -59,18 +59,21 @@ export function CausewayStrip({
   toLabel,
   heading,
   locale = "en",
+  reverse = false,
 }: {
   fromLabel?: string;
   toLabel?: string;
   heading?: string;
   locale?: Locale;
+  /** Saudi → Bahrain trips clear the Saudi post first. */
+  reverse?: boolean;
 }) {
   const copy = COPY[locale];
   const nodes: Node[] = [
     { label: fromLabel ?? copy.defaultFrom },
-    { label: copy.bahrainIsland, meta: copy.borderMeta },
+    { label: reverse ? copy.saudiIsland : copy.bahrainIsland, meta: copy.borderMeta },
     { label: copy.causeway, meta: copy.bridgeMeta },
-    { label: copy.saudiIsland, meta: copy.borderMeta },
+    { label: reverse ? copy.bahrainIsland : copy.saudiIsland, meta: copy.borderMeta },
     { label: toLabel ?? copy.defaultTo },
   ];
 

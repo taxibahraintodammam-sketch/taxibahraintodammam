@@ -5,7 +5,7 @@ import { SchemaScript } from "@/components/schema/SchemaScript";
 import { Hero } from "@/components/sections/Hero";
 import { TrustStrip } from "@/components/sections/TrustStrip";
 import { CausewayStrip } from "@/components/sections/CausewayStrip";
-import { RouteCardGrid } from "@/components/sections/RouteCardGrid";
+import { HomeRoutes } from "@/components/sections/HomeRoutes";
 import { FareTableTeaser } from "@/components/sections/FareTableTeaser";
 import { FleetTeaser } from "@/components/sections/FleetTeaser";
 import { FaqSection } from "@/components/sections/FaqSection";
@@ -82,7 +82,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Hero locale={locale} />
       <TrustStrip locale={locale} />
       <CausewayStrip locale={locale} />
-      <RouteCardGrid locale={locale} />
+      <HomeRoutes locale={locale} />
       <FareTableTeaser locale={locale} />
       <FleetTeaser locale={locale} />
       <FaqSection faqs={faqs} dict={dict} locale={locale} />
