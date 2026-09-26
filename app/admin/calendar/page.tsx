@@ -57,6 +57,7 @@ export default function AdminCalendarPage() {
             const { data, error } = await supabase
                 .from('bookings')
                 .select('id, pickup_date, pickup_time, customer_name, pickup_location, destination, vehicle_type, passengers, status')
+                .is('deleted_at', null)
                 .order('pickup_date', { ascending: true });
             if (error) throw error;
             setBookings(data || []);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
 import { absoluteUrl } from '@/lib/url';
@@ -42,7 +42,8 @@ import {
     Activity,
     Users,
     Mail,
-    Truck
+    Truck,
+    RotateCcw
 } from 'lucide-react';
 import { getPrice, getRouteKey } from '@/lib/pricing';
 import { driverService, Driver } from '@/lib/driverService';
@@ -132,6 +133,11 @@ export default function BookingsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    // Trash view: soft-deleted bookings (deleted_at set), which can be restored.
+    const [showTrash, setShowTrash] = useState(false);
+    // The realtime listener is set up once, so it reads the current view from a ref.
+    const showTrashRef = useRef(false);
+    useEffect(() => { showTrashRef.current = showTrash; }, [showTrash]);
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [dbPrices, setDbPrices] = useState<Record<string, Record<string, number>>>({});
     const [approvedDrivers, setApprovedDrivers] = useState<Driver[]>([]);
@@ -263,7 +269,7 @@ export default function BookingsPage() {
             .channel('public:bookings')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bookings' }, (payload) => {
                 const newB = payload.new as Booking;
-                setBookings(prev => [newB, ...prev]);
+                if (!showTrashRef.current) setBookings(prev => [newB, ...prev]);
                 setNewBookingAlert(newB);
 
                 // Play notification sound
@@ -282,8 +288,12 @@ export default function BookingsPage() {
                 setTimeout(() => setNewBookingAlert(null), 10000);
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bookings' }, (payload) => {
-                const updatedB = payload.new as Booking;
-                setBookings(prev => prev.map(b => b.id === updatedB.id ? updatedB : b));
+                const updatedB = payload.new as Booking & { deleted_at?: string | null };
+                // Drop rows that moved in or out of trash elsewhere; otherwise update in place.
+                const belongsHere = Boolean(updatedB.deleted_at) === showTrashRef.current;
+                setBookings(prev => belongsHere
+                    ? prev.map(b => b.id === updatedB.id ? updatedB : b)
+                    : prev.filter(b => b.id !== updatedB.id));
             })
             .subscribe();
 
@@ -353,11 +363,10 @@ export default function BookingsPage() {
         return `≈ $${usd} USD | ≈ €${eur} EUR`;
     };
 
-    const fetchBookings = async () => {
+    const fetchBookings = async (trash = showTrash) => {
         try {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('*')
+            const base = supabase.from('bookings').select('*');
+            const { data, error } = await (trash ? base.not('deleted_at', 'is', null) : base.is('deleted_at', null))
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -473,7 +482,7 @@ export default function BookingsPage() {
             // Send Email Notification
             const booking = bookings.find(b => b.id === id);
             if (booking && ['quote_sent', 'confirmed', 'in_progress', 'cancelled', 'completed'].includes(newStatus)) {
-                adminFetch('/api/send-status-email', {
+                adminFetch('/api/send-status-email/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -492,12 +501,24 @@ export default function BookingsPage() {
         }
     };
 
+    const toggleTrash = () => {
+        const next = !showTrash;
+        setShowTrash(next);
+        setSelectedIds([]);
+        setSelectedBooking(null);
+        setIsEditing(false);
+        setLoading(true);
+        fetchBookings(next);
+    };
+
+    // Outside the trash this moves a booking to trash (soft delete); inside the trash it restores it.
     const deleteBooking = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) return;
+        const restoring = showTrash;
+        if (!confirm(restoring ? 'Restore this booking to the main list?' : 'Move this booking to trash? You can restore it from the Trash view.')) return;
 
         try {
-            const response = await adminFetch(`/api/admin/bookings/${id}`, {
-                method: 'DELETE',
+            const response = await adminFetch(`/api/admin/bookings/${id}/`, {
+                method: restoring ? 'PATCH' : 'DELETE',
             });
 
             if (!response.ok) {
@@ -512,7 +533,7 @@ export default function BookingsPage() {
             }
         } catch (error) {
             console.error('Error deleting booking:', error);
-            alert('Failed to delete booking. Ensure you have the right permissions.');
+            alert(showTrash ? 'Failed to restore booking.' : 'Failed to delete booking. Ensure you have the right permissions.');
         }
     };
 
@@ -658,7 +679,8 @@ export default function BookingsPage() {
 
     const bulkUpdateStatus = async (newStatus: string) => {
         if (!selectedIds.length) return;
-        if (!confirm(`Are you sure you want to update ${selectedIds.length} bookings to ${newStatus}?`)) return;
+        const emails = ['quote_sent', 'confirmed', 'in_progress', 'cancelled', 'completed'].includes(newStatus);
+        if (!confirm(`Update ${selectedIds.length} bookings to ${newStatus}?${emails ? ' Each customer will be emailed.' : ''}`)) return;
 
         try {
             const { error } = await supabase
@@ -672,7 +694,27 @@ export default function BookingsPage() {
                 selectedIds.includes(b.id) ? { ...b, status: newStatus as any } : b
             ));
             setSelectedIds([]);
-            alert('Bulk update successful!');
+
+            // Same customer email a single status change sends, one booking at a time.
+            let failed = 0;
+            if (emails) {
+                for (const b of bookings.filter(x => selectedIds.includes(x.id) && x.customer_email)) {
+                    const res = await adminFetch('/api/send-status-email/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bookingId: b.id,
+                            status: newStatus,
+                            customerEmail: b.customer_email,
+                            customerName: b.customer_name,
+                            totalPrice: b.total_price,
+                            currency: b.currency || 'SAR',
+                        }),
+                    }).catch(() => null);
+                    if (!res?.ok) failed++;
+                }
+            }
+            alert(failed ? `Updated. ${failed} customer email(s) failed to send.` : emails ? 'Updated, and customers emailed.' : 'Bulk update successful!');
         } catch (error) {
             console.error('Error in bulk update:', error);
             alert('Failed to update bookings.');
@@ -713,19 +755,29 @@ export default function BookingsPage() {
 
     const bulkDelete = async () => {
         if (!selectedIds.length) return;
-        if (!confirm(`CAUTION: Are you sure you want to DELETE ${selectedIds.length} bookings? This cannot be undone.`)) return;
+        const permanent = showTrash;
+        const question = permanent
+            ? `PERMANENTLY delete ${selectedIds.length} booking(s)? This cannot be undone.`
+            : `Move ${selectedIds.length} booking(s) to trash? You can restore them from the Trash view.`;
+        if (!confirm(question)) return;
 
         try {
-            const { error } = await supabase
-                .from('bookings')
-                .delete()
-                .in('id', selectedIds);
-
-            if (error) throw error;
+            if (permanent) {
+                const { error } = await supabase
+                    .from('bookings')
+                    .delete()
+                    .in('id', selectedIds);
+                if (error) throw error;
+            } else {
+                const results = await Promise.all(
+                    selectedIds.map((id) => adminFetch(`/api/admin/bookings/${id}/`, { method: 'DELETE' }))
+                );
+                if (results.some((r) => !r.ok)) throw new Error('Some bookings could not be moved to trash');
+            }
 
             setBookings(bookings.filter(b => !selectedIds.includes(b.id)));
             setSelectedIds([]);
-            alert('Bulk delete successful!');
+            alert(permanent ? 'Permanently deleted.' : 'Moved to trash.');
         } catch (error) {
             console.error('Error in bulk delete:', error);
             alert('Failed to delete bookings.');
@@ -870,7 +922,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
     const resendEmail = async (booking: Booking) => {
         try {
-            const response = await adminFetch('/api/send-status-email', {
+            const response = await adminFetch('/api/send-status-email/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1085,6 +1137,9 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                     <p className="text-gray-500 text-sm">Monitor and process your transport reservations easily.</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
+                    <Button variant="outline" onClick={toggleTrash} className={showTrash ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 shadow-sm' : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700 shadow-sm'}>
+                        {showTrash ? <><RotateCcw className="mr-2 h-4 w-4" /> Back to bookings</> : <><Trash2 className="mr-2 h-4 w-4" /> Trash</>}
+                    </Button>
                     <Button onClick={() => setIsCreating(true)} className="bg-primary text-black hover:bg-black hover:text-white font-bold shadow-sm">
                         <Plus className="mr-2 h-4 w-4" /> New Booking
                     </Button>
@@ -1306,7 +1361,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                             onClick={bulkDelete}
                             className="bg-red-600 hover:bg-red-700 text-white h-9 px-4 text-[11px] font-bold rounded-lg border-b-2 border-red-800 transition-all active:translate-y-0.5"
                         >
-                            <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" /> {showTrash ? 'Delete forever' : 'Delete'}
                         </Button>
                         <Button 
                             variant="ghost" 
@@ -1562,9 +1617,9 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                                     size="icon"
                                                     onClick={() => deleteBooking(booking.id)}
                                                     className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                    title="Delete"
+                                                    title={showTrash ? 'Restore' : 'Move to trash'}
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    {showTrash ? <RotateCcw className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -1701,8 +1756,8 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
                                     <Button variant="ghost" size="icon" onClick={() => openBookingDetails(booking)} className="h-9 w-9 text-blue-600 hover:bg-blue-50" title="View Details">
                                         <Eye className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => deleteBooking(booking.id)} className="h-9 w-9 text-red-500 hover:bg-red-50" title="Delete">
-                                        <Trash2 className="h-4 w-4" />
+                                    <Button variant="ghost" size="icon" onClick={() => deleteBooking(booking.id)} className="h-9 w-9 text-red-500 hover:bg-red-50" title={showTrash ? 'Restore' : 'Move to trash'}>
+                                        {showTrash ? <RotateCcw className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                                     </Button>
                                 </div>
                             </div>
@@ -2517,7 +2572,7 @@ Please let us know if you would like to proceed with the booking. *Taxi Bahrain 
 
                                 {!isEditing && (
                                     <Button variant="ghost" className="w-full hover:bg-red-50 text-red-500 hover:text-red-600 mt-2 transition-all" onClick={() => deleteBooking(selectedBooking.id)}>
-                                        <Trash2 className="w-4 h-4 mr-2" /> Delete This Booking
+                                        {showTrash ? <><RotateCcw className="w-4 h-4 mr-2" /> Restore This Booking</> : <><Trash2 className="w-4 h-4 mr-2" /> Move to Trash</>}
                                     </Button>
                                 )}
                             </div>
