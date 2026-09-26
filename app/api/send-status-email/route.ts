@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
         }
 
         await sendMail({
+            sender: 'booking',
             to: customerEmail,
             subject,
             html: htmlContent

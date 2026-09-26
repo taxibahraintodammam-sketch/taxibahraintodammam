@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
 
         try {
             await sendMail({
+                sender: 'booking',
                 to: booking.customer_email,
                 subject: `⏰ Reminder: Your Trip Tomorrow — ${pickupTimeDisplay}`,
                 html: `

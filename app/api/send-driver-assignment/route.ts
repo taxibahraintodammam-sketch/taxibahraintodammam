@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         );
 
         await sendMail({
+            sender: 'booking',
             to: booking.customer_email,
             subject: `🚗 Your Driver is Assigned — ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}`,
             html: `

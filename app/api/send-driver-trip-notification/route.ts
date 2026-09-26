@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         const refId = `#${String(booking.id).slice(0, 8).toUpperCase()}`;
 
         await sendMail({
+            sender: 'booking',
             to: driver.email,
             subject: `🚗 New Trip Assigned — ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}`,
             html: `

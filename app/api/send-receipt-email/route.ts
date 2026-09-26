@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         };
 
         await sendMail({
+            sender: 'booking',
             to: booking.customer_email,
             subject: `✅ Payment Receipt ${refId} - Taxi Bahrain to Dammam`,
             html: `
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
         });
 
         await sendMail({
+            sender: 'booking',
             to: emailAdmin,
             replyTo: booking.customer_email,
             subject: `🧾 Receipt Sent — ${booking.customer_name} | ${curr} ${amount}`,

@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
 
         // 1. Send email to customer
         await sendMail({
+            sender: 'booking',
             to: booking.customer_email,
             subject: 'Quotation Request Received - Taxi Bahrain to Dammam',
             html: `
@@ -116,6 +117,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Send email to admin
         await sendMail({
+            sender: 'booking',
             to: emailAdmin,
             replyTo: booking.customer_email,
             subject: `📋 New Quote Request - ${safeName}`,

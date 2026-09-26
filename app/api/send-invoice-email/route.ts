@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
         // 1. Send invoice to customer (+ CC additional emails)
         await sendMail({
+            sender: 'booking',
             to: booking.customer_email,
             cc: cc.length ? cc : undefined,
             subject: `Your Invoice ${refId} - Taxi Bahrain to Dammam`,
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Notify admin that invoice was sent
         await sendMail({
+            sender: 'booking',
             to: emailAdmin,
             replyTo: booking.customer_email,
             subject: `🧾 Invoice Sent — ${booking.customer_name} | ${curr} ${amount}`,
