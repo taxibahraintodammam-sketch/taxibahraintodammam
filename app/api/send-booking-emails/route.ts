@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail-server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// A new-request email is only sent for a booking created this recently.
+const EMAIL_WINDOW_MS = 15 * 60 * 1000;
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -40,12 +45,30 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
         }
 
-        const body = await request.json();
-        if (!body || !body.booking) {
-            return NextResponse.json({ error: 'Missing booking data' }, { status: 400 });
+        // Only the booking id is trusted from the request. The booking itself is
+        // read from the database, so this public route can't be used to send
+        // arbitrary "confirmations" to arbitrary addresses — every email maps
+        // to a real, just-created booking visible in the admin panel.
+        // (Older clients sent { booking: {...} }; its id is still accepted.)
+        const body = await request.json().catch(() => null);
+        const bookingId: unknown = body?.bookingId ?? body?.booking?.id;
+        if (typeof bookingId !== 'string' || !UUID_RE.test(bookingId)) {
+            return NextResponse.json({ error: 'Missing booking id' }, { status: 400 });
         }
 
-        const { booking } = body;
+        const { data: booking, error: fetchError } = await supabaseAdmin
+            .from('bookings')
+            .select('*')
+            .eq('id', bookingId)
+            .maybeSingle();
+        if (fetchError || !booking) {
+            return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+        }
+        const ageMs = Date.now() - new Date(booking.created_at).getTime();
+        if (booking.status !== 'pending' || !(ageMs >= 0 && ageMs <= EMAIL_WINDOW_MS)) {
+            return NextResponse.json({ error: 'Booking is not eligible for a new-request email' }, { status: 409 });
+        }
+
         const emailAdmin = process.env.ADMIN_EMAIL || 'info@taxibahraintodammam.com';
 
         const safeName     = escapeHtml(booking.customer_name);
@@ -93,9 +116,9 @@ export async function POST(request: NextRequest) {
                         <p style="margin: 10px 0;"><strong>Request ID:</strong> ${formatBookingId(booking.id)}</p>
                         <p style="margin: 5px 0;"><strong>Pickup:</strong> ${safePickup}</p>
                         <p style="margin: 5px 0;"><strong>Destination:</strong> ${safeDest}</p>
-                        <p style="margin: 5px 0;"><strong>Date/Time:</strong> ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}</p>
+                        <p style="margin: 5px 0;"><strong>Date/Time:</strong> ${escapeHtml(booking.pickup_date)} at ${escapeHtml(formatTime12h(booking.pickup_time))}</p>
                         <p style="margin: 5px 0;"><strong>Vehicle Type:</strong> ${safeVehicle}</p>
-                        <p style="margin: 5px 0;"><strong>Passengers:</strong> ${booking.passengers} Pax</p>
+                        <p style="margin: 5px 0;"><strong>Passengers:</strong> ${escapeHtml(String(booking.passengers ?? ""))} Pax</p>
                     </div>
 
                     <div style="background-color: #000; color: #fff; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
@@ -128,10 +151,10 @@ export async function POST(request: NextRequest) {
                 <p><strong>Email:</strong> ${escapeHtml(booking.customer_email)}</p>
                 <p><strong>Phone:</strong> ${escapeHtml(booking.customer_phone)}</p>
                 <p><strong>Route:</strong> ${safePickup} to ${safeDest}</p>
-                <p><strong>Date/Time:</strong> ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}</p>
+                <p><strong>Date/Time:</strong> ${escapeHtml(booking.pickup_date)} at ${escapeHtml(formatTime12h(booking.pickup_time))}</p>
                 <p><strong>Vehicle:</strong> ${safeVehicle}</p>
-                <p><strong>Passengers:</strong> ${booking.passengers}</p>
-                <p><strong>Luggage:</strong> ${booking.luggage ?? 0} bags</p>
+                <p><strong>Passengers:</strong> ${escapeHtml(String(booking.passengers ?? ""))}</p>
+                <p><strong>Luggage:</strong> ${escapeHtml(String(booking.luggage ?? 0))} bags</p>
                 ${safeFlightNumber ? `<p><strong>Flight Number:</strong> ${safeFlightNumber}</p>` : ''}
                 <p><strong>Special Requests:</strong> ${safeRequests}</p>
                 <hr>

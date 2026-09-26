@@ -91,7 +91,7 @@ export function useBookingFlow() {
             fetch('/api/send-booking-emails', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ booking: finalFormData, price: 'Need Quote' }),
+                body: JSON.stringify({ bookingId }),
             }).catch((err) => console.error('Email fetch failed:', err));
 
             setStep(4);

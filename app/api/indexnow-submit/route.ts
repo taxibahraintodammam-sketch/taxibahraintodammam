@@ -23,14 +23,14 @@ export async function GET() {
             `${siteUrl}/booking/`,
             `${siteUrl}/fleet/`,
             `${siteUrl}/contact/`,
-            `${siteUrl}/calculator/`,
-            `${siteUrl}/faq/`,
+            `${siteUrl}/fares/`,
+            `${siteUrl}/faqs/`,
             `${siteUrl}/about/`
         ];
 
         if (blogs && blogs.length > 0) {
             blogs.forEach((blog: { slug: string }) => {
-                urls.push(`${siteUrl}/blog/${blog.slug}`);
+                urls.push(`${siteUrl}/blog/${blog.slug}/`);
             });
         }
 
