@@ -48,6 +48,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/bahrain-to-jubail-taxi",
+        destination: "/taxi-bahrain-to-jubail/",
+        permanent: true,
+      },
+      {
+        source: "/bahrain-to-jubail-taxi/",
+        destination: "/taxi-bahrain-to-jubail/",
+        permanent: true,
+      },
+      {
         source: "/dammam-to-bahrain-taxi",
         destination: "/taxi-dammam-to-bahrain/",
         permanent: true,
