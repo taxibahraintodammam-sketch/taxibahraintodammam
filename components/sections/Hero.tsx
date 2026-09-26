@@ -1,92 +1,58 @@
+import Image from "next/image";
 import { QuoteForm } from "@/components/ui/QuoteForm";
-import { HeroSlider } from "@/components/sections/HeroSlider";
-import { HERO_SLIDES } from "@/content/hero-slides";
-import { HERO_SLIDES_AR } from "@/content/hero-slides.ar";
 import type { Locale } from "@/lib/locale";
 
-const COPY: Record<
-  Locale,
-  {
-    eyebrow: string;
-    heading: string;
-    body: string;
-    distance: string;
-    doorToDoor: string;
-    causeway: string;
-    distanceValue: string;
-    doorToDoorValue: string;
-    causewayValue: string;
-  }
-> = {
+const COPY: Record<Locale, { eyebrow: string; heading: string; body: string; hint: string; alt: string }> = {
   en: {
-    eyebrow: "Licensed cross-border operator · 24/7",
-    heading: "Taxi from Bahrain to Dammam, door-to-door",
-    body: "Licensed sedans, SUVs and vans cross the King Fahd Causeway every day. Fixed fare, tolls included, about 70–90 minutes from your Bahrain address to your Dammam address — confirmed on WhatsApp before you travel.",
-    distance: "Distance",
-    doorToDoor: "Door-to-door",
-    causeway: "Causeway",
-    distanceValue: "~130 km",
-    doorToDoorValue: "70–90 min",
-    causewayValue: "25 km",
+    eyebrow: "Bahrain ⇄ Saudi Arabia · King Fahd Causeway",
+    heading: "Private taxi from Bahrain to Dammam and across Saudi Arabia",
+    body: "For travellers, families, airport passengers and business trips. Tell us where you're going and we'll confirm a fixed fare on WhatsApp before you travel.",
+    hint: "Opens WhatsApp with your trip filled in. We reply with a fixed fare. Nothing is booked or paid until you confirm.",
+    alt: "The King Fahd Causeway between Bahrain and Saudi Arabia at sunset",
   },
   ar: {
-    eyebrow: "شركة نقل مرخّصة عابرة للحدود · على مدار الساعة",
-    heading: "تاكسي من البحرين إلى الدمام، من الباب إلى الباب",
-    body: "سيارات سيدان ودفع رباعي وفان مرخّصة تعبر جسر الملك فهد يوميًا. سعر ثابت، الرسوم مشمولة، نحو 70–90 دقيقة من عنوانك في البحرين إلى عنوانك في الدمام — يُؤكَّد عبر واتساب قبل السفر.",
-    distance: "المسافة",
-    doorToDoor: "من الباب إلى الباب",
-    causeway: "الجسر",
-    distanceValue: "١٣٠ كم تقريبًا",
-    doorToDoorValue: "70–90 دقيقة",
-    causewayValue: "٢٥ كم",
+    eyebrow: "البحرين ⇄ السعودية · جسر الملك فهد",
+    heading: "تاكسي خاص من البحرين إلى الدمام وأنحاء السعودية",
+    body: "للمسافرين والعائلات والقادمين من المطار ورحلات العمل. أخبرنا بوجهتك ونؤكد لك سعرًا ثابتًا عبر واتساب قبل السفر.",
+    hint: "يفتح واتساب مع تفاصيل رحلتك، ونرد بسعر ثابت. لا يتم الحجز أو الدفع قبل تأكيدك.",
+    alt: "جسر الملك فهد بين البحرين والسعودية عند الغروب",
   },
 };
 
+/**
+ * One strong photo and one clear action. (This used to be a 5-slide
+ * autoplay slider, three of whose slides had no image yet — the hero kept
+ * rotating to an empty gradient, and the slider cost client JS for nothing.)
+ */
 export function Hero({ locale = "en" }: { locale?: Locale }) {
   const copy = COPY[locale];
-  const slides = locale === "ar" ? HERO_SLIDES_AR : HERO_SLIDES;
   return (
-    <section className="relative overflow-hidden bg-ink pb-20 pt-16 lg:pb-28 lg:pt-24">
-      <HeroSlider slides={slides} />
+    <section className="relative isolate overflow-hidden bg-ink pb-10 pt-12 text-white lg:pb-16 lg:pt-24">
+      <Image
+        src="/hero/slide-causeway.webp"
+        alt={copy.alt}
+        fill
+        priority
+        quality={80}
+        sizes="100vw"
+        className="-z-10 object-cover object-[65%_center]"
+      />
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/80 via-ink/70 to-ink lg:bg-gradient-to-r lg:from-ink/95 lg:via-ink/70 lg:to-ink/20 rtl:lg:bg-gradient-to-l"
+        aria-hidden="true"
+      />
 
-      <div className="relative mx-auto max-w-[1200px] px-5 lg:px-10">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
         <div className="max-w-2xl">
           <p className="eyebrow text-brass-lit">{copy.eyebrow}</p>
-          <h1 className="mt-3 text-[2.25rem] font-bold leading-tight text-white lg:text-[3.75rem]">
-            {copy.heading}
-          </h1>
+          <h1 className="mt-4 text-[2.1rem] font-bold leading-[1.1] sm:text-5xl lg:text-[3.4rem]">{copy.heading}</h1>
           <p className="mt-5 max-w-xl text-base text-white/80 lg:text-lg">{copy.body}</p>
-          <dl className="mt-8 grid grid-cols-3 gap-3 border-t border-white/10 pt-6 sm:gap-6">
-            <div className="min-w-0">
-              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
-                {copy.distance}
-              </dt>
-              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
-                {copy.distanceValue}
-              </dd>
-            </div>
-            <div className="min-w-0">
-              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
-                {copy.doorToDoor}
-              </dt>
-              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
-                {copy.doorToDoorValue}
-              </dd>
-            </div>
-            <div className="min-w-0">
-              <dt className="truncate text-[10px] font-bold uppercase tracking-wide text-white/50">
-                {copy.causeway}
-              </dt>
-              <dd className="mt-1 truncate font-[family-name:var(--font-display)] text-lg font-bold text-white sm:text-xl">
-                {copy.causewayValue}
-              </dd>
-            </div>
-          </dl>
         </div>
-      </div>
 
-      <div className="relative mx-auto mt-10 max-w-[1200px] px-5 lg:mt-14 lg:px-10">
-        <QuoteForm variant="pill" />
+        <div className="mt-9 lg:mt-14">
+          <QuoteForm variant="pill" />
+          <p className="mt-3 text-sm text-white/65">{copy.hint}</p>
+        </div>
       </div>
     </section>
   );

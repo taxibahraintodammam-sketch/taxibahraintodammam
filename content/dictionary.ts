@@ -20,6 +20,10 @@ export type Dictionary = {
   footerRoutesHeading: string;
   footerServicesHeading: string;
   footerPickupHeading: string;
+  footerSupportHeading: string;
+  languageSwitchLabel: string;
+  whatsappDefaultMessage: string;
+  quoteFormHint: string;
   footerLegalHeading: string;
   footerTagline: string;
   footerLicensedLine: string;
@@ -60,6 +64,7 @@ export type Dictionary = {
   toLabel: string;
   seeAllRoutes: string;
   ctaHeading: string;
+  ctaBody: string;
   ctaWhatsappButton: string;
   callButtonPrefix: string;
   homeCrumb: string;
@@ -98,9 +103,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     menuOpen: "Open menu",
     menuClose: "Close menu",
     footerCompanyHeading: "Company",
-    footerRoutesHeading: "Routes",
+    footerRoutesHeading: "Popular routes",
     footerServicesHeading: "Services",
     footerPickupHeading: "Pickup Areas",
+    footerSupportHeading: "Help",
+    languageSwitchLabel: "العربية",
+    whatsappDefaultMessage: "Hi, I'd like a fare for a taxi across the causeway.\nFrom: \nTo: \nDate: ",
+    quoteFormHint: "Opens WhatsApp with your trip filled in. We reply with a fixed fare before you travel.",
     footerLegalHeading: "Legal",
     footerTagline:
       "Licensed cross-border taxi and chauffeur service on the Bahrain–Saudi corridor via the King Fahd Causeway.",
@@ -142,7 +151,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     popularRoutesFrom: "Popular routes from {name}",
     toLabel: "To",
     seeAllRoutes: "See all routes",
-    ctaHeading: "Ready to cross? Get a fixed fare in one WhatsApp message.",
+    ctaHeading: "Send us your trip. We'll reply with a fixed fare.",
+    ctaBody:
+      "Pickup, destination and date is all we need to start. The fare is confirmed in the chat before you travel, with no account and no deposit.",
     ctaWhatsappButton: "Get my fare on WhatsApp",
     callButtonPrefix: "Call",
     homeCrumb: "Home",
@@ -180,9 +191,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     menuOpen: "فتح القائمة",
     menuClose: "إغلاق القائمة",
     footerCompanyHeading: "الشركة",
-    footerRoutesHeading: "الخطوط",
+    footerRoutesHeading: "الخطوط الأكثر طلبًا",
     footerServicesHeading: "الخدمات",
     footerPickupHeading: "مناطق الاستلام",
+    footerSupportHeading: "المساعدة",
+    languageSwitchLabel: "English",
+    whatsappDefaultMessage: "مرحبًا، أرغب في معرفة سعر تاكسي عبر الجسر.\nمن: \nإلى: \nالتاريخ: ",
+    quoteFormHint: "يفتح واتساب مع تفاصيل رحلتك، ونرد عليك بسعر ثابت قبل السفر.",
     footerLegalHeading: "قانوني",
     footerTagline:
       "خدمة تاكسي وشوفير مرخّصة عابرة للحدود بين البحرين والسعودية عبر جسر الملك فهد.",
@@ -224,7 +239,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     popularRoutesFrom: "الخطوط الأكثر حجزًا من {name}",
     toLabel: "إلى",
     seeAllRoutes: "عرض جميع الخطوط",
-    ctaHeading: "جاهز للعبور؟ احصل على سعر ثابت برسالة واتساب واحدة.",
+    ctaHeading: "أرسل لنا تفاصيل رحلتك، وسنرد بسعر ثابت.",
+    ctaBody:
+      "يكفينا مكان الانطلاق والوجهة والتاريخ للبدء. نؤكد السعر في المحادثة قبل السفر، دون حساب ودون دفعة مقدمة.",
     ctaWhatsappButton: "احصل على سعري عبر واتساب",
     callButtonPrefix: "اتصال",
     homeCrumb: "الرئيسية",

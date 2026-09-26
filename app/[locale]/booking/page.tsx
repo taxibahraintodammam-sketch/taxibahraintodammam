@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/url";
-import { BUSINESS, telHref, whatsappHref } from "@/content/business";
+import { BUSINESS, telHref } from "@/content/business";
 import { breadcrumbSchema, faqPageSchema } from "@/lib/schema";
 import { SchemaScript } from "@/components/schema/SchemaScript";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -131,50 +131,39 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
       <Breadcrumbs items={breadcrumbItems} />
 
       <section className="border-b border-ink/10 bg-white pb-16 pt-8 lg:pb-20 lg:pt-12">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:gap-16 lg:px-10">
-          <div className="flex flex-col justify-center">
+        {/* Phones: heading, then the form, then how it works. Desktop: steps sit under the heading, beside the form. */}
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-x-16 gap-y-8 px-5 lg:grid-cols-2 lg:px-10">
+          <div>
             <p className="eyebrow text-brass">{copy.eyebrow}</p>
             <h1 className="mt-3 text-[2rem] font-bold leading-tight text-ink lg:text-[2.75rem]">
               {copy.heading}
             </h1>
             <p className="mt-5 max-w-xl text-base text-slate lg:text-lg">{copy.body}</p>
-            <div className="mt-8 flex flex-col gap-3 border-t border-ink/10 pt-6 sm:flex-row">
-              <a
-                href={whatsappHref()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-12 items-center justify-center rounded-input bg-brass px-6 text-sm font-semibold text-ink hover:bg-brass-lit"
-                data-analytics="whatsapp_click"
-              >
-                {copy.whatsappBtn}
-              </a>
-              <a
-                href={telHref()}
-                className="flex h-12 items-center justify-center rounded-input border border-ink/20 px-6 text-sm font-semibold text-ink hover:border-brass hover:text-brass"
-                data-analytics="call_click"
-              >
-                {copy.callBtn} {BUSINESS.phoneDisplay}
-              </a>
-            </div>
           </div>
-          <div className="flex items-center">
+          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:flex lg:items-center">
             <BookingTabs locale={locale} />
           </div>
-        </div>
-      </section>
-
-      <section className="bg-sand py-16 lg:py-20">
-        <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-          <h2 className="text-2xl font-bold text-ink lg:text-3xl">{copy.stepsHeading}</h2>
-          <ol className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
-            {copy.steps.map((step, index) => (
-              <li key={step.title} className="rounded-card border border-ink/10 bg-white p-6">
-                <span className="eyebrow text-brass">0{index + 1}</span>
-                <p className="mt-2 font-semibold text-ink">{step.title}</p>
-                <p className="mt-2 text-sm text-slate">{step.body}</p>
-              </li>
-            ))}
-          </ol>
+          <div>
+            <ol className="flex flex-col gap-5 border-t border-ink/10 pt-6">
+              {copy.steps.map((step, index) => (
+                <li key={step.title} className="grid grid-cols-[2rem_1fr] gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-[family-name:var(--font-mono)] text-xs text-white">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-ink">{step.title}</p>
+                    <p className="mt-0.5 text-sm text-slate">{step.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6 text-sm text-slate">
+              {copy.callBtn}{" "}
+              <a href={telHref()} dir="ltr" className="font-semibold text-ink hover:text-sea" data-analytics="call_click">
+                {BUSINESS.phoneDisplay}
+              </a>
+            </p>
+          </div>
         </div>
       </section>
 

@@ -1,56 +1,38 @@
 import type { Locale } from "@/lib/locale";
 
+// Concrete, checkable promises the site already makes elsewhere (fares,
+// FAQs, cancellation policy). The "licensed" claim isn't repeated here: it
+// awaits the licence number in content/business.ts.
 const ITEMS: Record<Locale, string[]> = {
   en: [
-    "Licensed cross-border operator",
-    "Fixed fare, tolls included",
-    "Available 24 hours a day, 7 days a week",
+    "Fixed fare agreed before you travel",
+    "Causeway toll included",
+    "Open 24/7, no night surcharge",
     "English & Arabic speaking drivers",
-    "Flight tracking on airport transfers",
-    "Door-to-door, no city-to-city changeovers",
-    "No deposit — cancel free before dispatch",
+    "Flights tracked on airport pickups",
+    "No deposit, free cancellation before dispatch",
   ],
   ar: [
-    "شركة نقل مرخّصة عابرة للحدود",
-    "سعر ثابت، الرسوم مشمولة",
-    "متاحون على مدار 24 ساعة، طوال أيام الأسبوع",
+    "سعر ثابت يُتفق عليه قبل السفر",
+    "رسوم الجسر مشمولة",
+    "على مدار الساعة دون رسوم ليلية",
     "سائقون يتحدثون العربية والإنجليزية",
-    "تتبع الرحلة الجوية في نقل المطار",
-    "من الباب إلى الباب، دون تبديل بين المدن",
-    "بدون دفعة مقدمة — إلغاء مجاني قبل تحرك السائق",
+    "متابعة الرحلات الجوية عند الاستقبال من المطار",
+    "بدون دفعة مقدمة، وإلغاء مجاني قبل تحرك السائق",
   ],
 };
 
 export function TrustStrip({ locale = "en" }: { locale?: Locale }) {
-  const items = ITEMS[locale];
   return (
-    <section aria-label="Why book with us" className="border-b border-ink/10 bg-white">
-      <div className="mx-auto max-w-[1200px] px-5 py-8 lg:px-10">
-        <ul className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
-          {items.map((item) => (
-            <li key={item} className="flex items-start gap-2 text-sm text-ink/80">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="mt-0.5 shrink-0 text-sea"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.6" />
-                <path
-                  d="M8 12.5l2.5 2.5L16 9"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <section aria-label={locale === "ar" ? "لماذا تحجز معنا" : "Why book with us"} className="border-b border-ink/10 bg-white">
+      <ul className="mx-auto flex max-w-[1200px] flex-wrap gap-x-7 gap-y-2.5 px-5 py-5 text-sm text-ink/75 lg:px-10">
+        {ITEMS[locale].map((item) => (
+          <li key={item} className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sea" aria-hidden="true" />
+            {item}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

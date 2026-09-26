@@ -43,7 +43,7 @@ export default async function LocaleLayout({
       <body className="flex min-h-full flex-col bg-sand text-ink">
         <SkipLink label={dict.skipToContent} />
         <Header dict={dict} locale={locale} />
-        <main id="main-content" className="flex-1 pb-[var(--sticky-bar-height)] lg:pb-0">
+        <main id="main-content" className="flex-1">
           {children}
         </main>
         <Footer dict={dict} locale={locale} />

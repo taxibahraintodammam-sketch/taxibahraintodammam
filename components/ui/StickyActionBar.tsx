@@ -20,7 +20,7 @@ export function StickyActionBar({ dict, locale = "en" }: { dict: Dictionary; loc
         <span className="text-xs font-medium">{dict.callNow}</span>
       </a>
       <a
-        href={whatsappHref()}
+        href={whatsappHref(dict.whatsappDefaultMessage)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex flex-1 flex-col items-center justify-center gap-0.5 border-r border-ink/10 bg-brass text-ink"

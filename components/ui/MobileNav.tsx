@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import type { NavLink } from "@/content/nav";
 import { withSlash } from "@/lib/url";
+import { LanguageSwitch } from "@/components/ui/LanguageSwitch";
 
 export function MobileNav({
   links,
@@ -12,12 +13,18 @@ export function MobileNav({
   closeLabel,
   bookNowLabel,
   bookNowHref,
+  languageLabel,
+  phoneDisplay,
+  phoneHref,
 }: {
   links: NavLink[];
   openLabel: string;
   closeLabel: string;
   bookNowLabel: string;
   bookNowHref: string;
+  languageLabel: string;
+  phoneDisplay: string;
+  phoneHref: string;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -39,7 +46,8 @@ export function MobileNav({
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="flex items-center gap-3 lg:hidden">
+      <LanguageSwitch label={languageLabel} className="px-1 py-2 text-sm font-semibold text-ink/70" />
       <button
         type="button"
         aria-expanded={open}
@@ -73,7 +81,7 @@ export function MobileNav({
                     <Link
                       href={withSlash(link.href)}
                       onClick={() => setOpen(false)}
-                      className="block rounded-input px-3 py-3 text-lg text-ink/85 hover:bg-ink/5"
+                      className="block rounded-input px-3 py-3 text-lg font-medium text-ink/85 hover:bg-ink/5"
                     >
                       {link.label}
                     </Link>
@@ -84,10 +92,16 @@ export function MobileNav({
             <Link
               href={withSlash(bookNowHref)}
               onClick={() => setOpen(false)}
-              className="mt-6 flex h-12 items-center justify-center rounded-input bg-brass px-6 font-medium text-ink"
+              className="mt-6 flex h-12 items-center justify-center rounded-input bg-brass px-6 font-semibold text-ink"
             >
               {bookNowLabel}
             </Link>
+            <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-5 text-sm">
+              <a href={phoneHref} dir="ltr" className="py-2 font-semibold text-ink">
+                {phoneDisplay}
+              </a>
+              <LanguageSwitch label={languageLabel} className="rounded-pill border border-ink/15 px-4 py-2 font-semibold text-ink" />
+            </div>
           </div>,
           document.body
         )}

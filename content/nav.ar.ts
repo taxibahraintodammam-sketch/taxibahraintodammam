@@ -2,11 +2,10 @@ import type { NavLink } from "@/content/nav";
 
 export const PRIMARY_NAV_AR: NavLink[] = [
   { label: "الخطوط", href: "/ar/king-fahd-causeway-taxi/" },
-  { label: "الأسعار", href: "/ar/fares/" },
+  { label: "النقل من وإلى المطار", href: "/ar/airport-transfers/" },
+  { label: "الشركات", href: "/ar/corporate-accounts/" },
   { label: "الأسطول", href: "/ar/fleet/" },
-  { label: "الخدمات", href: "/ar/visa-u-turn-service/" },
-  { label: "من نحن", href: "/ar/about/" },
-  { label: "المدونة", href: "/ar/blog/" },
+  { label: "الأسعار", href: "/ar/fares/" },
   { label: "تواصل معنا", href: "/ar/contact/" },
 ];
 
@@ -65,6 +64,28 @@ export const COMPANY_LINKS_AR: NavLink[] = [
   { label: "من نحن", href: "/ar/about/" },
   { label: "أسطولنا", href: "/ar/fleet/" },
   { label: "جدول الأسعار", href: "/ar/fares/" },
-  { label: "احجز الآن", href: "/ar/booking/" },
+  { label: "التقييمات", href: "/ar/reviews/" },
+  { label: "أدلة السفر", href: "/ar/blog/" },
+];
+
+export const FOOTER_ROUTE_LINKS_AR: NavLink[] = [
+  { label: "البحرين إلى الدمام", href: "/ar/taxi-bahrain-to-dammam/" },
+  { label: "الدمام إلى البحرين", href: "/ar/taxi-dammam-to-bahrain/" },
+  { label: "البحرين إلى الخبر", href: "/ar/taxi-bahrain-to-khobar/" },
+  { label: "مطار البحرين إلى الدمام", href: "/ar/bahrain-airport-to-dammam-taxi/" },
+  { label: "البحرين إلى مطار الدمام", href: "/ar/bahrain-to-dammam-airport-taxi/" },
+  { label: "البحرين إلى الرياض", href: "/ar/taxi-bahrain-to-riyadh/" },
+  { label: "جميع الخطوط", href: "/ar/king-fahd-causeway-taxi/" },
+];
+
+export const SUPPORT_LINKS_AR: NavLink[] = [
+  { label: "احجز رحلة", href: "/ar/booking/" },
   { label: "تواصل معنا", href: "/ar/contact/" },
+  { label: "الأسئلة الشائعة", href: "/ar/faqs/" },
+  { label: "الإلغاء والاسترداد", href: "/ar/cancellation-and-refund-policy/" },
+];
+
+export const FOOTER_LEGAL_LINKS_AR: NavLink[] = [
+  { label: "الشروط والأحكام", href: "/ar/terms-and-conditions/" },
+  { label: "سياسة الخصوصية", href: "/ar/privacy-policy/" },
 ];

@@ -72,17 +72,16 @@
     letter-spacing: normal;
   }
 
+  /* Section label: quiet small caps. Deliberately not a pill — a badge on
+     every section was visual noise, and inline-flex pills stretched to full
+     width inside flex-col parents on mobile. */
   .eyebrow {
-    display: inline-flex;
-    align-items: center;
+    display: block;
     font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 0.3rem 0.7rem;
-    border-radius: var(--radius-pill);
-    background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   :lang(ar) .eyebrow {
