@@ -33,9 +33,10 @@ export const ROUTE_LINKS: NavLink[] = [
 export const SERVICE_LINKS: NavLink[] = [
   { label: "Visa U-Turn Service", href: "/visa-u-turn-service/" },
   { label: "Airport Transfers", href: "/airport-transfers/" },
+  { label: "Umrah Transfer to Makkah", href: "/bahrain-to-makkah-umrah-taxi/" },
   { label: "Hourly Chauffeur Hire", href: "/hourly-chauffeur-hire/" },
   { label: "Corporate Accounts", href: "/corporate-accounts/" },
-  { label: "Family Van Transfer", href: "/family-van-transfer/" },
+  { label: "Family & Group Transfers", href: "/family-van-transfer/" },
   { label: "VIP Luxury Transfer", href: "/vip-luxury-transfer/" },
   { label: "Wheelchair Accessible Transfer", href: "/wheelchair-accessible-transfer/" },
 ];

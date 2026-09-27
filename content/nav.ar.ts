@@ -30,9 +30,10 @@ export const ROUTE_LINKS_AR: NavLink[] = [
 export const SERVICE_LINKS_AR: NavLink[] = [
   { label: "خدمة الخروج والعودة (فيزا U-turn)", href: "/ar/visa-u-turn-service/" },
   { label: "نقل المطار", href: "/ar/airport-transfers/" },
+  { label: "نقل العمرة إلى مكة", href: "/ar/bahrain-to-makkah-umrah-taxi/" },
   { label: "استئجار شوفير بالساعة", href: "/ar/hourly-chauffeur-hire/" },
   { label: "الحسابات المؤسسية", href: "/ar/corporate-accounts/" },
-  { label: "نقل فان عائلي", href: "/ar/family-van-transfer/" },
+  { label: "نقل العائلات والمجموعات", href: "/ar/family-van-transfer/" },
   { label: "نقل فاخر لكبار الشخصيات", href: "/ar/vip-luxury-transfer/" },
   { label: "نقل لذوي الاحتياجات الخاصة", href: "/ar/wheelchair-accessible-transfer/" },
 ];

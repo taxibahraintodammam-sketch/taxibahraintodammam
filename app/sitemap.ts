@@ -10,6 +10,7 @@ const STATIC_PATHS = [
   "",
   "about",
   "airport-transfers",
+  "bahrain-to-makkah-umrah-taxi",
   "bahrain-airport-to-dammam-taxi",
   "bahrain-to-dammam-airport-taxi",
   "blog",
