@@ -248,6 +248,35 @@ body:has([data-page-sticky]) .site-sticky-bar {
   transform: none;
 }
 
+/* Hourly hero: the day line draws downward, then a marker travels it once
+   and stays at the end (reduced motion shows the finished state). */
+@keyframes day-line {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.day-line {
+  transform-origin: top center;
+  animation: day-line 1.2s ease-out both;
+}
+
+@keyframes day-marker {
+  from {
+    top: 0;
+  }
+  to {
+    top: calc(100% - 0.75rem);
+  }
+}
+
+.day-marker {
+  animation: day-marker 5s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+
 .causeway-trail {
   animation: causeway-light-trail 12s linear infinite;
 }
