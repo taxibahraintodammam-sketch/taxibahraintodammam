@@ -48,6 +48,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/family-group-transfer-bahrain-saudi",
+        destination: "/family-van-transfer/",
+        permanent: true,
+      },
+      {
+        source: "/family-group-transfer-bahrain-saudi/",
+        destination: "/family-van-transfer/",
+        permanent: true,
+      },
+      {
         source: "/bahrain-to-jubail-taxi",
         destination: "/taxi-bahrain-to-jubail/",
         permanent: true,
