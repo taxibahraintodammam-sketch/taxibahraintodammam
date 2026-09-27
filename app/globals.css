@@ -185,6 +185,69 @@ body:has([data-page-sticky]) .site-sticky-bar {
   animation: corridor-run 4s ease-in-out infinite;
 }
 
+/* SUV page: the hero photo settles in once, then drifts slightly as the
+   page scrolls (scroll-driven where supported; static elsewhere). */
+@keyframes suv-settle {
+  from {
+    transform: scale(1.07);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.suv-settle {
+  animation: suv-settle 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes suv-drift {
+  to {
+    transform: translateY(-7%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .suv-parallax {
+      animation: suv-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+
+/* A route segment drawing itself from the start side. */
+@keyframes route-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.route-draw {
+  transform-origin: left center;
+  animation: route-draw 0.9s ease-out both;
+}
+
+[dir="rtl"] .route-draw {
+  transform-origin: right center;
+}
+
+/* Reveal variant that slides in sideways (luggage going into the boot). */
+.reveal.reveal-x[data-armed] {
+  transform: translateX(28px);
+}
+
+[dir="rtl"] .reveal.reveal-x[data-armed] {
+  transform: translateX(-28px);
+}
+
+.reveal.reveal-x[data-armed][data-shown] {
+  transform: none;
+}
+
 .causeway-trail {
   animation: causeway-light-trail 12s linear infinite;
 }
