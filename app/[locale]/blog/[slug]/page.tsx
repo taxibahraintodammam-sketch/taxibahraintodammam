@@ -23,8 +23,10 @@ export async function generateMetadata({
   const enPath = `/blog/${slug}`;
   const arPath = `/ar/blog/${slug}`;
   const path = locale === "ar" ? arPath : enPath;
+  // The H1 uses rawData.title; the search title can be phrased differently.
+  const seoTitle = (rawData.seoTitle as string | undefined) || rawData.title;
   return {
-    title: rawData.title,
+    title: seoTitle,
     description: rawData.description,
     alternates: {
       canonical: absoluteUrl(path),
@@ -39,10 +41,10 @@ export async function generateMetadata({
       locale: locale === "ar" ? "ar_BH" : "en_BH",
       siteName: "Taxi Bahrain to Dammam",
       url: absoluteUrl(path),
-      title: rawData.title,
+      title: seoTitle,
       description: rawData.description,
     },
-    twitter: { card: "summary_large_image", title: rawData.title, description: rawData.description },
+    twitter: { card: "summary_large_image", title: seoTitle, description: rawData.description },
     robots: {
       index: true,
       follow: true,

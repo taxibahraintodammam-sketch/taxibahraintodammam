@@ -31,7 +31,8 @@ export async function generateMetadata({
   const copy = COPY[locale];
   const path = locale === "ar" ? "/ar/cancellation-and-refund-policy" : "/cancellation-and-refund-policy";
   return {
-    title: copy.title,
+    // Brand in the search title; the H1 stays the plain page name.
+    title: `${copy.title} | ${locale === "ar" ? "تاكسي البحرين إلى الدمام" : "Taxi Bahrain to Dammam"}`,
     description: copy.description,
     alternates: {
       canonical: absoluteUrl(path),

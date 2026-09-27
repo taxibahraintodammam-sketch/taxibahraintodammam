@@ -13,6 +13,8 @@ const POSTS_DIRS: Record<Locale, string> = {
 
 export type PostFrontmatter = {
   title: string;
+  /** Search-result title. Optional; differs from the on-page H1 (title) so the two can target different phrasing. */
+  seoTitle?: string;
   description: string;
   datePublished: string;
   dateModified: string;
