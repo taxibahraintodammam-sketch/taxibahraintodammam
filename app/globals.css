@@ -292,6 +292,31 @@ body:has([data-page-sticky]) .site-sticky-bar {
   animation: khobar-drive 3.2s cubic-bezier(0.45, 0, 0.25, 1) 0.4s both;
 }
 
+/* Riyadh hero: a slower marker for a long route, and road markings that
+   run for a few seconds and then stop. */
+@keyframes riyadh-drive {
+  from {
+    left: 0;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.riyadh-drive {
+  animation: riyadh-drive 6s cubic-bezier(0.45, 0, 0.25, 1) 0.3s both;
+}
+
+@keyframes road-dash {
+  to {
+    stroke-dashoffset: -112;
+  }
+}
+
+.road-dash {
+  animation: road-dash 1.4s linear 4;
+}
+
 .causeway-trail {
   animation: causeway-light-trail 12s linear infinite;
 }
