@@ -8,6 +8,7 @@ import { SkipLink } from "@/components/ui/SkipLink";
 import { Header } from "@/components/sections/Header";
 import { Footer } from "@/components/sections/Footer";
 import { StickyActionBar } from "@/components/ui/StickyActionBar";
+import { Analytics } from "@/components/Analytics";
 
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "ar" }];
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
         </main>
         <Footer dict={dict} locale={locale} />
         <StickyActionBar dict={dict} locale={locale} />
+        <Analytics />
       </body>
     </html>
   );
