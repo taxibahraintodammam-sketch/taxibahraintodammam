@@ -461,10 +461,11 @@ function Distance({ route }: { route: { distanceKm: number } }) {
 function Causeway() {
   return (
     <>
-      <CausewayStrip heading={DMM_CAUSEWAY.heading} fromLabel="Bahrain pickup" toLabel="DMM departures" />
+      <CausewayStrip heading={DMM_CAUSEWAY.eyebrow} fromLabel="Bahrain pickup" toLabel="DMM departures" />
       <div className="bg-white pb-16 lg:pb-24">
         <div className={`${wrap} max-w-[820px]`}>
-          <p className="text-ink/80 lg:text-lg">{DMM_CAUSEWAY.body}</p>
+          <p className="font-semibold text-ink lg:text-lg">{DMM_CAUSEWAY.heading}</p>
+          <p className="mt-2 text-ink/80 lg:text-lg">{DMM_CAUSEWAY.body}</p>
         </div>
       </div>
     </>
