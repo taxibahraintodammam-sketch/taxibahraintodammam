@@ -8,7 +8,7 @@ export function StickyActionBar({ dict, locale = "en" }: { dict: Dictionary; loc
   const bookNowHref = locale === "ar" ? "/ar/booking/" : "/booking/";
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 flex border-t border-ink/10 bg-white shadow-elevation lg:hidden"
+      className="site-sticky-bar fixed inset-x-0 bottom-0 z-50 flex border-t border-ink/10 bg-white shadow-elevation lg:hidden"
       style={{ height: "var(--sticky-bar-height)" }}
     >
       <a

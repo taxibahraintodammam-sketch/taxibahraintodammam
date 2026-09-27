@@ -134,6 +134,12 @@
   }
 }
 
+/* A page that renders its own mobile action bar (marked data-page-sticky)
+   replaces the site-wide one rather than stacking a second bar on top. */
+body:has([data-page-sticky]) .site-sticky-bar {
+  display: none;
+}
+
 .causeway-trail {
   animation: causeway-light-trail 12s linear infinite;
 }
