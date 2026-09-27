@@ -277,6 +277,21 @@ body:has([data-page-sticky]) .site-sticky-bar {
   animation: day-marker 5s cubic-bezier(0.45, 0, 0.25, 1) both;
 }
 
+/* Khobar hero: a marker drives Bahrain → Khobar once along the route line
+   (geography is left-to-right in both languages). */
+@keyframes khobar-drive {
+  from {
+    left: 0;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.khobar-drive {
+  animation: khobar-drive 3.2s cubic-bezier(0.45, 0, 0.25, 1) 0.4s both;
+}
+
 .causeway-trail {
   animation: causeway-light-trail 12s linear infinite;
 }

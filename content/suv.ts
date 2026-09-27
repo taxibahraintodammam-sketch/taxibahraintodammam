@@ -141,7 +141,7 @@ export const SUV = {
     body: "This isn't a shuttle to the end of the road. The same car and driver take you from your door, through both immigration posts and across the causeway, to wherever you're going in Saudi Arabia. Whatever space you have at the start is the space you have for the whole journey.",
     stops: [
       { name: "Your Bahrain address", note: "Bags loaded once" },
-      { name: "Bahrain immigration", note: "You stay in the vehicle for most of it" },
+      { name: "Bahrain immigration", note: "Exit formalities for every passenger" },
       { name: "King Fahd Causeway", note: "Across the water" },
       { name: "Saudi immigration", note: "Checks on the Saudi side" },
       { name: "Dammam · Khobar · Jubail · beyond", note: "Unloaded at your door" },
