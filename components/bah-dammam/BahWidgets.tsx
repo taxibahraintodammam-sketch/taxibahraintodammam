@@ -158,7 +158,7 @@ export function ArrivalStages({ copy }: { copy: BahDmmCopy["stages"] }) {
               <div className="flex items-center gap-3">
                 <span className={`text-sm ${mono} ${airport ? "text-sea" : "text-slate"}`}>{s.n}</span>
                 <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${airport ? "bg-sea/10 text-sea" : s.phase === "meet" ? "bg-brass-lit/20 text-ink" : "bg-ink/[0.06] text-ink/70"}`}>
-                  {airport ? copy.before : copy.after}
+                  {airport ? copy.before : s.phase === "meet" ? copy.meet : copy.after}
                 </span>
               </div>
               <h3 className="mt-3 text-2xl font-bold lg:text-[2.2rem]">{s.title}</h3>

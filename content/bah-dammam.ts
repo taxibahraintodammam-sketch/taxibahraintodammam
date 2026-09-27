@@ -82,6 +82,7 @@ export const BAHDMM = {
     intro: "Scroll through the stages. The first two happen inside the airport, before you meet the car.",
     before: "Inside the airport",
     after: "In the vehicle",
+    meet: "Arrivals hall",
     items: [
       { n: "01", title: "Flight lands", body: "Your flight arrives at Bahrain International Airport.", phase: "airport" },
       { n: "02", title: "Clear arrivals", body: "You complete Bahrain airport immigration and collect your luggage.", phase: "airport" },
