@@ -24,7 +24,8 @@ export async function GET(
         .from('bookings')
         .select('id, pickup_location, destination, pickup_date, pickup_time, vehicle_type, passengers, status, total_price, currency, has_return_trip, driver_name, driver_phone, driver_plate, actual_vehicle')
         .eq('id', id)
-        .single();
+        .is('deleted_at', null)
+        .maybeSingle();
 
     if (error || !booking) {
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 });

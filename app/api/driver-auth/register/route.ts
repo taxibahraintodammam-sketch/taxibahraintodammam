@@ -27,11 +27,19 @@ export async function POST(request: NextRequest) {
         if (!full_name || !phone_number || !email || !city || !vehicle_model) {
             return NextResponse.json({ error: 'Full name, phone, email, city and vehicle are required' }, { status: 400 });
         }
-        if (password.length < 6) {
-            return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+        if (password.length < 8) {
+            return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
         }
-        if (!otp) {
-            return NextResponse.json({ error: 'Enter the verification code sent to your email' }, { status: 400 });
+        if (!/^\d{6}$/.test(otp)) {
+            return NextResponse.json({ error: 'Enter the 6-digit verification code sent to your email' }, { status: 400 });
+        }
+        // Per-email guess limit on top of the per-IP one, so a 6-digit code
+        // can't be brute-forced from rotating IPs.
+        if (!checkRateLimit(`driver-register-email:${email}`, 5, 10 * 60_000)) {
+            return NextResponse.json({ error: 'Too many attempts. Request a new code and try again later.' }, { status: 429 });
+        }
+        if (password.length > 200 || full_name.length > 120 || city.length > 80 || vehicle_model.length > 120) {
+            return NextResponse.json({ error: 'One of the fields is too long' }, { status: 400 });
         }
 
         const { data: otpRow } = await supabaseAdmin

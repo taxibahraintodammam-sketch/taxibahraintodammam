@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getDriverByToken } from '@/lib/driverPortalAuth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { validateUpload } from '@/lib/upload-validation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -9,6 +10,7 @@ export const runtime = 'nodejs';
 // Driver self-service can only log these — advance/penalty are things the
 // company applies to a driver, not something a driver should self-report.
 const ALLOWED_CATEGORIES = ['fuel', 'maintenance', 'other'];
+const ALLOWED_CURRENCIES = ['BHD', 'SAR', 'AED', 'QAR', 'KWD', 'OMR', 'USD'];
 
 export async function POST(
     request: NextRequest,
@@ -41,18 +43,30 @@ export async function POST(
         if (!amount || amount <= 0) {
             return NextResponse.json({ error: 'Enter a valid amount' }, { status: 400 });
         }
-        if (!expense_date) {
-            return NextResponse.json({ error: 'Missing date' }, { status: 400 });
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(expense_date)) {
+            return NextResponse.json({ error: 'Missing or invalid date' }, { status: 400 });
+        }
+        if (!ALLOWED_CURRENCIES.includes(currency)) {
+            return NextResponse.json({ error: 'Invalid currency' }, { status: 400 });
+        }
+        if (amount > 100_000) {
+            return NextResponse.json({ error: 'Amount is too large' }, { status: 400 });
+        }
+        if (description && description.length > 1000) {
+            return NextResponse.json({ error: 'Description is too long' }, { status: 400 });
         }
 
         let receipt_url: string | undefined;
         if (file && file.size > 0) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const checked = validateUpload(file, `receipts/${driver.id}`);
+            if ('error' in checked) {
+                return NextResponse.json({ error: checked.error }, { status: 400 });
+            }
+            const fileName = checked.path;
 
             const { error: uploadError } = await supabaseAdmin.storage
                 .from('driver-receipts')
-                .upload(fileName, file);
+                .upload(fileName, file, { contentType: file.type });
 
             if (uploadError) {
                 console.error('driver-portal expense upload error:', uploadError);

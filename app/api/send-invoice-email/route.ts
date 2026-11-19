@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail-server';
+import { escapeHtml } from '@/lib/status-email';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { getAdminSession } from '@/lib/admin-auth';
@@ -64,19 +65,19 @@ export async function POST(request: NextRequest) {
                     <h1 style="margin: 0; color: #C6FF00; text-transform: uppercase; letter-spacing: 2px;">Your Invoice</h1>
                 </div>
                 <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
-                    <p style="font-size: 16px;">Dear <strong>${booking.customer_name}</strong>,</p>
+                    <p style="font-size: 16px;">Dear <strong>${escapeHtml(booking.customer_name)}</strong>,</p>
                     <p>Please find your invoice attached for your upcoming journey with <strong>Taxi Bahrain to Dammam</strong>.</p>
 
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #ebedf0;">
                         <h3 style="margin-top: 0; color: #000; border-bottom: 2px solid #C6FF00; padding-bottom: 8px; display: inline-block;">Booking Summary</h3>
                         <p style="margin: 10px 0;"><strong>Invoice Ref:</strong> ${refId}</p>
-                        <p style="margin: 5px 0;"><strong>Pickup:</strong> ${booking.pickup_location}</p>
-                        <p style="margin: 5px 0;"><strong>Destination:</strong> ${booking.destination}</p>
-                        <p style="margin: 5px 0;"><strong>Date/Time:</strong> ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}</p>
-                        <p style="margin: 5px 0;"><strong>Vehicle:</strong> ${booking.vehicle_type}</p>
-                        <p style="margin: 5px 0;"><strong>Amount:</strong> ${currency || 'SAR'} ${booking.total_price?.toFixed(2) || '0.00'}</p>
-                        <p style="margin: 5px 0;"><strong>Payment Status:</strong> ${paymentStatus || 'Unpaid'}</p>
-                        <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${paymentMethod || 'Cash to Driver'}</p>
+                        <p style="margin: 5px 0;"><strong>Pickup:</strong> ${escapeHtml(booking.pickup_location)}</p>
+                        <p style="margin: 5px 0;"><strong>Destination:</strong> ${escapeHtml(booking.destination)}</p>
+                        <p style="margin: 5px 0;"><strong>Date/Time:</strong> ${escapeHtml(booking.pickup_date)} at ${formatTime12h(booking.pickup_time)}</p>
+                        <p style="margin: 5px 0;"><strong>Vehicle:</strong> ${escapeHtml(booking.vehicle_type)}</p>
+                        <p style="margin: 5px 0;"><strong>Amount:</strong> ${escapeHtml(currency || 'SAR')} ${booking.total_price?.toFixed(2) || '0.00'}</p>
+                        <p style="margin: 5px 0;"><strong>Payment Status:</strong> ${escapeHtml(paymentStatus || 'Unpaid')}</p>
+                        <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${escapeHtml(paymentMethod || 'Cash to Driver')}</p>
                     </div>
 
                     <p style="font-size: 14px; color: #666;">The PDF invoice is attached to this email. Please save it for your records.</p>
@@ -107,22 +108,22 @@ export async function POST(request: NextRequest) {
             html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                 <h2 style="color: #000; border-bottom: 2px solid #C6FF00; padding-bottom: 10px;">Invoice Sent to Customer</h2>
-                <p><strong>Customer:</strong> ${booking.customer_name}</p>
-                <p><strong>Email:</strong> ${booking.customer_email}</p>
-                <p><strong>Phone:</strong> ${booking.customer_phone || 'N/A'}</p>
-                <p><strong>Route:</strong> ${booking.pickup_location} → ${booking.destination}</p>
-                <p><strong>Date/Time:</strong> ${booking.pickup_date} at ${formatTime12h(booking.pickup_time)}</p>
-                <p><strong>Vehicle:</strong> ${booking.vehicle_type}</p>
-                <p><strong>Amount:</strong> <span style="font-size:18px; font-weight:900; color:#000;">${curr} ${amount}</span></p>
-                <p><strong>Payment Status:</strong> ${paymentStatus || 'Unpaid'}</p>
-                <p><strong>Payment Method:</strong> ${paymentMethod || 'Cash to Driver'}</p>
+                <p><strong>Customer:</strong> ${escapeHtml(booking.customer_name)}</p>
+                <p><strong>Email:</strong> ${escapeHtml(booking.customer_email)}</p>
+                <p><strong>Phone:</strong> ${escapeHtml(booking.customer_phone || 'N/A')}</p>
+                <p><strong>Route:</strong> ${escapeHtml(booking.pickup_location)} → ${escapeHtml(booking.destination)}</p>
+                <p><strong>Date/Time:</strong> ${escapeHtml(booking.pickup_date)} at ${formatTime12h(booking.pickup_time)}</p>
+                <p><strong>Vehicle:</strong> ${escapeHtml(booking.vehicle_type)}</p>
+                <p><strong>Amount:</strong> <span style="font-size:18px; font-weight:900; color:#000;">${escapeHtml(curr)} ${escapeHtml(String(amount))}</span></p>
+                <p><strong>Payment Status:</strong> ${escapeHtml(paymentStatus || 'Unpaid')}</p>
+                <p><strong>Payment Method:</strong> ${escapeHtml(paymentMethod || 'Cash to Driver')}</p>
                 <p style="font-size:12px; color:#666;">Ref: ${refId} — PDF invoice was attached to customer email.</p>
             </div>`,
         });
 
         // Log email activity to booking
         const logTime = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Riyadh', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        await appendEmailLog(booking.id, `📧 [${logTime}] Invoice sent — ${curr} ${amount} | ${paymentStatus || 'Unpaid'}`).catch(() => {});
+        await appendEmailLog(booking.id, `📧 [${logTime}] Invoice sent — ${escapeHtml(curr)} ${escapeHtml(String(amount))} | ${escapeHtml(paymentStatus || 'Unpaid')}`).catch(() => {});
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

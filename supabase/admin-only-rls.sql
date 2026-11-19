@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO public.admin_users (email) VALUES
-    ('REPLACE_WITH_YOUR_ADMIN_EMAIL@example.com')
+    ('taxibahraintodammam@gmail.com')
 ON CONFLICT (email) DO NOTHING;
 
 -- STEP 2: the check every policy uses.

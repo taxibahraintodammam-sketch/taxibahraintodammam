@@ -9,6 +9,13 @@ export const runtime = 'nodejs';
 // A driver can move a trip forward, not sideways into a state that's really
 // an admin/customer decision (cancelling, re-opening a quote, etc).
 const DRIVER_SETTABLE_STATUSES = ['in_progress', 'completed'];
+// Which current status each driver-settable status may be reached from, so a
+// cancelled (or still unconfirmed) trip can't be marked completed and counted
+// as earnings.
+const ALLOWED_FROM: Record<string, string[]> = {
+    in_progress: ['confirmed'],
+    completed: ['confirmed', 'in_progress'],
+};
 
 const TRIP_FIELDS =
     'id, pickup_location, destination, pickup_date, pickup_time, vehicle_type, ' +
@@ -29,6 +36,7 @@ export async function GET(
         .from('bookings')
         .select(TRIP_FIELDS)
         .eq('driver_id', driver.id)
+        .is('deleted_at', null)
         .order('pickup_date', { ascending: false });
 
     if (error) {
@@ -68,11 +76,13 @@ export async function PATCH(
             .update({ status })
             .eq('id', bookingId)
             .eq('driver_id', driver.id)
+            .in('status', ALLOWED_FROM[status])
+            .is('deleted_at', null)
             .select(TRIP_FIELDS)
-            .single();
+            .maybeSingle();
 
         if (error || !data) {
-            return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
+            return NextResponse.json({ error: 'Trip not found or cannot move to this status' }, { status: 409 });
         }
 
         return NextResponse.json({ trip: data });

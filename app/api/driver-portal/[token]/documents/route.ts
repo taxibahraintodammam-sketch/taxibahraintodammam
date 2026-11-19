@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getDriverByToken } from '@/lib/driverPortalAuth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { validateUpload } from '@/lib/upload-validation';
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -57,14 +60,23 @@ export async function POST(
         if (!ALLOWED_DOC_TYPES.includes(doc_type)) {
             return NextResponse.json({ error: 'Invalid document type' }, { status: 400 });
         }
+        if (expiry_date && !DATE_RE.test(expiry_date)) {
+            return NextResponse.json({ error: 'Invalid expiry date' }, { status: 400 });
+        }
+        if (document_number && document_number.length > 100) {
+            return NextResponse.json({ error: 'Document number is too long' }, { status: 400 });
+        }
 
         let file_url: string | undefined;
         if (file && file.size > 0) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const checked = validateUpload(file, `documents/${driver.id}`);
+            if ('error' in checked) {
+                return NextResponse.json({ error: checked.error }, { status: 400 });
+            }
+            const fileName = checked.path;
             const { error: uploadError } = await supabaseAdmin.storage
                 .from('driver-receipts')
-                .upload(fileName, file);
+                .upload(fileName, file, { contentType: file.type });
 
             if (uploadError) {
                 console.error('driver-portal document upload error:', uploadError);

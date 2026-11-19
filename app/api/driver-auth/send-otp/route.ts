@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomInt } from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendMail } from '@/lib/mail-server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Too many codes requested for this email. Please try again later.' }, { status: 429 });
         }
 
-        const otp_code = String(Math.floor(100000 + Math.random() * 900000));
+        const otp_code = String(randomInt(100000, 1000000));
         const expires_at = new Date(Date.now() + 10 * 60_000).toISOString();
 
         const { error } = await supabaseAdmin.from('driver_otp_verifications').insert({ email, otp_code, expires_at });

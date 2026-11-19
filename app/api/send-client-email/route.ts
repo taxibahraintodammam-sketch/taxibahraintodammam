@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail-server';
+import { escapeHtml } from '@/lib/status-email';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAdminSession } from '@/lib/admin-auth';
 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
                 <h1 style="margin: 0; color: #C6FF00; font-size: 20px; letter-spacing: 1px;">Taxi Bahrain to Dammam</h1>
             </div>
             <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
-                ${greetingName ? `<p style="font-size: 16px; margin-top: 0;">Dear <strong>${greetingName}</strong>,</p>` : ''}
+                ${greetingName ? `<p style="font-size: 16px; margin-top: 0;">Dear <strong>${escapeHtml(greetingName)}</strong>,</p>` : ''}
                 ${paragraphs}
 
                 <table role="presentation" style="margin-top: 28px; border-top: 1px solid #eee; padding-top: 18px;">

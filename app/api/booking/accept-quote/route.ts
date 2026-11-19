@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
     if (booking.status === 'confirmed') {
         return NextResponse.json({ success: true, alreadyConfirmed: true });
     }
-    if (!['quote_sent', 'pending'].includes(booking.status)) {
+    // Only a booking that actually has a quote can be accepted online. A
+    // 'pending' request has no price yet, so accepting it would confirm a
+    // trip at an unknown fare.
+    if (booking.status !== 'quote_sent' || !booking.total_price) {
         return NextResponse.json(
             { error: 'Booking cannot be accepted in this state', currentStatus: booking.status },
             { status: 409 }
@@ -49,7 +52,8 @@ export async function POST(request: NextRequest) {
     const { error: updateError } = await supabaseAdmin
         .from('bookings')
         .update({ status: 'confirmed' })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .eq('status', 'quote_sent'); // no double-confirm if two requests race
     if (updateError) {
         return NextResponse.json({ error: 'Failed to confirm booking' }, { status: 500 });
     }

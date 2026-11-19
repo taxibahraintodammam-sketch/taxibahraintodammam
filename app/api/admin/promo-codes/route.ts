@@ -55,8 +55,19 @@ export async function PATCH(request: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();
-    const { id, ...updates } = body;
+    const { id, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+
+    // Only these columns may be changed — never id, created_at, used_count, etc.
+    const EDITABLE = ['code', 'discount_type', 'discount_value', 'max_uses', 'expires_at', 'is_active'] as const;
+    const updates: Record<string, unknown> = {};
+    for (const key of EDITABLE) {
+        if (key in rest) updates[key] = rest[key];
+    }
+    if (typeof updates.code === 'string') updates.code = updates.code.toUpperCase().trim();
+    if (Object.keys(updates).length === 0) {
+        return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
+    }
 
     const { data, error } = await supabaseAdmin
         .from('promo_codes')

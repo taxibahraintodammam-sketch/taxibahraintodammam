@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail-server';
+import { escapeHtml } from '@/lib/status-email';
 import { getAdminSession } from '@/lib/admin-auth';
 
 // Sends one outreach email to one B2B lead (Umrah/Hajj travel companies etc).
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
                 <p style="color: #aaa; margin: 6px 0 0; font-size: 12px;">Ground Transport Partner in Saudi Arabia</p>
             </div>
             <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
-                ${companyName ? `<p style="font-size: 16px; margin-top: 0;">Dear <strong>${companyName}</strong> team,</p>` : ''}
+                ${companyName ? `<p style="font-size: 16px; margin-top: 0;">Dear <strong>${escapeHtml(companyName)}</strong> team,</p>` : ''}
                 ${paragraphs}
 
                 <table role="presentation" style="margin-top: 28px; border-top: 1px solid #eee; padding-top: 18px;">

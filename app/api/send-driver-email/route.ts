@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail-server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { getAdminSession, isInternalRequest } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,6 +17,13 @@ function escapeHtml(str: string | undefined | null): string {
 
 export async function POST(request: NextRequest) {
     try {
+        // Nothing in the site calls this any more (driver sign-up goes through
+        // /api/driver-auth/*). Left public, it would email any address from
+        // info@ with attacker-chosen text, so only admins / internal calls.
+        if (!isInternalRequest(request) && !(await getAdminSession(request))) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const ip = getClientIp(request);
         if (!checkRateLimit(`driver-email:${ip}`, 5, 60_000)) {
             return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

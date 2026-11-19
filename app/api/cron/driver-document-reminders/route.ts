@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendMail } from '@/lib/mail-server';
+import { isCronRequest } from '@/lib/cron-auth';
+import { escapeHtml } from '@/lib/status-email';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,8 +20,7 @@ const DOC_TYPE_LABEL: Record<string, string> = {
 // app/api/cron/send-reminders. Each document is only ever emailed about
 // once (reminder_sent), so re-running this on a schedule won't spam anyone.
 export async function GET(request: NextRequest) {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!isCronRequest(request)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
                             <h1 style="margin: 0; color: #C6FF00; font-size: 18px;">Document Reminder</h1>
                         </div>
                         <div style="padding: 25px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
-                            <p>Hi ${driver.full_name || 'there'},</p>
+                            <p>Hi ${escapeHtml(driver.full_name) || 'there'},</p>
                             <p>Your <strong>${docLabel}</strong> ${isExpired ? 'expired on' : 'is set to expire on'} <strong>${expiryDate}</strong>.</p>
                             <p>Please renew it and upload the new copy in your driver portal as soon as possible.</p>
                         </div>
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
                 await sendMail({
                     to: adminEmail,
                     subject: `Driver document ${isExpired ? 'expired' : 'expiring soon'}: ${driver?.full_name || 'Unknown driver'} — ${docLabel}`,
-                    html: `<p>${driver?.full_name || 'A driver'}'s <strong>${docLabel}</strong> ${isExpired ? 'expired on' : 'expires on'} <strong>${expiryDate}</strong>.</p>`,
+                    html: `<p>${escapeHtml(driver?.full_name) || 'A driver'}'s <strong>${docLabel}</strong> ${isExpired ? 'expired on' : 'expires on'} <strong>${expiryDate}</strong>.</p>`,
                 });
             }
 

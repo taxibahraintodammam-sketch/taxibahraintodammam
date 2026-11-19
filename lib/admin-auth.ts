@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { NextRequest } from 'next/server';
+import { safeEqual } from './cron-auth';
 
 // This admin panel's browser session lives in localStorage (lib/supabase.ts
 // uses the plain browser client, not @supabase/ssr), so it is never sent to
@@ -35,6 +36,6 @@ export async function getAdminSession(request: NextRequest | Request) {
 export function isInternalRequest(request: NextRequest | Request): boolean {
     const secret = process.env.INTERNAL_API_SECRET;
     if (!secret) return false;
-    const header = (request as Request).headers.get('x-internal-secret');
-    return header === secret;
+    const header = (request as Request).headers.get('x-internal-secret') || '';
+    return safeEqual(header, secret);
 }

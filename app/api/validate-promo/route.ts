@@ -1,18 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
     try {
-        const { code, basePrice } = await request.json();
+        // Stops guessing promo codes by brute force.
+        const ip = getClientIp(request);
+        if (!checkRateLimit(`validate-promo:${ip}`, 10, 60_000)) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        const { code: rawCode, basePrice: rawBase } = await request.json();
+        const code = typeof rawCode === 'string' ? rawCode.slice(0, 50) : '';
+        const basePrice = Number(rawBase) || 0;
 
         if (!code) return NextResponse.json({ error: 'No code provided' }, { status: 400 });
 
         const { data, error } = await supabaseAdmin
             .from('promo_codes')
-            .select('*')
+            .select('code, discount_type, discount_value, expires_at, max_uses, used_count')
             .eq('code', code.toUpperCase().trim())
             .eq('is_active', true)
             .single();

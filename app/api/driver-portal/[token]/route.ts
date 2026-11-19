@@ -73,7 +73,11 @@ export async function PATCH(
         // A quick duty-status toggle carries just this one field; a profile
         // save carries the rest. Handle both through the same endpoint.
         if (body.duty_status !== undefined && Object.keys(body).length === 1) {
-            const DUTY_STATUSES = ['on_duty', 'off_duty', 'on_leave', 'suspended'];
+            // 'suspended' is an admin decision, not something a driver sets.
+            const DUTY_STATUSES = ['on_duty', 'off_duty', 'on_leave'];
+            if (driver.duty_status === 'suspended') {
+                return NextResponse.json({ error: 'Your account is suspended. Please contact your manager.' }, { status: 403 });
+            }
             if (!DUTY_STATUSES.includes(body.duty_status)) {
                 return NextResponse.json({ error: 'Invalid duty status' }, { status: 400 });
             }

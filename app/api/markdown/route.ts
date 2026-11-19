@@ -38,7 +38,22 @@ export async function GET(request: NextRequest) {
   const path = searchParams.get('path') || '/';
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taxibahraintodammam.com';
-  const targetUrl = `${siteUrl}${path}`;
+
+  // Only ever fetch pages of this site. Plain concatenation let
+  // `?path=@evil.com/` become `https://site@evil.com/` (open proxy / SSRF).
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) {
+    return new NextResponse('Invalid path', { status: 400 });
+  }
+  let target: URL;
+  try {
+    target = new URL(path, siteUrl);
+  } catch {
+    return new NextResponse('Invalid path', { status: 400 });
+  }
+  if (target.origin !== new URL(siteUrl).origin) {
+    return new NextResponse('Invalid path', { status: 400 });
+  }
+  const targetUrl = target.toString();
 
   try {
     const response = await fetch(targetUrl, {

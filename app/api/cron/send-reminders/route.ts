@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendMail } from '@/lib/mail-server';
+import { isCronRequest } from '@/lib/cron-auth';
+import { escapeHtml } from '@/lib/status-email';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,14 +26,13 @@ function formatTime12h(timeStr?: string): string {
 
 export async function GET(request: NextRequest) {
     // Verify cron secret to prevent unauthorized calls
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!isCronRequest(request)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    // "Tomorrow" in Riyadh time — the server runs in UTC.
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const tomorrowStr = tomorrow.toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }); // YYYY-MM-DD
 
     // Fetch confirmed bookings for tomorrow that haven't been reminded yet
     const { data: bookings, error } = await supabaseAdmin
@@ -55,6 +56,15 @@ export async function GET(request: NextRequest) {
     for (const booking of bookings) {
         if (!booking.customer_email) continue;
 
+        // Customer-supplied fields (from the public booking form) — escape before HTML.
+        const safe = {
+            name: escapeHtml(booking.customer_name),
+            pickup: escapeHtml(booking.pickup_location),
+            dest: escapeHtml(booking.destination),
+            vehicle: escapeHtml(booking.vehicle_type),
+            passengers: escapeHtml(String(booking.passengers ?? '')),
+        };
+
         const refId = `#${String(booking.id).slice(0, 8).toUpperCase()}`;
         const pickupTimeDisplay = formatTime12h(booking.pickup_time);
         const whatsappMsg = encodeURIComponent(
@@ -73,17 +83,17 @@ export async function GET(request: NextRequest) {
                         <p style="color: #aaa; margin: 6px 0 0; font-size: 13px;">Your journey is tomorrow</p>
                     </div>
                     <div style="padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 10px 10px; background-color: #fff;">
-                        <p style="font-size: 16px;">Dear <strong>${booking.customer_name}</strong>,</p>
+                        <p style="font-size: 16px;">Dear <strong>${safe.name}</strong>,</p>
                         <p>This is a friendly reminder that your transfer with <strong>Taxi Bahrain to Dammam</strong> is scheduled for <strong>tomorrow</strong>.</p>
 
                         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #ebedf0;">
                             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                                 <tr><td style="padding: 6px 0; color: #666; width: 40%;">Booking Ref</td><td style="font-weight: bold; color: #000;">${refId}</td></tr>
-                                <tr><td style="padding: 6px 0; color: #666;">Pickup Time</td><td style="font-weight: bold; color: #000; font-size: 18px;">${pickupTimeDisplay}</td></tr>
-                                <tr><td style="padding: 6px 0; color: #666;">Pickup Location</td><td style="font-weight: bold; color: #000;">${booking.pickup_location}</td></tr>
-                                <tr><td style="padding: 6px 0; color: #666;">Destination</td><td style="font-weight: bold; color: #000;">${booking.destination}</td></tr>
-                                <tr><td style="padding: 6px 0; color: #666;">Vehicle</td><td style="font-weight: bold; color: #000;">${booking.vehicle_type}</td></tr>
-                                <tr><td style="padding: 6px 0; color: #666;">Passengers</td><td style="font-weight: bold; color: #000;">${booking.passengers} Pax</td></tr>
+                                <tr><td style="padding: 6px 0; color: #666;">Pickup Time</td><td style="font-weight: bold; color: #000; font-size: 18px;">${escapeHtml(pickupTimeDisplay)}</td></tr>
+                                <tr><td style="padding: 6px 0; color: #666;">Pickup Location</td><td style="font-weight: bold; color: #000;">${safe.pickup}</td></tr>
+                                <tr><td style="padding: 6px 0; color: #666;">Destination</td><td style="font-weight: bold; color: #000;">${safe.dest}</td></tr>
+                                <tr><td style="padding: 6px 0; color: #666;">Vehicle</td><td style="font-weight: bold; color: #000;">${safe.vehicle}</td></tr>
+                                <tr><td style="padding: 6px 0; color: #666;">Passengers</td><td style="font-weight: bold; color: #000;">${safe.passengers} Pax</td></tr>
                             </table>
                         </div>
 
