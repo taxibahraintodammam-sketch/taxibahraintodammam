@@ -708,7 +708,7 @@ export default function InvoicePage() {
                         <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-200">
                             <div>
                                 <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                                    Taxi Service <span className="text-lime-600">KSA</span>
+                                    Taxi Bahrain <span className="text-lime-600">to Dammam</span>
                                 </h2>
                                 <div className="text-xs text-gray-500 space-y-1 mt-2 leading-snug">
                                     <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> {t.city}</p>
