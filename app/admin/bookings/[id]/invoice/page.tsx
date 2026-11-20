@@ -10,7 +10,7 @@ import {
     formatMoney, renderDocumentPdf, toNumber, type DocLang,
 } from '@/lib/doc-utils';
 import {
-    ActionButton, Badge, COMMON, ControlPanel, DocFooter, DocHeader, DocPage, DocToolbar, Field,
+    ActionButton, Badge, COMMON, ControlPanel, DocFooter, DocPage, DocToolbar, Field, InvoiceHeader,
     LineItems, NoteBox, PartyBlock, PrintStyles, Segmented, SectionLabel, Totals, TripDetails,
     inputClass, methodLabel, type TripStop,
 } from '@/components/admin/documents/DocumentKit';
@@ -35,7 +35,7 @@ const TEXT: Record<DocLang, Record<string, string>> = {
         term2: 'Free cancellation up to 24 hours before the pickup time.',
         term3: 'Driver waits up to 60 minutes for airport pickups at no charge.',
         term4: 'Please quote the invoice number with any payment or query.',
-        remarks: 'Remarks',
+        remarks: 'Remarks', status: 'Status', serviceDetails: 'Service Details',
     },
     ar: {
         title: 'فاتورة',
@@ -54,7 +54,7 @@ const TEXT: Record<DocLang, Record<string, string>> = {
         term2: 'إلغاء مجاني حتى 24 ساعة قبل موعد الانطلاق.',
         term3: 'ينتظر السائق حتى 60 دقيقة في المطار دون رسوم إضافية.',
         term4: 'يرجى ذكر رقم الفاتورة عند الدفع أو الاستفسار.',
-        remarks: 'ملاحظات',
+        remarks: 'ملاحظات', status: 'الحالة', serviceDetails: 'تفاصيل الخدمة',
     },
 };
 
@@ -328,7 +328,7 @@ export default function InvoicePage() {
             <div className="h-3 print:hidden" />
 
             <DocPage id={DOC_ID} lang={lang} kind="invoice" watermark={isPaid ? c.paid : null}>
-                <DocHeader lang={lang} kind="invoice" title={t.title}
+                <InvoiceHeader lang={lang} title={t.title}
                     meta={[
                         { label: c.no, value: invoiceNumber, mono: true },
                         { label: c.issued, value: issued },
@@ -337,21 +337,34 @@ export default function InvoicePage() {
                     ]}
                     badges={<>
                         <Badge tone={isPaid ? 'green' : paymentStatus === 'Unpaid' ? 'red' : 'amber'}>{statusLabel}</Badge>
-                        <Badge>{methodLabel(paymentMethod, lang)}</Badge>
                         {isRoundTrip && <Badge tone="blue">{c.roundTrip}</Badge>}
                     </>}
                 />
 
-                <div className="mt-5">
-                    <PartyBlock label={c.billTo} name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
+                <div className="mt-5 grid grid-cols-2 gap-4">
+                    <div className="rounded-lg border border-gray-200 px-4 py-3">
+                        <PartyBlock label={c.billTo} name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                        <SectionLabel>{t.payment}</SectionLabel>
+                        <dl className="space-y-1 text-[11.5px]">
+                            <div className="flex justify-between"><dt className="text-gray-500">{c.paymentMethod}</dt><dd className="font-bold">{methodLabel(paymentMethod, lang)}</dd></div>
+                            <div className="flex justify-between"><dt className="text-gray-500">{t.status}</dt><dd className={`font-bold ${isPaid ? 'text-green-700' : 'text-red-700'}`}>{statusLabel}</dd></div>
+                            <div className="flex justify-between"><dt className="text-gray-500">{isPaid ? c.amountPaid : c.balanceDue}</dt><dd className="font-black" dir="ltr">{formatMoney(total, currency)}</dd></div>
+                        </dl>
+                    </div>
                 </div>
 
-                <div className="mt-5">
+                <section className="mt-5">
+                    <div className="mb-3 flex items-center gap-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em]">{t.serviceDetails}</p>
+                        <span className="h-px flex-1 bg-gray-300" />
+                    </div>
                     <TripDetails lang={lang} date={booking.pickup_date} time={booking.pickup_time} vehicle={booking.vehicle_type}
                         passengers={booking.passengers} luggage={booking.luggage}
                         pickup={booking.pickup_location} destination={booking.destination}
                         stops={stops} roundTrip={isRoundTrip} returnTo={returnDestination} />
-                </div>
+                </section>
 
                 <div className="mt-5">
                     <LineItems lang={lang} rows={[{

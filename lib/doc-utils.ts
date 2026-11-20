@@ -157,6 +157,8 @@ export async function renderDocumentPdf(element: HTMLElement, filename: string) 
     // that gets rasterised, so a phone or a narrow window produces exactly the
     // same one-page PDF as a desktop.
     const A4_PX = 794;
+    // The signature uses a web font; make sure it has loaded before rasterising.
+    if (document.fonts?.ready) await document.fonts.ready;
     const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,

@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Download, Mail } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
 import {
     CURRENCIES, PAYMENT_METHODS, amountInWords, bookingRef, currencyDecimals, docFilename,
-    formatDocDate, formatMoney, renderDocumentPdf, toNumber, type DocLang,
+    formatDocDate, formatMoney, formatTime12h, renderDocumentPdf, toNumber, type DocLang,
 } from '@/lib/doc-utils';
 import {
-    ACCENT, ActionButton, Badge, COMMON, ControlPanel, DocFooter, DocHeader, DocPage, DocToolbar,
-    Field, LineItems, NoteBox, PartyBlock, PrintStyles, Segmented, Totals, TripDetails, inputClass, methodLabel,
+    ActionButton, COMMON, ControlPanel, DocPage, DocToolbar, GREEN, ReceiptFooter, ReceiptHeader,
+    Field, NoteBox, PrintStyles, Segmented, inputClass, methodLabel,
 } from '@/components/admin/documents/DocumentKit';
 
 const DOC_ID = 'receipt-print';
@@ -29,7 +29,7 @@ const TEXT: Record<DocLang, Record<string, string>> = {
         term1: 'This receipt confirms payment received for the booking referenced above.',
         term2: 'Please retain this receipt for your records.',
         term3: 'Refunds, where applicable, follow our cancellation policy.',
-        remarks: 'Remarks',
+        remarks: 'Remarks', paymentStatus: 'Payment Status', thanks: 'Thank you for travelling with us!',
     },
     ar: {
         title: 'إيصال',
@@ -43,7 +43,7 @@ const TEXT: Record<DocLang, Record<string, string>> = {
         term1: 'يؤكد هذا الإيصال استلام الدفعة للحجز المذكور أعلاه.',
         term2: 'يرجى الاحتفاظ بهذا الإيصال لسجلاتكم.',
         term3: 'تخضع المبالغ المستردة لسياسة الإلغاء الخاصة بنا.',
-        remarks: 'ملاحظات',
+        remarks: 'ملاحظات', paymentStatus: 'حالة الدفع', thanks: 'شكراً لسفركم معنا!',
     },
 };
 
@@ -189,62 +189,59 @@ export default function ReceiptPage() {
             </ControlPanel>
 
             <DocPage id={DOC_ID} lang={lang} kind="receipt" watermark={fullyPaid ? c.paid : null}>
-                <DocHeader lang={lang} kind="receipt" title={t.title}
+                <ReceiptHeader lang={lang} title={t.title}
                     meta={[
                         { label: c.no, value: receiptNumber, mono: true },
                         { label: c.issued, value: issued },
                         { label: c.bookingRef, value: `#${ref}`, mono: true },
                     ]}
-                    badges={<>
-                        <Badge tone={fullyPaid ? 'green' : 'amber'}>{fullyPaid ? c.paid : c.partial}</Badge>
-                        <Badge>{methodLabel(paymentMethod, lang)}</Badge>
-                    </>}
                 />
 
-                <p className="mt-5 rounded-lg bg-[#f3faf6] px-4 py-3 text-[12.5px] leading-relaxed text-gray-700">
-                    {t.statementA} <strong className="text-[#0d0d0d]">{booking.customer_name}</strong> {t.statementB}{' '}
-                    <strong className="text-[#1e7f4f]" dir="ltr">{formatMoney(paid, currency)}</strong> {t.statementC}{' '}
-                    <strong className="text-[#0d0d0d]">{formatDocDate(booking.pickup_date)}</strong>.
-                </p>
-
-                <div className="mt-5 grid grid-cols-[1fr_1.35fr] gap-6">
-                    <PartyBlock label={c.receivedFrom} name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
-                    <div>
-                        <p className="mb-2 text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{c.paymentMethod}</p>
-                        <p className="text-[15px] font-bold">{methodLabel(paymentMethod, lang)}</p>
-                        <p className="mt-1 text-[11px] text-gray-600">{issued}</p>
+                {/* Ticket-style amount block with punched notches */}
+                <div className="relative mt-6 overflow-hidden rounded-2xl px-8 py-6 text-center text-white" style={{ background: `linear-gradient(135deg, ${GREEN} 0%, #145c39 100%)` }}>
+                    <span aria-hidden className="absolute -start-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-white" />
+                    <span aria-hidden className="absolute -end-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-white" />
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.35em]" style={{ color: 'rgba(255,255,255,0.75)' }}>{c.amountPaid}</p>
+                    <p className="mt-1.5 text-[44px] font-black leading-none" dir="ltr">{formatMoney(paid, currency)}</p>
+                    {lang === 'en' && <p className="mt-2 text-[11px] italic" style={{ color: 'rgba(255,255,255,0.85)' }}>{amountInWords(paid, currency)}</p>}
+                    <div className="mt-3 flex justify-center gap-2">
+                        <span className="rounded-full bg-white px-3 py-0.5 text-[9.5px] font-black uppercase tracking-wider" style={{ color: GREEN }}>{fullyPaid ? c.paid : c.partial}</span>
+                        <span className="rounded-full px-3 py-0.5 text-[9.5px] font-bold uppercase tracking-wider" style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.5)' }}>{methodLabel(paymentMethod, lang)}</span>
                     </div>
                 </div>
 
-                <div className="mt-5">
-                    <TripDetails lang={lang} date={booking.pickup_date} time={booking.pickup_time} vehicle={booking.vehicle_type}
-                        passengers={booking.passengers} luggage={booking.luggage}
-                        pickup={booking.pickup_location} destination={booking.destination}
-                        stops={booking.invoice_data?.stops} roundTrip={roundTrip} />
+                <p className="mx-auto mt-5 max-w-[88%] text-center text-[12.5px] leading-relaxed text-gray-700">
+                    {t.statementA} <strong className="text-[#0d0d0d]"><bdi>{booking.customer_name}</bdi></strong> {t.statementB}{' '}
+                    <strong style={{ color: GREEN }} dir="ltr">{formatMoney(paid, currency)}</strong> {t.statementC}{' '}
+                    <strong className="text-[#0d0d0d]"><bdi>{formatDocDate(booking.pickup_date)}</bdi></strong>.
+                </p>
+
+                <div className="mt-5 overflow-hidden rounded-xl border-2 border-dashed border-gray-200">
+                    {/* 1px gaps over a grey background draw the inner grid lines */}
+                    <dl className="grid grid-cols-2 gap-px bg-gray-200 text-[11.5px]">
+                        {([
+                            [c.receivedFrom, <>{booking.customer_name}<span className="block text-[10px] font-normal text-gray-500" dir="ltr">{booking.customer_phone}</span></>, false],
+                            [c.paymentMethod, methodLabel(paymentMethod, lang), false],
+                            [`${c.date} · ${c.time}`, <bdi key="v">{formatDocDate(booking.pickup_date)} · {formatTime12h(booking.pickup_time)}</bdi>, false],
+                            [c.vehicle, <><bdi>{booking.vehicle_type}</bdi> · {booking.passengers} {c.pax}</>, false],
+                            [c.route, <><bdi>{booking.pickup_location}</bdi> <span style={{ color: GREEN }}>{roundTrip ? "⇄" : (lang === "ar" ? "←" : "→")}</span> <bdi>{booking.destination}</bdi></>, true],
+                            [t.bookingTotal, <span key="v" dir="ltr">{formatMoney(total || paid, currency)}</span>, false],
+                            fullyPaid
+                                ? [t.paymentStatus, <span key="v" style={{ color: GREEN }}>{c.paid}</span>, false]
+                                : [c.balanceDue, <span key="v" className="text-red-700" dir="ltr">{formatMoney(balance, currency)}</span>, false],
+                        ] as [string, ReactNode, boolean][]).map(([k, v, wide]) => (
+                            <div key={k} className={`bg-white px-4 py-2.5 ${wide ? 'col-span-2' : ''}`}>
+                                <dt className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-400">{k}</dt>
+                                <dd className="mt-0.5 font-bold leading-snug">{v}</dd>
+                            </div>
+                        ))}
+                    </dl>
                 </div>
 
-                <div className="mt-5">
-                    <LineItems lang={lang} rows={[{
-                        title: roundTrip ? t.roundTripService : t.service,
-                        detail: <>{booking.vehicle_type} · {booking.pickup_location.split(',')[0]} {roundTrip ? '⇄' : '→'} {booking.destination.split(',')[0]}</>,
-                        amount: formatMoney(total || paid, currency),
-                    }]} />
-                </div>
+                {receiptNote.trim() && <div className="mt-4"><NoteBox label={t.remarks}>{receiptNote.trim()}</NoteBox></div>}
 
-                <div className="mt-4">
-                    <Totals accent={ACCENT.receipt}
-                        rows={[
-                            { label: t.bookingTotal, value: formatMoney(total || paid, currency) },
-                            ...(!fullyPaid ? [{ label: c.balanceDue, value: formatMoney(balance, currency), tone: 'red' as const }] : []),
-                        ]}
-                        grand={{ label: c.amountPaid, value: formatMoney(paid, currency) }}
-                        words={lang === 'en' ? amountInWords(paid, currency) : undefined} wordsLabel={c.inWords} />
-                </div>
-
-                {receiptNote.trim() && <div className="mt-5"><NoteBox label={t.remarks}>{receiptNote.trim()}</NoteBox></div>}
-
-                <DocFooter lang={lang} kind="receipt" terms={[t.term1, t.term2, t.term3]} stampLabel={t.stamp}
-                    refLine={`${receiptNumber} · ${issued}`} />
+                <ReceiptFooter lang={lang} terms={[t.term1, t.term2, t.term3]} stampLabel={t.stamp}
+                    refLine={`${receiptNumber} · ${issued}`} thanks={t.thanks} />
             </DocPage>
 
             <PrintStyles id={DOC_ID} />

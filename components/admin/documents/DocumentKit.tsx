@@ -1,17 +1,25 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Herr_Von_Muellerhoff } from 'next/font/google';
 import { ArrowLeft, Check, Languages, Loader2 } from 'lucide-react';
 import { COMPANY, METHOD_AR, formatTime12h, formatDocDate, type DocLang } from '@/lib/doc-utils';
 
 /**
- * One visual system for the quotation, invoice and receipt: same letterhead,
- * party block, trip summary, totals, footer and stamp. Colours are plain hex
+ * Building blocks for the quotation, invoice and receipt. They share brand,
+ * signature and stamp, but each document has its own header and footer
+ * layout so the three are recognisable at a glance. Colours are plain hex
  * (not Tailwind theme tokens) so the PDF renderer reproduces them exactly.
  */
 
+// Self-hosted by next/font, so it loads under the site's CSP and is
+// available to the PDF renderer once document.fonts is ready.
+const signatureFont = Herr_Von_Muellerhoff({ weight: '400', subsets: ['latin'], display: 'block' });
+
 export const INK = '#0d0d0d';
 export const BLUE = '#0655ff';
+export const GREEN = '#1e7f4f';
+const SIGNATURE_INK = '#16297a';
 
 export type DocKind = 'quotation' | 'invoice' | 'receipt';
 
@@ -152,10 +160,6 @@ export function DocPage({ id, lang, kind, watermark, children }: {
         <div id={id} dir={lang === 'ar' ? 'rtl' : 'ltr'}
             className="doc-page relative mx-auto w-full max-w-[210mm] overflow-hidden bg-white text-[#0d0d0d] shadow-[0_10px_40px_rgba(0,0,0,0.12)] print:max-w-none print:shadow-none"
             style={{ minHeight: '297mm', fontFamily: lang === 'ar' ? 'Tahoma, Arial, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif' }}>
-            <div className="flex h-2">
-                <div className="flex-1" style={{ background: INK }} />
-                <div className="w-1/3" style={{ background: ACCENT[kind] === INK ? BLUE : ACCENT[kind] }} />
-            </div>
             {watermark && (
                 <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <span className="-rotate-[28deg] select-none rounded-2xl border-[6px] px-10 py-3 text-[96px] font-black uppercase tracking-[0.15em] opacity-[0.07]"
@@ -164,49 +168,116 @@ export function DocPage({ id, lang, kind, watermark, children }: {
                     </span>
                 </div>
             )}
-            <div className="relative flex flex-col px-[14mm] pb-[8mm] pt-[9mm]" style={{ minHeight: 'calc(297mm - 8px)' }}>
+            <div className="relative flex flex-col px-[14mm] pb-[8mm] pt-[9mm]" style={{ minHeight: '297mm' }}>
                 {children}
             </div>
         </div>
     );
 }
 
-export function DocHeader({ lang, kind, title, meta, badges }: {
-    lang: DocLang; kind: DocKind; title: string;
-    meta: { label: string; value: string; mono?: boolean }[];
-    badges?: ReactNode;
+type Meta = { label: string; value: string; mono?: boolean }[];
+
+function Logo({ className = 'h-11 w-11' }: { className?: string }) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={COMPANY.logo} alt="" className={`${className} shrink-0 object-contain`} />;
+}
+
+/** Quotation: a full-bleed blue proposal cover. */
+export function QuoteHeader({ lang, title, subtitle, meta, badges }: {
+    lang: DocLang; title: string; subtitle: string; meta: Meta; badges?: ReactNode;
 }) {
     return (
-        <header className="flex items-start justify-between gap-8 border-b border-gray-200 pb-5">
-            <div className="flex items-start gap-3.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={COMPANY.logo} alt="" className="h-14 w-14 shrink-0 object-contain" />
-                <div>
-                    <p className="text-[19px] font-black leading-tight tracking-tight">
-                        Taxi Bahrain <span style={{ color: BLUE }}>to Dammam</span>
-                    </p>
-                    <p className="mt-0.5 text-[10.5px] font-medium text-gray-500">{COMPANY.tagline[lang]}</p>
-                    <div className="mt-2.5 space-y-0.5 text-[10.5px] leading-snug text-gray-600">
-                        <p>{COMPANY.city[lang]}</p>
-                        <p><span dir="ltr">{COMPANY.phone}</span> · {COMPANY.email}</p>
-                        <p>{COMPANY.website}</p>
+        <header className="relative -mx-[14mm] -mt-[9mm] overflow-hidden px-[14mm] pb-6 pt-[8mm] text-white"
+            style={{ background: `linear-gradient(135deg, ${BLUE} 0%, #0839b8 100%)` }}>
+            <div aria-hidden className="absolute -end-16 -top-24 h-72 w-72 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <div aria-hidden className="absolute -bottom-28 end-40 h-56 w-56 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <div className="relative flex items-start justify-between gap-6">
+                <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-white p-1.5"><Logo className="h-10 w-10" /></div>
+                    <div>
+                        <p className="text-[18px] font-black leading-tight">Taxi Bahrain to Dammam</p>
+                        <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.75)' }}>{COMPANY.tagline[lang]}</p>
                     </div>
                 </div>
+                <div className="text-end text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    <p>{COMPANY.city[lang]}</p>
+                    <p dir="ltr">{COMPANY.phone}</p>
+                    <p>{COMPANY.email}</p>
+                    <p>{COMPANY.website}</p>
+                </div>
             </div>
-            <div className="shrink-0 text-end">
-                <p className="text-[28px] font-black uppercase leading-none tracking-[0.08em]" style={{ color: ACCENT[kind] }}>{title}</p>
-                <table className="ms-auto mt-3 text-[11px]">
-                    <tbody>
-                        {meta.map((m) => (
-                            <tr key={m.label}>
-                                <td className="pe-3 text-start text-gray-500">{m.label}</td>
-                                <td className={`text-end font-bold ${m.mono ? 'font-mono tracking-wide' : ''}`} dir="ltr">{m.value}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {badges && <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">{badges}</div>}
+            <div className="relative mt-6 flex items-end justify-between gap-6">
+                <div>
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.7)' }}>{subtitle}</p>
+                    <p className="mt-1 text-[38px] font-black uppercase leading-none tracking-[0.04em]">{title}</p>
+                    {badges && <div className="mt-3 flex gap-1.5">{badges}</div>}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    {meta.map((m) => (
+                        <div key={m.label} className="rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.12)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)' }}>
+                            <p className="text-[8.5px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.65)' }}>{m.label}</p>
+                            <p className={`text-[11.5px] font-bold ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
+        </header>
+    );
+}
+
+/** Invoice: formal black masthead with a boxed details strip. */
+export function InvoiceHeader({ lang, title, meta, badges }: {
+    lang: DocLang; title: string; meta: Meta; badges?: ReactNode;
+}) {
+    return (
+        <header className="-mx-[14mm] -mt-[9mm]">
+            <div className="flex items-center justify-between gap-6 px-[14mm] py-6 text-white" style={{ background: INK }}>
+                <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-white p-1.5"><Logo className="h-10 w-10" /></div>
+                    <div>
+                        <p className="text-[18px] font-black leading-tight">Taxi Bahrain <span style={{ color: '#7aa2ff' }}>to Dammam</span></p>
+                        <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.6)' }}>{COMPANY.tagline[lang]}</p>
+                    </div>
+                </div>
+                <p className="text-[36px] font-black uppercase leading-none tracking-[0.22em]">{title}</p>
+            </div>
+            <div className="h-1" style={{ background: BLUE }} />
+            <div className="mx-[14mm] mt-5 grid overflow-hidden rounded-lg border border-gray-300" style={{ gridTemplateColumns: `repeat(${meta.length}, minmax(0, 1fr))` }}>
+                {meta.map((m, i) => (
+                    <div key={m.label} className={`px-3.5 py-2 ${i ? 'border-s border-gray-300' : ''}`}>
+                        <p className="text-[8.5px] font-black uppercase tracking-[0.15em] text-gray-400">{m.label}</p>
+                        <p className={`text-[12px] font-bold ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="mx-[14mm] mt-2.5 flex items-center justify-between gap-4">
+                <p className="text-[10px] text-gray-500">{COMPANY.city[lang]} · <span dir="ltr">{COMPANY.phone}</span> · {COMPANY.email} · {COMPANY.website}</p>
+                {badges && <div className="flex shrink-0 gap-1.5">{badges}</div>}
+            </div>
+        </header>
+    );
+}
+
+/** Receipt: centred voucher heading. */
+export function ReceiptHeader({ lang, title, meta, badges }: {
+    lang: DocLang; title: string; meta: Meta; badges?: ReactNode;
+}) {
+    return (
+        <header className="text-center">
+            <Logo className="mx-auto h-12 w-12" />
+            <p className="mt-2 text-[18px] font-black leading-tight">Taxi Bahrain <span style={{ color: GREEN }}>to Dammam</span></p>
+            <p className="mt-0.5 text-[10px] text-gray-500">{COMPANY.city[lang]} · <span dir="ltr">{COMPANY.phone}</span> · {COMPANY.website}</p>
+            <div className="mt-5 flex items-center gap-4">
+                <span className="h-px flex-1 border-t-2 border-dashed border-gray-200" />
+                <p className="text-[14px] font-black uppercase tracking-[0.42em]" style={{ color: GREEN }}>{title}</p>
+                <span className="h-px flex-1 border-t-2 border-dashed border-gray-200" />
+            </div>
+            <div className="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-1 text-[10.5px] text-gray-500">
+                {meta.map((m) => (
+                    <span key={m.label}>{m.label} <b className={`text-[#0d0d0d] ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</b></span>
+                ))}
+            </div>
+            {badges && <div className="mt-2.5 flex justify-center gap-1.5">{badges}</div>}
         </header>
     );
 }
@@ -268,7 +339,7 @@ export function TripDetails({ lang, date, time, vehicle, passengers, luggage, pi
                     ].map(([k, v]) => (
                         <div key={k} className="flex justify-between gap-3 border-b border-dashed border-gray-100 pb-1.5">
                             <dt className="text-gray-500">{k}</dt>
-                            <dd className="text-end font-semibold">{v}</dd>
+                            <dd className="text-end font-semibold"><bdi>{v}</bdi></dd>
                         </div>
                     ))}
                 </dl>
@@ -283,7 +354,7 @@ export function TripDetails({ lang, date, time, vehicle, passengers, luggage, pi
                                 {i < points.length - 1 && <span className="mt-1 w-px flex-1 border-s border-dashed border-gray-300" />}
                             </div>
                             <div className="min-w-0 pb-0.5">
-                                <p className="text-[9.5px] font-bold uppercase tracking-wider" style={{ color: p.color }}>{p.label}</p>
+                                <p className="text-[9.5px] font-bold uppercase tracking-wider" style={{ color: p.color }}><bdi>{p.label}</bdi></p>
                                 <p className="break-words text-[12px] font-semibold leading-snug">{p.place || '—'}</p>
                             </div>
                         </li>
@@ -365,10 +436,10 @@ export function NoteBox({ label, children }: { label: string; children: ReactNod
     );
 }
 
-export function Stamp({ kind, label }: { kind: DocKind; label: string }) {
-    const color = kind === 'receipt' ? '#1e7f4f' : BLUE;
+export function Stamp({ kind, label, size = 92 }: { kind: DocKind; label: string; size?: number }) {
+    const color = kind === 'receipt' ? GREEN : BLUE;
     return (
-        <svg viewBox="0 0 120 120" className="h-[96px] w-[96px] -rotate-6 opacity-90">
+        <svg viewBox="0 0 120 120" className="shrink-0 -rotate-6 opacity-90" style={{ width: size, height: size }}>
             <defs>
                 {/* Top arc runs left→right over the top; glyphs sit outside it (r 40–46). */}
                 <path id={`top-${kind}`} d="M 20,60 a 40,40 0 1,1 80,0" />
@@ -389,32 +460,114 @@ export function Stamp({ kind, label }: { kind: DocKind; label: string }) {
     );
 }
 
+/** Fahed Irshad's signature: script name with a pen flourish, in blue ink. */
+export function Signature({ width = 170 }: { width?: number }) {
+    return (
+        <div className="relative" style={{ width, height: 54 }} dir="ltr" aria-label={`Signed: ${COMPANY.director}`}>
+            <span className={`${signatureFont.className} absolute start-1 top-0 whitespace-nowrap leading-none`}
+                style={{ color: SIGNATURE_INK, fontSize: 44, transform: 'rotate(-5deg)', transformOrigin: 'left bottom' }}>
+                Fahed Irshad
+            </span>
+            <svg viewBox="0 0 170 22" className="absolute bottom-0 start-0" style={{ width, height: 18 }}>
+                <path d="M6 15 C 38 6, 70 20, 104 11 S 150 4, 166 9" stroke={SIGNATURE_INK} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                <path d="M120 17 C 132 13, 146 13, 158 15" stroke={SIGNATURE_INK} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.7" />
+            </svg>
+        </div>
+    );
+}
+
+function SignatureBlock({ lang, caption }: { lang: DocLang; caption?: string }) {
+    const c = COMMON[lang];
+    return (
+        <div className="text-center">
+            <div className="flex justify-center"><Signature /></div>
+            <div className="mx-auto mt-0.5 w-44 border-t border-gray-400 pt-1">
+                <p className="text-[11px] font-bold">{COMPANY.director}</p>
+                <p className="text-[9.5px] text-gray-500">{caption || `${c.director} · ${c.authorizedSignature}`}</p>
+            </div>
+        </div>
+    );
+}
+
+function TermsList({ lang, terms, center, columns }: { lang: DocLang; terms: string[]; center?: boolean; columns?: boolean }) {
+    const c = COMMON[lang];
+    return (
+        <div>
+            <SectionLabel>{c.terms}</SectionLabel>
+            {/* Numbered by hand: list-decimal markers land on the wrong side in RTL PDFs. */}
+            <ol className={`list-none text-[9.5px] leading-relaxed text-gray-500 ${columns ? 'grid grid-cols-2 gap-x-8 gap-y-0.5' : 'space-y-0.5'}`}>
+                {terms.map((t, i) => (
+                    <li key={t} className={center ? '' : 'flex gap-1.5'}>
+                        {!center && <span className="shrink-0">{i + 1}.</span>}<span>{t}</span>
+                    </li>
+                ))}
+            </ol>
+        </div>
+    );
+}
+
+/** Invoice footer: terms beside stamp + signature, black reference bar. */
 export function DocFooter({ lang, kind, terms, stampLabel, refLine }: {
     lang: DocLang; kind: DocKind; terms: string[]; stampLabel: string; refLine: string;
 }) {
-    const c = COMMON[lang];
     return (
         <footer className="mt-auto pt-4">
             <div className="flex items-end justify-between gap-8 border-t border-gray-200 pt-4">
-                <div className="max-w-[58%]">
-                    <SectionLabel>{c.terms}</SectionLabel>
-                    <ol className="list-decimal space-y-0.5 ps-4 text-[9.5px] leading-relaxed text-gray-500">
-                        {terms.map((t) => <li key={t}>{t}</li>)}
-                    </ol>
-                </div>
-                <div className="flex items-end gap-4">
+                <div className="max-w-[55%]"><TermsList lang={lang} terms={terms} /></div>
+                <div className="flex items-end gap-3">
                     <Stamp kind={kind} label={stampLabel} />
-                    <div className="text-center">
-                        <div className="mt-10 w-36 border-t border-gray-400 pt-1">
-                            <p className="text-[11px] font-bold">{COMPANY.director}</p>
-                            <p className="text-[9.5px] text-gray-500">{c.director} · {c.authorizedSignature}</p>
-                        </div>
+                    <SignatureBlock lang={lang} />
+                </div>
+            </div>
+            <div className="-mx-[14mm] -mb-[8mm] mt-5 flex items-center justify-between gap-4 px-[14mm] py-3 text-[9.5px]" style={{ background: INK, color: 'rgba(255,255,255,0.8)' }}>
+                <span className="font-mono tracking-wide" dir="ltr">{refLine}</span>
+                <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail} · {COMPANY.phone}</span>
+            </div>
+        </footer>
+    );
+}
+
+/** Quotation footer: company signs, client countersigns to accept. */
+export function QuoteFooter({ lang, terms, stampLabel, refLine, acceptLabel, acceptCaption }: {
+    lang: DocLang; terms: string[]; stampLabel: string; refLine: string; acceptLabel: string; acceptCaption: string;
+}) {
+    return (
+        <footer className="mt-auto pt-4">
+            <TermsList lang={lang} terms={terms} columns />
+            <div className="mt-3 grid grid-cols-2 gap-6 border-t border-gray-200 pt-3">
+                <div className="flex items-end gap-5">
+                    <Stamp kind="quotation" label={stampLabel} />
+                    <SignatureBlock lang={lang} />
+                </div>
+                <div className="flex flex-col justify-end text-center">
+                    <p className="mb-auto text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{acceptLabel}</p>
+                    <div className="mx-auto mt-12 w-52 border-t border-gray-400 pt-1">
+                        <p className="text-[9.5px] text-gray-500">{acceptCaption}</p>
                     </div>
                 </div>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-4 rounded-lg px-4 py-2 text-[9.5px] text-white/80" style={{ background: INK }}>
+            <div className="-mx-[14mm] -mb-[8mm] mt-5 flex items-center justify-between gap-4 px-[14mm] py-3 text-[9.5px] text-white" style={{ background: BLUE }}>
                 <span className="font-mono tracking-wide" dir="ltr">{refLine}</span>
                 <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail} · {COMPANY.phone}</span>
+            </div>
+        </footer>
+    );
+}
+
+/** Receipt footer: centred stamp and signature with a thank-you line. */
+export function ReceiptFooter({ lang, terms, stampLabel, refLine, thanks }: {
+    lang: DocLang; terms: string[]; stampLabel: string; refLine: string; thanks: string;
+}) {
+    return (
+        <footer className="mt-auto pt-4 text-center">
+            <div className="flex items-center justify-center gap-10">
+                <Stamp kind="receipt" label={stampLabel} size={112} />
+                <SignatureBlock lang={lang} />
+            </div>
+            <p className="mt-4 text-[13px] font-bold" style={{ color: GREEN }}>{thanks}</p>
+            <div className="mx-auto mt-3 max-w-[80%]"><TermsList lang={lang} terms={terms} center /></div>
+            <div className="mt-4 border-t-2 border-dashed border-gray-200 pt-2.5 text-[9.5px] text-gray-500">
+                <span className="font-mono" dir="ltr">{refLine}</span> · <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail}</span>
             </div>
         </footer>
     );
@@ -424,6 +577,8 @@ export function DocFooter({ lang, kind, terms, stampLabel, refLine }: {
 export function PrintStyles({ id }: { id: string }) {
     return (
         <style jsx global>{`
+            /* Letter-spacing pulls joined Arabic letters apart, so drop it in RTL. */
+            #${id}[dir='rtl'], #${id}[dir='rtl'] * { letter-spacing: 0 !important; }
             @media print {
                 @page { size: A4; margin: 0; }
                 html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
