@@ -6,67 +6,73 @@ import { Download, Mail, Send } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
 import {
-    COMPANY, addDays, amountInWords, bookingRef, docFilename, formatDocDate, formatMoney,
+    COMPANY, addDays, amountInWords, bookingRef, docFilename, formatDocDate, formatMoney, formatTime12h,
     renderDocumentPdf, toNumber, type DocLang,
 } from '@/lib/doc-utils';
 import {
-    ActionButton, BLUE, COMMON, ControlPanel, DocPage, DocToolbar, NoteBox, PartyBlock, PrintStyles,
-    QuoteFooter, QuoteHeader, SectionLabel, TripDetails, type TripStop,
+    ACCENT, ActionButton, COMMON, ControlPanel, DocFooter, DocPage, DocTitle, DocToolbar, KV, Letterhead,
+    NAVY, PrintStyles, RouteRows, Section, SignatureBlock, SummaryBox, TONE, TermsSection, methodLabel,
+    type Tone, type TripStop,
 } from '@/components/admin/documents/DocumentKit';
 
 const DOC_ID = 'printable-area';
 const VALID_DAYS = 7;
+const ACC = ACCENT.quotation;
 
-const TEXT = {
+const TEXT: Record<DocLang, Record<string, string>> = {
     en: {
-        title: 'Quotation',
-        subject: 'Official quotation for private transport services',
-        dear: 'Dear',
-        intro: 'Thank you for your enquiry. We are pleased to quote for your private transfer as detailed below. The price is all-inclusive — there are no hidden charges at the border or on arrival.',
-        service: 'Private Chauffeur Transfer', roundTripService: 'Round Trip Chauffeur Transfer',
-        includes: ['Professional, licensed chauffeur', 'Fuel, tolls and parking', 'Border crossing assistance (King Fahd Causeway)', 'Free waiting time — 60 min at airports'],
-        accept: 'Accept this quotation online',
-        acceptHint: 'Open the link below, or reply to our email / WhatsApp, to confirm your booking.',
-        stamp: 'QUOTED',
-        term1: `This quotation is valid for ${VALID_DAYS} days from the date of issue, subject to vehicle availability.`,
-        term2: 'Free cancellation up to 24 hours before the pickup time.',
-        term3: 'Changes to the route, time or vehicle may change the price.',
-        term4: 'Valid passports / visas for the border crossing are the passenger’s responsibility.',
-        note: 'Note',
+        title: 'Official Transportation Quotation',
+        quoteRef: 'Quotation Reference', quoteStatus: 'Quotation Status',
+        awaiting: 'Awaiting Acceptance', confirmed: 'Confirmed', cancelled: 'Cancelled',
+        preparedFor: 'Prepared For', serviceJourney: 'Service & Journey Details', summary: 'Quotation Summary',
+        baseFare: 'Base Transportation Fare', totalQuoted: 'Total Quoted Price',
+        payable: 'Full amount, payable',
+        payableCash: 'in cash to the driver on the day of service',
+        payableOther: 'by {method} before the day of service',
+        pricingBasis: 'Pricing Basis', pricingBasisText: 'One private vehicle for the journey specified above.',
+        included: 'Included in the Fare', includedText: 'Vehicle and professional chauffeur, fuel, road tolls, parking fees and King Fahd Causeway crossing assistance.',
+        otherCharges: 'Any other charge (extra stops, extended waiting, route changes) is not included and will be agreed with you before it applies.',
+        noAdvance: 'No advance payment is required unless agreed otherwise.',
         noPrice: 'Price on request',
-        subtitle: 'Private Transfer Proposal',
-        journey: 'Your Journey',
-        included: "What's Included",
-        fare: 'Your Fare',
-        fareHint: 'All-inclusive · no hidden charges',
-        acceptedBy: 'Accepted by Client',
-        acceptCaption: 'Name · Signature · Date',
+        term1: 'This quotation is valid until {date}, unless otherwise stated.',
+        term2: 'Subject to vehicle availability; the booking is confirmed once you accept and we send our confirmation.',
+        term3: 'Journey times vary with traffic, flights and border processing; an exact arrival time cannot be guaranteed.',
+        term4: 'Changes to time, route, passengers, luggage or vehicle may change the fare; we will ask for your approval first.',
+        term5: 'Valid passports and visas for the border crossing are the passenger’s responsibility. There are no hidden fees.',
+        nextStep: 'Next Step',
+        nextStepText: 'Please check the journey details and fare, then accept online or reply by email or WhatsApp to confirm your booking.',
+        acceptOnline: 'Accept online',
+        customerAcceptance: 'Customer Acceptance', bookingConfirmation: 'Booking Confirmation', pending: 'Pending',
+        representative: 'Authorised Representative',
+        thanks: 'Thank you for considering Taxi Bahrain to Dammam for your transportation requirements.',
     },
     ar: {
-        title: 'عرض سعر',
-        subject: 'عرض سعر رسمي لخدمات النقل الخاص',
-        dear: 'عزيزي',
-        intro: 'شكراً لاستفساركم. يسعدنا تقديم عرض السعر التالي لرحلتكم الخاصة. السعر شامل بالكامل — لا توجد رسوم مخفية عند الحدود أو عند الوصول.',
-        service: 'نقل خاص بسائق', roundTripService: 'نقل خاص ذهاب وعودة',
-        includes: ['سائق محترف ومرخص', 'الوقود والرسوم والمواقف', 'المساعدة في عبور جسر الملك فهد', 'انتظار مجاني — 60 دقيقة في المطار'],
-        accept: 'اقبل عرض السعر عبر الإنترنت',
-        acceptHint: 'افتح الرابط أدناه، أو رد على بريدنا / واتساب، لتأكيد حجزك.',
-        stamp: 'QUOTED',
-        term1: `هذا العرض صالح لمدة ${VALID_DAYS} أيام من تاريخ الإصدار حسب توفر المركبات.`,
-        term2: 'إلغاء مجاني حتى 24 ساعة قبل موعد الانطلاق.',
-        term3: 'قد يتغير السعر عند تغيير المسار أو الوقت أو المركبة.',
-        term4: 'جوازات السفر والتأشيرات اللازمة لعبور الحدود مسؤولية الراكب.',
-        note: 'ملاحظة',
+        title: 'عرض سعر رسمي لخدمات النقل',
+        quoteRef: 'رقم العرض', quoteStatus: 'حالة العرض',
+        awaiting: 'بانتظار الموافقة', confirmed: 'مؤكد', cancelled: 'ملغي',
+        preparedFor: 'مُعد لـ', serviceJourney: 'تفاصيل الخدمة والرحلة', summary: 'ملخص العرض',
+        baseFare: 'أجرة النقل الأساسية', totalQuoted: 'السعر الإجمالي المقترح',
+        payable: 'المبلغ كاملاً، يُدفع',
+        payableCash: 'نقداً للسائق يوم الخدمة',
+        payableOther: 'عن طريق {method} قبل يوم الخدمة',
+        pricingBasis: 'أساس التسعير', pricingBasisText: 'مركبة خاصة واحدة للرحلة المذكورة أعلاه.',
+        included: 'يشمل السعر', includedText: 'المركبة والسائق المحترف والوقود ورسوم الطرق والمواقف والمساعدة في عبور جسر الملك فهد.',
+        otherCharges: 'أي رسوم أخرى (محطات إضافية، انتظار مطوّل، تغيير المسار) غير مشمولة وسيتم الاتفاق عليها معكم مسبقاً.',
+        noAdvance: 'لا يلزم دفع مقدم ما لم يتم الاتفاق على غير ذلك.',
         noPrice: 'السعر عند الطلب',
-        subtitle: 'عرض نقل خاص',
-        journey: 'رحلتكم',
-        included: 'ما يشمله السعر',
-        fare: 'الأجرة',
-        fareHint: 'شامل بالكامل · بدون رسوم مخفية',
-        acceptedBy: 'موافقة العميل',
-        acceptCaption: 'الاسم · التوقيع · التاريخ',
+        term1: 'هذا العرض صالح حتى {date} ما لم يذكر خلاف ذلك.',
+        term2: 'هذا العرض يخضع لتوفر المركبات. يتم تأكيد الحجز بعد موافقتكم وإرسال تأكيد الحجز منا.',
+        term3: 'قد تختلف مدة الرحلة بسبب حركة المرور والرحلات الجوية وإجراءات الحدود، ولا يمكن ضمان وقت وصول محدد.',
+        term4: 'قد يؤثر تغيير وقت الانطلاق أو المسار أو عدد الركاب أو الأمتعة أو المركبة على التوفر والسعر، وسنشارككم أي تغيير للموافقة أولاً.',
+        term5: 'جوازات السفر والتأشيرات اللازمة لعبور الحدود مسؤولية الراكب. لا توجد رسوم مخفية.',
+        nextStep: 'الخطوة التالية',
+        nextStepText: 'للمتابعة، يرجى التأكد من صحة تفاصيل الرحلة والمركبة والسعر. اقبلوا العرض عبر الرابط أدناه أو ردوا على بريدنا أو واتساب وسنؤكد حجزكم.',
+        acceptOnline: 'القبول عبر الإنترنت',
+        customerAcceptance: 'موافقة العميل', bookingConfirmation: 'تأكيد الحجز', pending: 'قيد الانتظار',
+        representative: 'الممثل المفوض',
+        thanks: 'شكراً لاختياركم تاكسي البحرين إلى الدمام لاحتياجات النقل الخاصة بكم.',
     },
-} satisfies Record<DocLang, Record<string, string | string[]>>;
+};
 
 interface Booking {
     id: string;
@@ -85,6 +91,7 @@ interface Booking {
     special_requests?: string;
     total_price?: number;
     currency?: string;
+    payment_method?: string;
     has_return_trip?: boolean;
     invoice_data?: { stops?: TripStop[] };
 }
@@ -138,6 +145,11 @@ export default function QuotationPage() {
     const roundTrip = !!booking.has_return_trip;
     const acceptUrl = `${COMPANY.siteUrl}/booking/quote/?id=${booking.id}`;
     const filename = docFilename('Quotation', ref, booking.customer_name);
+    const isConfirmed = ['confirmed', 'in_progress', 'completed'].includes(booking.status);
+    const [quoteStatus, quoteTone]: [string, Tone] = booking.status === 'cancelled' ? [t.cancelled, 'red']
+        : isConfirmed ? [t.confirmed, 'green'] : [t.awaiting, 'amber'];
+    const method = booking.payment_method || 'Cash to Driver';
+    const payableText = `${t.payable} ${method === 'Cash to Driver' ? t.payableCash : t.payableOther.replace('{method}', methodLabel(method, lang).toLowerCase())}`;
 
     const buildPdf = async () => {
         const el = document.getElementById(DOC_ID);
@@ -204,71 +216,101 @@ export default function QuotationPage() {
 
             <div className="h-3 print:hidden" />
 
-            <DocPage id={DOC_ID} lang={lang} kind="quotation">
-                <QuoteHeader lang={lang} title={t.title} subtitle={t.subtitle}
-                    meta={[
-                        { label: c.no, value: quoteNumber, mono: true },
-                        { label: c.issued, value: issued },
-                        { label: c.validUntil, value: validUntil },
-                        { label: c.bookingRef, value: `#${ref}`, mono: true },
-                    ]}
-                    badges={roundTrip ? <span className="rounded-full bg-white px-3 py-0.5 text-[9.5px] font-black uppercase tracking-wider" style={{ color: BLUE }}>{c.roundTrip}</span> : undefined}
-                />
+            <DocPage id={DOC_ID} lang={lang}>
+                <Letterhead lang={lang} accent={ACC} />
+                <DocTitle title={t.title} center size={20} />
 
-                <div className="mt-5 grid grid-cols-[1fr_1.5fr] gap-6">
-                    <PartyBlock label={c.preparedFor} name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
-                    <div className="border-s-2 ps-5" style={{ borderColor: BLUE }}>
-                        <p className="text-[12.5px] font-bold">{t.subject}</p>
-                        <p className="mt-1.5 text-[11.5px] leading-relaxed text-gray-600">
-                            {t.dear} {booking.customer_name?.split(' ')[0] || ''}, {t.intro}
+                <SummaryBox items={[
+                    { label: t.quoteRef, value: quoteNumber, mono: true },
+                    { label: c.issueDate, value: issued },
+                    { label: c.validUntil, value: validUntil },
+                    { label: t.quoteStatus, value: quoteStatus, tone: quoteTone },
+                    { label: c.currency, value: currency },
+                    { label: c.bookingRef, value: `#${ref}`, mono: true },
+                ]} />
+
+                <Section title={t.preparedFor} accent={ACC} className="mt-5">
+                    <div className="grid grid-cols-3 gap-x-6 text-[11.5px]">
+                        {[
+                            [c.customerName, booking.customer_name],
+                            [c.emailAddress, booking.customer_email || '—'],
+                            [c.phone, <span key="p" dir="ltr">{booking.customer_phone || '—'}</span>],
+                        ].map(([k, v]) => (
+                            <div key={k as string}>
+                                <p className="text-gray-500">{k}</p>
+                                <p className="font-bold"><bdi>{v}</bdi></p>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title={t.serviceJourney} accent={ACC} className="mt-4">
+                    <div className="grid grid-cols-2 gap-x-8">
+                        <KV label={c.serviceType} value={roundTrip ? c.roundTripService : c.oneWayService} />
+                        <KV label={c.vehicle} value={booking.vehicle_type} />
+                        <KV label={c.pickupDate} value={formatDocDate(booking.pickup_date)} />
+                        <KV label={c.pickupTime} value={formatTime12h(booking.pickup_time)} />
+                        <KV label={c.passengers} value={String(booking.passengers ?? 1)} />
+                        <KV label={c.luggage} value={`${booking.luggage ?? 0} ${c.bagsN}`} />
+                    </div>
+                    <RouteRows lang={lang} pickup={booking.pickup_location} destination={booking.destination}
+                        stops={booking.invoice_data?.stops} roundTrip={roundTrip} formatTime={formatTime12h} />
+                    {booking.special_requests && <KV labelWidth="20%" label={c.specialRequests} value={booking.special_requests} />}
+                </Section>
+
+                <Section title={t.summary} accent={ACC} className="mt-4">
+                    <div className="overflow-hidden rounded-xl border border-gray-200">
+                        <div className="flex justify-between px-4 py-2 text-[12px]">
+                            <span>{t.baseFare}</span>
+                            <span className="font-bold" dir="ltr">{hasPrice ? formatMoney(total, currency) : t.noPrice}</span>
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-2 text-white" style={{ background: NAVY }}>
+                            <span className="text-[13px] font-bold uppercase">{t.totalQuoted}</span>
+                            <span className="whitespace-nowrap text-[19px] font-black" dir="ltr">{hasPrice ? formatMoney(total, currency) : t.noPrice}</span>
+                        </div>
+                        {hasPrice && (
+                            <div className="flex justify-between gap-4 px-4 py-2 text-[11.5px] font-bold" style={{ color: TONE.green, background: '#ecfdf3' }}>
+                                <span>{payableText}</span>
+                                <span dir="ltr">{formatMoney(total, currency)}</span>
+                            </div>
+                        )}
+                        <div className="space-y-0.5 bg-[#f8fafc] px-4 py-2 text-[11px] text-gray-700">
+                            {hasPrice && lang === 'en' && <p><span className="text-gray-500">{c.inWords}:</span> <i>{amountInWords(total, currency)}</i></p>}
+                            <p><span className="text-gray-500">{t.pricingBasis}:</span> {t.pricingBasisText}</p>
+                            <p><span className="text-gray-500">{t.included}:</span> {t.includedText}</p>
+                            <p className="text-gray-500">{t.otherCharges} {t.noAdvance}</p>
+                            {quickNote.trim() && <p className="whitespace-pre-wrap"><span className="text-gray-500">{c.remarks}:</span> {quickNote.trim()}</p>}
+                        </div>
+                    </div>
+                </Section>
+
+                <TermsSection lang={lang} accent={ACC} className="mt-4"
+                    terms={[t.term1.replace('{date}', validUntil), t.term2, t.term3, t.term4, t.term5]} />
+
+                <div className="mb-3 mt-4 grid grid-cols-[1.25fr_1fr] items-end gap-8">
+                    <Section title={t.nextStep} accent={ACC}>
+                        <p className="text-[11.5px] leading-relaxed text-gray-700">{t.nextStepText}</p>
+                        <p className="mt-1 break-all text-[10px] text-gray-500" dir="ltr">
+                            <b style={{ color: ACC }}>{t.acceptOnline}:</b> {acceptUrl.replace('https://', '')}
                         </p>
+                        <div className="mt-2 grid grid-cols-2 gap-4 text-[11px]">
+                            <div>
+                                <p className="text-gray-500">{t.customerAcceptance}</p>
+                                <p className="font-bold" style={{ color: TONE[isConfirmed ? 'green' : 'amber'] }}>{isConfirmed ? t.confirmed : t.pending}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500">{t.bookingConfirmation}</p>
+                                <p className="font-bold" style={{ color: TONE[isConfirmed ? 'green' : 'amber'] }}>{isConfirmed ? t.confirmed : t.pending}</p>
+                            </div>
+                        </div>
+                    </Section>
+                    <div className="flex flex-col items-center">
+                        <p className="mb-3 text-[10.5px] uppercase tracking-[0.15em] text-gray-500">{t.representative}</p>
+                        <SignatureBlock lang={lang} />
                     </div>
                 </div>
 
-                <section className="mt-4 rounded-xl border border-blue-100 bg-[#f7f9ff] px-5 py-3">
-                    <p className="mb-2 text-[13px] font-black" style={{ color: BLUE }}>{t.journey}</p>
-                    <TripDetails lang={lang} date={booking.pickup_date} time={booking.pickup_time} vehicle={booking.vehicle_type}
-                        passengers={booking.passengers} luggage={booking.luggage}
-                        pickup={booking.pickup_location} destination={booking.destination}
-                        stops={booking.invoice_data?.stops} roundTrip={roundTrip} />
-                </section>
-
-                <div className="mt-4 grid grid-cols-[1.15fr_1fr] gap-5">
-                    <div>
-                        <SectionLabel>{t.included}</SectionLabel>
-                        <div className="grid grid-cols-2 gap-2">
-                            {t.includes.map((x) => (
-                                <div key={x} className="flex items-start gap-2 rounded-lg border border-gray-100 px-2.5 py-2">
-                                    <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white" style={{ background: BLUE }}>✓</span>
-                                    <span className="text-[10.5px] leading-snug text-gray-700">{x}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-3 rounded-lg border-2 border-dashed px-3 py-2" style={{ borderColor: '#b9ccff' }}>
-                            <p className="text-[11.5px] font-black" style={{ color: BLUE }}>{t.accept}</p>
-                            <p className="mt-0.5 text-[10px] leading-snug text-gray-600">{t.acceptHint}</p>
-                            <p className="mt-0.5 break-all font-mono text-[9px] text-gray-500" dir="ltr">{acceptUrl.replace('https://', '')}</p>
-                        </div>
-                    </div>
-                    <div className="flex flex-col justify-center rounded-xl px-5 py-4 text-white" style={{ background: BLUE }}>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.fare}</p>
-                        <p className="mt-1 text-[30px] font-black leading-none" dir="ltr">{hasPrice ? formatMoney(total, currency) : t.noPrice}</p>
-                        <p className="mt-1.5 text-[10px]" style={{ color: 'rgba(255,255,255,0.8)' }}>{roundTrip ? t.roundTripService : t.service} · {t.fareHint}</p>
-                        {hasPrice && lang === 'en' && <p className="mt-2 border-t pt-2 text-[10px] italic" style={{ borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)' }}>{amountInWords(total, currency)}</p>}
-                        <span className="mt-3 self-start rounded-full bg-white px-3 py-1 text-[10px] font-black" style={{ color: BLUE }} dir="ltr">{c.validUntil} · {validUntil}</span>
-                    </div>
-                </div>
-
-                {(booking.special_requests || quickNote.trim()) && (
-                    <div className="mt-4">
-                        <NoteBox label={quickNote.trim() ? t.note : c.specialRequests}>
-                            {[booking.special_requests, quickNote.trim()].filter(Boolean).join('\n')}
-                        </NoteBox>
-                    </div>
-                )}
-
-                <QuoteFooter lang={lang} terms={[t.term1, t.term2, t.term3, t.term4]} stampLabel={t.stamp}
-                    refLine={`${quoteNumber} · ${issued}`} acceptLabel={t.acceptedBy} acceptCaption={t.acceptCaption} />
+                <DocFooter lang={lang} thanks={t.thanks} />
             </DocPage>
 
             <PrintStyles id={DOC_ID} />

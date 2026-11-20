@@ -2,59 +2,60 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Download, Landmark, Mail, Plus, Save, Trash2, X } from 'lucide-react';
+import { Download, Mail, Plus, Save, Trash2, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { adminFetch } from '@/lib/admin-fetch';
 import {
     CURRENCIES, PAYMENT_METHODS, amountInWords, bookingRef, docFilename, formatDocDate,
-    formatMoney, renderDocumentPdf, toNumber, type DocLang,
+    formatMoney, formatTime12h, renderDocumentPdf, toNumber, type DocLang,
 } from '@/lib/doc-utils';
 import {
-    ActionButton, Badge, COMMON, ControlPanel, DocFooter, DocPage, DocToolbar, Field, InvoiceHeader,
-    LineItems, NoteBox, PartyBlock, PrintStyles, Segmented, SectionLabel, Totals, TripDetails,
-    inputClass, methodLabel, type TripStop,
+    ACCENT, ActionButton, Banner, COMMON, ChargesTable, ControlPanel, DocFooter, DocPage, DocTitle, DocToolbar,
+    Field, KV, Letterhead, PartyLines, PrintStyles, RouteRows, Section, Segmented, SummaryBox,
+    TermsAndSignature, TotalsBox, bookingStatusLabel, inputClass, methodLabel, type Tone, type TripStop,
 } from '@/components/admin/documents/DocumentKit';
 
 const DOC_ID = 'invoice-print';
+const ACC = ACCENT.invoice;
 
 const TEXT: Record<DocLang, Record<string, string>> = {
     en: {
-        title: 'Invoice',
-        service: 'Private Chauffeur Transfer', roundTripService: 'Round Trip Chauffeur Transfer',
-        includes: 'Includes professional chauffeur, fuel, tolls and border crossing assistance.',
-        payment: 'Payment',
-        payCash: 'Please pay the driver in cash on completion of the journey.',
-        payBank: 'Please transfer the total to the bank account below and share the receipt on WhatsApp.',
+        title: 'Invoice', invoiceNumber: 'Invoice Number', invoiceStatus: 'Invoice Status', dueDate: 'Payment Due',
+        charges: 'Service Description & Charges', totalInvoice: 'Total Invoice Amount',
+        payCash: 'Payment is to be made in cash to the driver on completion of the journey.',
+        payBank: 'Please transfer the total to the bank account below and share the transfer receipt on WhatsApp.',
         payOnline: 'Payment is made online using the secure link sent by our team.',
         payCard: 'Payment by card is accepted at the time of the journey.',
-        paidNote: 'This invoice has been paid in full. Thank you.',
-        bank: 'Bank Transfer Details', bankName: 'Bank', accountName: 'Account Name',
-        accountNumber: 'Account No.', iban: 'IBAN', swift: 'SWIFT / BIC',
-        stamp: 'INVOICED',
-        term1: 'Price includes fuel, parking, tolls and border crossing assistance.',
-        term2: 'Free cancellation up to 24 hours before the pickup time.',
-        term3: 'Driver waits up to 60 minutes for airport pickups at no charge.',
-        term4: 'Please quote the invoice number with any payment or query.',
-        remarks: 'Remarks', status: 'Status', serviceDetails: 'Service Details',
+        paidInFull: 'Payment has been received in full.',
+        bannerPaid: 'Your payment has been received in full. Thank you for choosing Taxi Bahrain to Dammam.',
+        bannerDue: 'Please settle the outstanding balance by the payment due date. Thank you for choosing Taxi Bahrain to Dammam.',
+        bank: 'Bank Transfer Details', bankName: 'Bank Name', accountName: 'Account Name',
+        accountNumber: 'Account Number', iban: 'IBAN', swift: 'SWIFT / BIC',
+        term1: 'This invoice covers the transportation service and itinerary stated in this document.',
+        term2: 'Fuel, tolls, parking and border crossing assistance are included in the price.',
+        term3: 'Additional waiting time, stops, route changes or other services may incur additional charges when agreed.',
+        term4: 'Free cancellation up to 24 hours before the pickup time; later cancellations follow the booking terms.',
+        term5: 'Please quote the invoice number with any payment or query.',
+        thanks: 'Thank you for choosing Taxi Bahrain to Dammam.',
     },
     ar: {
-        title: 'فاتورة',
-        service: 'نقل خاص بسائق', roundTripService: 'نقل خاص ذهاب وعودة',
-        includes: 'يشمل سائقاً محترفاً والوقود والرسوم والمساعدة في عبور الحدود.',
-        payment: 'الدفع',
-        payCash: 'يرجى الدفع نقداً للسائق عند انتهاء الرحلة.',
-        payBank: 'يرجى تحويل المبلغ إلى الحساب البنكي أدناه وإرسال الإيصال عبر واتساب.',
+        title: 'فاتورة', invoiceNumber: 'رقم الفاتورة', invoiceStatus: 'حالة الفاتورة', dueDate: 'تاريخ الاستحقاق',
+        charges: 'وصف الخدمة والرسوم', totalInvoice: 'إجمالي الفاتورة',
+        payCash: 'يتم الدفع نقداً للسائق عند انتهاء الرحلة.',
+        payBank: 'يرجى تحويل المبلغ إلى الحساب البنكي أدناه وإرسال إيصال التحويل عبر واتساب.',
         payOnline: 'يتم الدفع إلكترونياً عبر الرابط الآمن المرسل من فريقنا.',
         payCard: 'يتم قبول الدفع بالبطاقة وقت الرحلة.',
-        paidNote: 'تم سداد هذه الفاتورة بالكامل. شكراً لكم.',
-        bank: 'تفاصيل التحويل البنكي', bankName: 'البنك', accountName: 'اسم الحساب',
+        paidInFull: 'تم استلام المبلغ بالكامل.',
+        bannerPaid: 'تم استلام دفعتكم بالكامل. شكراً لاختياركم تاكسي البحرين إلى الدمام.',
+        bannerDue: 'يرجى سداد الرصيد المتبقي بحلول تاريخ الاستحقاق. شكراً لاختياركم تاكسي البحرين إلى الدمام.',
+        bank: 'تفاصيل التحويل البنكي', bankName: 'اسم البنك', accountName: 'اسم الحساب',
         accountNumber: 'رقم الحساب', iban: 'الآيبان', swift: 'السويفت',
-        stamp: 'INVOICED',
-        term1: 'السعر يشمل الوقود والمواقف والرسوم والمساعدة في عبور الحدود.',
-        term2: 'إلغاء مجاني حتى 24 ساعة قبل موعد الانطلاق.',
-        term3: 'ينتظر السائق حتى 60 دقيقة في المطار دون رسوم إضافية.',
-        term4: 'يرجى ذكر رقم الفاتورة عند الدفع أو الاستفسار.',
-        remarks: 'ملاحظات', status: 'الحالة', serviceDetails: 'تفاصيل الخدمة',
+        term1: 'تغطي هذه الفاتورة خدمة النقل وخط السير المذكورين في هذا المستند.',
+        term2: 'السعر يشمل الوقود والرسوم والمواقف والمساعدة في عبور الحدود.',
+        term3: 'قد يترتب على وقت الانتظار الإضافي أو المحطات أو تغيير المسار رسوم إضافية عند الاتفاق.',
+        term4: 'إلغاء مجاني حتى 24 ساعة قبل موعد الانطلاق؛ وتخضع الإلغاءات اللاحقة لشروط الحجز.',
+        term5: 'يرجى ذكر رقم الفاتورة عند الدفع أو الاستفسار.',
+        thanks: 'شكراً لاختياركم تاكسي البحرين إلى الدمام.',
     },
 };
 
@@ -90,6 +91,7 @@ interface Booking {
     customer_phone: string;
     customer_email: string;
     special_requests?: string;
+    status?: string;
     total_price?: number;
     currency?: string;
     payment_status?: string;
@@ -177,11 +179,16 @@ export default function InvoicePage() {
     const isPaid = paymentStatus.toLowerCase() === 'paid';
     const filename = docFilename('Invoice', ref, booking.customer_name);
     const statusLabel = paymentStatus === 'Paid' ? c.paid : paymentStatus === 'Unpaid' ? c.unpaid : paymentStatus === 'Pending' ? c.pending : paymentStatus;
+    const statusTone: Tone = isPaid ? 'green' : paymentStatus === 'Unpaid' ? 'red' : 'amber';
+    const [bookingStatus, bookingTone] = bookingStatusLabel(booking.status, lang);
+    const received = isPaid ? total : 0;
+    const outstanding = total - received;
     const showBank = bank.showOnDocument && !isPaid && (bank.iban || bank.accountNumber);
-    const paymentText = isPaid ? t.paidNote
+    const paymentText = isPaid ? t.paidInFull
         : paymentMethod === 'Cash to Driver' ? t.payCash
         : paymentMethod === 'Bank Transfer' ? t.payBank
         : paymentMethod === 'Card' ? t.payCard : t.payOnline;
+    const passengersText = `${booking.passengers ?? 1} ${c.passengersN} · ${booking.luggage ?? 0} ${c.bagsN}`;
 
     const saveDraft = async (silent = false) => {
         if (!silent) setSaving(true);
@@ -327,91 +334,96 @@ export default function InvoicePage() {
 
             <div className="h-3 print:hidden" />
 
-            <DocPage id={DOC_ID} lang={lang} kind="invoice" watermark={isPaid ? c.paid : null}>
-                <InvoiceHeader lang={lang} title={t.title}
-                    meta={[
-                        { label: c.no, value: invoiceNumber, mono: true },
-                        { label: c.issued, value: issued },
-                        { label: c.dueDate, value: formatDocDate(booking.pickup_date) },
-                        { label: c.bookingRef, value: `#${ref}`, mono: true },
-                    ]}
-                    badges={<>
-                        <Badge tone={isPaid ? 'green' : paymentStatus === 'Unpaid' ? 'red' : 'amber'}>{statusLabel}</Badge>
-                        {isRoundTrip && <Badge tone="blue">{c.roundTrip}</Badge>}
-                    </>}
-                />
+            <DocPage id={DOC_ID} lang={lang}>
+                <Letterhead lang={lang} accent={ACC} />
+                <DocTitle title={t.title} pill={statusLabel} pillTone={statusTone} />
 
-                <div className="mt-5 grid grid-cols-2 gap-4">
-                    <div className="rounded-lg border border-gray-200 px-4 py-3">
-                        <PartyBlock label={c.billTo} name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
-                    </div>
-                    <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-                        <SectionLabel>{t.payment}</SectionLabel>
-                        <dl className="space-y-1 text-[11.5px]">
-                            <div className="flex justify-between"><dt className="text-gray-500">{c.paymentMethod}</dt><dd className="font-bold">{methodLabel(paymentMethod, lang)}</dd></div>
-                            <div className="flex justify-between"><dt className="text-gray-500">{t.status}</dt><dd className={`font-bold ${isPaid ? 'text-green-700' : 'text-red-700'}`}>{statusLabel}</dd></div>
-                            <div className="flex justify-between"><dt className="text-gray-500">{isPaid ? c.amountPaid : c.balanceDue}</dt><dd className="font-black" dir="ltr">{formatMoney(total, currency)}</dd></div>
-                        </dl>
-                    </div>
+                <SummaryBox items={[
+                    { label: t.invoiceNumber, value: invoiceNumber, mono: true },
+                    { label: c.issueDate, value: issued },
+                    { label: c.bookingRef, value: `#${ref}`, mono: true },
+                    { label: t.invoiceStatus, value: statusLabel, tone: statusTone },
+                    { label: c.currency, value: currency },
+                    { label: c.bookingStatus, value: bookingStatus, tone: bookingTone },
+                ]} />
+
+                <div className="mt-5 grid grid-cols-2 gap-8">
+                    <Section title={c.billTo} accent={ACC}>
+                        <PartyLines name={booking.customer_name} phone={booking.customer_phone} email={booking.customer_email} />
+                    </Section>
+                    <Section title={c.bookingDetails} accent={ACC}>
+                        <KV label={c.serviceDate} value={formatDocDate(booking.pickup_date)} />
+                        <KV label={c.pickupTime} value={formatTime12h(booking.pickup_time)} />
+                        <KV label={c.vehicle} value={booking.vehicle_type} />
+                        <KV label={c.passengers} value={passengersText} />
+                        <KV label={c.serviceType} value={isRoundTrip ? c.roundTripService : c.oneWayService} />
+                    </Section>
                 </div>
 
-                <section className="mt-5">
-                    <div className="mb-3 flex items-center gap-3">
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em]">{t.serviceDetails}</p>
-                        <span className="h-px flex-1 bg-gray-300" />
-                    </div>
-                    <TripDetails lang={lang} date={booking.pickup_date} time={booking.pickup_time} vehicle={booking.vehicle_type}
-                        passengers={booking.passengers} luggage={booking.luggage}
-                        pickup={booking.pickup_location} destination={booking.destination}
-                        stops={stops} roundTrip={isRoundTrip} returnTo={returnDestination} />
-                </section>
+                <Section title={c.journeyRoute} accent={ACC} className="mt-4">
+                    <RouteRows lang={lang} pickup={booking.pickup_location} destination={booking.destination}
+                        stops={stops} roundTrip={isRoundTrip} returnTo={returnDestination} formatTime={formatTime12h} />
+                </Section>
 
-                <div className="mt-5">
-                    <LineItems lang={lang} rows={[{
-                        title: isRoundTrip ? t.roundTripService : t.service,
-                        detail: <>
-                            <p>{booking.vehicle_type} · {booking.pickup_location.split(',')[0]} {isRoundTrip ? '⇄' : '→'} {booking.destination.split(',')[0]}</p>
-                            <p>{t.includes}</p>
-                            {booking.special_requests && <p className="mt-1 whitespace-pre-wrap"><b>{c.specialRequests}:</b> {booking.special_requests}</p>}
-                        </>,
+                <Section title={t.charges} accent={ACC} className="mt-4">
+                    <ChargesTable lang={lang} rows={[{
+                        title: isRoundTrip ? c.roundTripService : c.oneWayService,
+                        sub: `${booking.vehicle_type} — ${c.chauffeur}`,
+                        detail: booking.special_requests
+                            ? <p className="whitespace-pre-wrap"><b>{c.specialRequests}:</b> {booking.special_requests}</p>
+                            : undefined,
+                        unit: formatMoney(total, currency),
                         amount: formatMoney(total, currency),
                     }]} />
+                </Section>
+
+                <div className="mt-4 grid grid-cols-[1.25fr_1fr] gap-6">
+                    <Section title={c.paymentDetails} accent={ACC}>
+                        <KV label={c.paymentMethod} value={methodLabel(paymentMethod, lang)} />
+                        <KV label={t.invoiceStatus} value={statusLabel} tone={statusTone} />
+                        <KV label={c.amountReceived} value={formatMoney(received, currency)} />
+                        <KV label={c.outstanding} value={formatMoney(outstanding, currency)} tone={outstanding > 0 ? 'red' : undefined} />
+                        {!isPaid && <KV label={t.dueDate} value={formatDocDate(booking.pickup_date)} />}
+                        {lang === 'en' && <KV label={c.inWords} value={<span className="font-normal italic">{amountInWords(total, currency)}</span>} />}
+                    </Section>
+                    <div className="pt-5">
+                        <TotalsBox
+                            before={[{ label: c.subtotal, value: formatMoney(total, currency) }]}
+                            grand={{ label: t.totalInvoice, value: formatMoney(total, currency) }}
+                            after={[
+                                { label: c.amountReceived, value: formatMoney(received, currency), tone: received > 0 ? 'green' : undefined },
+                                { label: c.outstanding, value: formatMoney(outstanding, currency), strong: true, tone: outstanding > 0 ? 'red' : undefined },
+                            ]}
+                        />
+                    </div>
                 </div>
+
+                {showBank && (
+                    <Section title={t.bank} accent={ACC} className="mt-4">
+                        <div className="grid grid-cols-2 gap-x-8">
+                            {bank.bankName && <KV label={t.bankName} value={bank.bankName} />}
+                            {bank.accountName && <KV label={t.accountName} value={bank.accountName} />}
+                            {bank.accountNumber && <KV label={t.accountNumber} value={<span className="font-mono">{bank.accountNumber}</span>} />}
+                            {bank.swiftCode && <KV label={t.swift} value={<span className="font-mono">{bank.swiftCode}</span>} />}
+                        </div>
+                        {bank.iban && <KV labelWidth="18%" label={t.iban} value={<span className="font-mono tracking-wider">{bank.iban}</span>} />}
+                        {bank.notes && <p className="mt-1 text-[10.5px] italic text-gray-500">{bank.notes}</p>}
+                    </Section>
+                )}
+
+                {quickNote.trim() && (
+                    <Section title={c.remarks} accent={ACC} className="mt-4">
+                        <p className="whitespace-pre-wrap text-[11.5px] text-gray-700">{quickNote.trim()}</p>
+                    </Section>
+                )}
 
                 <div className="mt-4">
-                    <Totals
-                        rows={[
-                            { label: c.subtotal, value: formatMoney(total, currency) },
-                            ...(isPaid ? [{ label: c.amountPaid, value: formatMoney(total, currency), tone: 'green' as const }] : []),
-                        ]}
-                        grand={{ label: isPaid ? c.balanceDue : c.total, value: formatMoney(isPaid ? 0 : total, currency) }}
-                        words={lang === 'en' ? amountInWords(total, currency) : undefined} wordsLabel={c.inWords} />
+                    <Banner tone={isPaid ? 'green' : 'amber'}>{isPaid ? t.bannerPaid : `${paymentText} ${t.bannerDue}`}</Banner>
                 </div>
 
-                <div className="mt-5 grid gap-4" style={{ gridTemplateColumns: showBank ? '1fr 1.4fr' : '1fr' }}>
-                    <div className="rounded-lg border border-gray-200 px-4 py-3">
-                        <SectionLabel>{t.payment} · {methodLabel(paymentMethod, lang)}</SectionLabel>
-                        <p className="text-[11.5px] leading-relaxed text-gray-700">{paymentText}</p>
-                    </div>
-                    {showBank && (
-                        <div className="rounded-lg border border-blue-100 bg-[#f4f7ff] px-4 py-3">
-                            <SectionLabel><span className="inline-flex items-center gap-1.5"><Landmark className="h-3 w-3" /> {t.bank}</span></SectionLabel>
-                            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                                {([[t.bankName, bank.bankName], [t.accountName, bank.accountName], [t.accountNumber, bank.accountNumber], [t.swift, bank.swiftCode]] as const)
-                                    .filter(([, v]) => v).map(([k, v]) => (
-                                        <div key={k}><dt className="text-gray-500">{k}</dt><dd className="font-mono font-bold" dir="ltr">{v}</dd></div>
-                                    ))}
-                                {bank.iban && <div className="col-span-2"><dt className="text-gray-500">{t.iban}</dt><dd className="font-mono font-bold tracking-wider" dir="ltr">{bank.iban}</dd></div>}
-                            </dl>
-                            {bank.notes && <p className="mt-2 text-[10.5px] italic text-blue-700">{bank.notes}</p>}
-                        </div>
-                    )}
-                </div>
+                <TermsAndSignature lang={lang} accent={ACC} terms={[t.term1, t.term2, t.term3, t.term4, t.term5]} />
 
-                {quickNote.trim() && <div className="mt-5"><NoteBox label={t.remarks}>{quickNote.trim()}</NoteBox></div>}
-
-                <DocFooter lang={lang} kind="invoice" terms={[t.term1, t.term2, t.term3, t.term4]} stampLabel={t.stamp}
-                    refLine={`${invoiceNumber} · ${issued}`} />
+                <DocFooter lang={lang} thanks={t.thanks} />
             </DocPage>
 
             <PrintStyles id={DOC_ID} />

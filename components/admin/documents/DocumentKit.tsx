@@ -3,66 +3,89 @@
 import type { ReactNode } from 'react';
 import { Herr_Von_Muellerhoff } from 'next/font/google';
 import { ArrowLeft, Check, Languages, Loader2 } from 'lucide-react';
-import { COMPANY, METHOD_AR, formatTime12h, formatDocDate, type DocLang } from '@/lib/doc-utils';
+import { COMPANY, METHOD_AR, type DocLang } from '@/lib/doc-utils';
 
 /**
- * Building blocks for the quotation, invoice and receipt. They share brand,
- * signature and stamp, but each document has its own header and footer
- * layout so the three are recognisable at a glance. Colours are plain hex
- * (not Tailwind theme tokens) so the PDF renderer reproduces them exactly.
+ * Building blocks for the quotation, invoice and receipt, in a clean formal
+ * corporate style: bold uppercase letterhead, a grey summary box, accent
+ * section headings with label/value rows, a navy charges table and a totals
+ * box. Each document has its own accent colour and title. Colours are plain
+ * hex (not Tailwind theme tokens) so the PDF renderer reproduces them exactly.
  */
 
 // Self-hosted by next/font, so it loads under the site's CSP and is
 // available to the PDF renderer once document.fonts is ready.
 const signatureFont = Herr_Von_Muellerhoff({ weight: '400', subsets: ['latin'], display: 'block' });
 
-export const INK = '#0d0d0d';
-export const BLUE = '#0655ff';
-export const GREEN = '#1e7f4f';
+export const NAVY = '#0f172a';
 const SIGNATURE_INK = '#16297a';
 
 export type DocKind = 'quotation' | 'invoice' | 'receipt';
 
 export const ACCENT: Record<DocKind, string> = {
-    quotation: BLUE,
-    invoice: INK,
-    receipt: '#1e7f4f',
+    quotation: '#2747b8',
+    invoice: '#118a5f',
+    receipt: '#0f766e',
 };
+
+export const TONE = { green: '#118a5f', red: '#b42318', amber: '#b45309', ink: NAVY } as const;
+export type Tone = keyof typeof TONE;
 
 export const COMMON: Record<DocLang, Record<string, string>> = {
     en: {
-        no: 'No.', issued: 'Date', bookingRef: 'Booking Ref', validUntil: 'Valid Until', dueDate: 'Due',
-        billTo: 'Bill To', preparedFor: 'Prepared For', receivedFrom: 'Received From',
-        tripDetails: 'Trip Details', date: 'Date', time: 'Pickup Time', vehicle: 'Vehicle',
-        passengers: 'Passengers', pax: 'Pax', bags: 'Bags', route: 'Route',
-        pickup: 'Pick-up', dropoff: 'Drop-off', returnTo: 'Return Drop-off', stop: 'Stop',
-        roundTrip: 'Round Trip', oneWay: 'One Way',
-        specialRequests: 'Special Requests', note: 'Note',
-        description: 'Description', qty: 'Qty', amount: 'Amount',
-        subtotal: 'Subtotal', total: 'Total', amountPaid: 'Amount Paid', balanceDue: 'Balance Due',
-        inWords: 'Amount in words',
-        terms: 'Terms & Conditions', authorizedSignature: 'Authorized Signature', director: 'Director',
+        tagline: 'Private Transportation & Chauffeur Services',
+        issueDate: 'Issue Date', currency: 'Currency', bookingRef: 'Booking Reference', bookingStatus: 'Booking Status',
+        validUntil: 'Valid Until', customerName: 'Customer Name', emailAddress: 'Email Address', phone: 'Phone',
+        billTo: 'Bill To', bookingDetails: 'Booking Details', journeyRoute: 'Journey Route',
+        serviceDate: 'Service Date', pickupDate: 'Pickup Date', pickupTime: 'Pickup Time', vehicle: 'Vehicle',
+        passengers: 'Passengers', luggage: 'Luggage', serviceType: 'Service Type',
+        passengersN: 'passengers', bagsN: 'bags',
+        pickup: 'Pickup', dropoff: 'Drop-off', returnTo: 'Return Drop-off', stop: 'Stop',
+        oneWayService: 'Private One-Way Transfer', roundTripService: 'Private Round-Trip Transfer',
+        chauffeur: 'Professional Chauffeur Service',
+        description: 'Description', qty: 'Qty', unitPrice: 'Unit Price', amount: 'Amount',
+        subtotal: 'Subtotal', paymentDetails: 'Payment Details', paymentMethod: 'Payment Method',
+        amountReceived: 'Amount Received', outstanding: 'Outstanding Balance', inWords: 'Amount in Words',
+        specialRequests: 'Special Requests', remarks: 'Remarks',
+        terms: 'Terms & Conditions', director: 'Director',
         paid: 'Paid', unpaid: 'Unpaid', partial: 'Partially Paid', pending: 'Pending',
-        paymentMethod: 'Payment Method',
-        phone: 'Phone', email: 'Email',
     },
     ar: {
-        no: 'الرقم', issued: 'التاريخ', bookingRef: 'رقم الحجز', validUntil: 'صالح حتى', dueDate: 'الاستحقاق',
-        billTo: 'فاتورة إلى', preparedFor: 'مُعد لـ', receivedFrom: 'استلمنا من',
-        tripDetails: 'تفاصيل الرحلة', date: 'التاريخ', time: 'وقت الانطلاق', vehicle: 'المركبة',
-        passengers: 'الركاب', pax: 'راكب', bags: 'حقيبة', route: 'المسار',
+        tagline: 'خدمات النقل الخاص والسائقين',
+        issueDate: 'تاريخ الإصدار', currency: 'العملة', bookingRef: 'رقم الحجز', bookingStatus: 'حالة الحجز',
+        validUntil: 'صالح حتى', customerName: 'اسم العميل', emailAddress: 'البريد الإلكتروني', phone: 'الهاتف',
+        billTo: 'فاتورة إلى', bookingDetails: 'تفاصيل الحجز', journeyRoute: 'مسار الرحلة',
+        serviceDate: 'تاريخ الخدمة', pickupDate: 'تاريخ الانطلاق', pickupTime: 'وقت الانطلاق', vehicle: 'المركبة',
+        passengers: 'الركاب', luggage: 'الأمتعة', serviceType: 'نوع الخدمة',
+        passengersN: 'ركاب', bagsN: 'حقائب',
         pickup: 'الانطلاق', dropoff: 'الوصول', returnTo: 'نقطة العودة', stop: 'محطة',
-        roundTrip: 'ذهاب وعودة', oneWay: 'اتجاه واحد',
-        specialRequests: 'طلبات خاصة', note: 'ملاحظة',
-        description: 'الوصف', qty: 'الكمية', amount: 'المبلغ',
-        subtotal: 'المجموع الفرعي', total: 'الإجمالي', amountPaid: 'المبلغ المدفوع', balanceDue: 'الرصيد المستحق',
-        inWords: 'المبلغ كتابةً',
-        terms: 'الشروط والأحكام', authorizedSignature: 'التوقيع المعتمد', director: 'المدير',
+        oneWayService: 'نقل خاص باتجاه واحد', roundTripService: 'نقل خاص ذهاب وعودة',
+        chauffeur: 'خدمة سائق محترف',
+        description: 'الوصف', qty: 'الكمية', unitPrice: 'سعر الوحدة', amount: 'المبلغ',
+        subtotal: 'المجموع الفرعي', paymentDetails: 'تفاصيل الدفع', paymentMethod: 'طريقة الدفع',
+        amountReceived: 'المبلغ المستلم', outstanding: 'الرصيد المتبقي', inWords: 'المبلغ كتابةً',
+        specialRequests: 'طلبات خاصة', remarks: 'ملاحظات',
+        terms: 'الشروط والأحكام', director: 'المدير',
         paid: 'مدفوع', unpaid: 'غير مدفوع', partial: 'مدفوع جزئياً', pending: 'قيد الانتظار',
-        paymentMethod: 'طريقة الدفع',
-        phone: 'الهاتف', email: 'البريد الإلكتروني',
     },
 };
+
+const BOOKING_STATUS: Record<DocLang, Record<string, [string, Tone]>> = {
+    en: {
+        pending: ['Awaiting Quote', 'amber'], quote_sent: ['Quote Sent', 'amber'], confirmed: ['Confirmed', 'green'],
+        in_progress: ['In Progress', 'green'], completed: ['Service Completed', 'green'],
+        cancelled: ['Cancelled', 'red'], no_show: ['No Show', 'red'],
+    },
+    ar: {
+        pending: ['بانتظار العرض', 'amber'], quote_sent: ['تم إرسال العرض', 'amber'], confirmed: ['مؤكد', 'green'],
+        in_progress: ['قيد التنفيذ', 'green'], completed: ['تمت الخدمة', 'green'],
+        cancelled: ['ملغي', 'red'], no_show: ['لم يحضر', 'red'],
+    },
+};
+
+export function bookingStatusLabel(status: string | undefined, lang: DocLang): [string, Tone] {
+    return BOOKING_STATUS[lang][status || 'pending'] || [status || '—', 'ink'];
+}
 
 export function methodLabel(method: string, lang: DocLang) {
     return lang === 'ar' ? METHOD_AR[method] || method : method;
@@ -93,8 +116,8 @@ export function ActionButton({ onClick, busy, done, icon, label, busyLabel, done
     busyLabel?: string; doneLabel?: string; variant?: 'dark' | 'blue' | 'outline';
 }) {
     const styles = {
-        dark: 'bg-[#0d0d0d] text-white hover:bg-black',
-        blue: 'bg-[#0655ff] text-white hover:bg-[#0546d6]',
+        dark: 'bg-[#0f172a] text-white hover:bg-black',
+        blue: 'bg-[#2747b8] text-white hover:bg-[#1f3a99]',
         outline: 'border border-gray-200 bg-white text-gray-800 hover:bg-gray-50',
     }[variant];
     return (
@@ -131,7 +154,7 @@ export function Segmented<T extends string>({ label, options, value, onChange, r
             <div className="flex flex-wrap gap-1">
                 {options.map((o) => (
                     <button key={o} onClick={() => onChange(o)}
-                        className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${value === o ? 'bg-[#0d0d0d] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${value === o ? 'bg-[#0f172a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                         {render ? render(o) : o}
                     </button>
                 ))}
@@ -149,246 +172,147 @@ export function Field({ label, children }: { label: string; children: ReactNode 
     );
 }
 
-export const inputClass = 'h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#0655ff] focus:bg-white';
+export const inputClass = 'h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#2747b8] focus:bg-white';
 
 // ── The A4 document ─────────────────────────────────────────────────────────
 
-export function DocPage({ id, lang, kind, watermark, children }: {
-    id: string; lang: DocLang; kind: DocKind; watermark?: string | null; children: ReactNode;
-}) {
+export function DocPage({ id, lang, children }: { id: string; lang: DocLang; children: ReactNode }) {
     return (
         <div id={id} dir={lang === 'ar' ? 'rtl' : 'ltr'}
-            className="doc-page relative mx-auto w-full max-w-[210mm] overflow-hidden bg-white text-[#0d0d0d] shadow-[0_10px_40px_rgba(0,0,0,0.12)] print:max-w-none print:shadow-none"
-            style={{ minHeight: '297mm', fontFamily: lang === 'ar' ? 'Tahoma, Arial, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif' }}>
-            {watermark && (
-                <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <span className="-rotate-[28deg] select-none rounded-2xl border-[6px] px-10 py-3 text-[96px] font-black uppercase tracking-[0.15em] opacity-[0.07]"
-                        style={{ color: ACCENT[kind] === INK ? '#1e7f4f' : ACCENT[kind], borderColor: ACCENT[kind] === INK ? '#1e7f4f' : ACCENT[kind] }}>
-                        {watermark}
-                    </span>
-                </div>
-            )}
-            <div className="relative flex flex-col px-[14mm] pb-[8mm] pt-[9mm]" style={{ minHeight: '297mm' }}>
-                {children}
-            </div>
+            className="doc-page relative mx-auto flex w-full max-w-[210mm] flex-col bg-white px-[14mm] pb-[8mm] pt-[9mm] shadow-[0_10px_40px_rgba(0,0,0,0.12)] print:max-w-none print:shadow-none"
+            style={{ minHeight: '297mm', color: NAVY, fontFamily: lang === 'ar' ? 'Tahoma, Arial, sans-serif' : 'Arial, Helvetica, sans-serif' }}>
+            {children}
         </div>
     );
 }
 
-type Meta = { label: string; value: string; mono?: boolean }[];
-
-function Logo({ className = 'h-11 w-11' }: { className?: string }) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={COMPANY.logo} alt="" className={`${className} shrink-0 object-contain`} />;
-}
-
-/** Quotation: a full-bleed blue proposal cover. */
-export function QuoteHeader({ lang, title, subtitle, meta, badges }: {
-    lang: DocLang; title: string; subtitle: string; meta: Meta; badges?: ReactNode;
-}) {
+/** Bold uppercase letterhead with contacts on the right and a heavy rule. */
+export function Letterhead({ lang, accent }: { lang: DocLang; accent: string }) {
     return (
-        <header className="relative -mx-[14mm] -mt-[9mm] overflow-hidden px-[14mm] pb-6 pt-[8mm] text-white"
-            style={{ background: `linear-gradient(135deg, ${BLUE} 0%, #0839b8 100%)` }}>
-            <div aria-hidden className="absolute -end-16 -top-24 h-72 w-72 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
-            <div aria-hidden className="absolute -bottom-28 end-40 h-56 w-56 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            <div className="relative flex items-start justify-between gap-6">
-                <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-white p-1.5"><Logo className="h-10 w-10" /></div>
-                    <div>
-                        <p className="text-[18px] font-black leading-tight">Taxi Bahrain to Dammam</p>
-                        <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.75)' }}>{COMPANY.tagline[lang]}</p>
-                    </div>
-                </div>
-                <div className="text-end text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    <p>{COMPANY.city[lang]}</p>
-                    <p dir="ltr">{COMPANY.phone}</p>
-                    <p>{COMPANY.email}</p>
-                    <p>{COMPANY.website}</p>
-                </div>
+        <header className="flex items-start justify-between gap-6 border-b-2 pb-3" style={{ borderColor: NAVY }}>
+            <div>
+                <p className="text-[25px] font-black uppercase leading-none tracking-[0.02em]">
+                    Taxi Bahrain to <span style={{ color: accent }}>Dammam</span>
+                </p>
+                <p className="mt-1.5 text-[12px] font-bold text-gray-600">{COMMON[lang].tagline}</p>
+                <p className="text-[11px] text-gray-500">{COMPANY.city[lang]}</p>
             </div>
-            <div className="relative mt-6 flex items-end justify-between gap-6">
-                <div>
-                    <p className="text-[10.5px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.7)' }}>{subtitle}</p>
-                    <p className="mt-1 text-[38px] font-black uppercase leading-none tracking-[0.04em]">{title}</p>
-                    {badges && <div className="mt-3 flex gap-1.5">{badges}</div>}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                    {meta.map((m) => (
-                        <div key={m.label} className="rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.12)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)' }}>
-                            <p className="text-[8.5px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.65)' }}>{m.label}</p>
-                            <p className={`text-[11.5px] font-bold ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</p>
-                        </div>
-                    ))}
-                </div>
+            <div className="text-end text-[11px] leading-[1.7] text-gray-600">
+                <p dir="ltr">{COMPANY.phone}</p>
+                <p>{COMPANY.email}</p>
+                <p>{COMPANY.website}</p>
             </div>
         </header>
     );
 }
 
-/** Invoice: formal black masthead with a boxed details strip. */
-export function InvoiceHeader({ lang, title, meta, badges }: {
-    lang: DocLang; title: string; meta: Meta; badges?: ReactNode;
+export function DocTitle({ title, center, pill, pillTone = 'green', size = 26 }: {
+    title: string; center?: boolean; pill?: string; pillTone?: Tone; size?: number;
 }) {
     return (
-        <header className="-mx-[14mm] -mt-[9mm]">
-            <div className="flex items-center justify-between gap-6 px-[14mm] py-6 text-white" style={{ background: INK }}>
-                <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-white p-1.5"><Logo className="h-10 w-10" /></div>
-                    <div>
-                        <p className="text-[18px] font-black leading-tight">Taxi Bahrain <span style={{ color: '#7aa2ff' }}>to Dammam</span></p>
-                        <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.6)' }}>{COMPANY.tagline[lang]}</p>
-                    </div>
+        <div className={`mt-5 flex items-center gap-4 ${center ? 'justify-center' : 'justify-between'}`}>
+            <h1 className="font-black uppercase leading-none tracking-[0.16em]" style={{ fontSize: size }}>{title}</h1>
+            {pill && (
+                <span className="rounded-xl border-2 px-4 py-1 text-[13px] font-black uppercase tracking-wider" style={{ color: TONE[pillTone], borderColor: TONE[pillTone] }}>
+                    {pill}
+                </span>
+            )}
+        </div>
+    );
+}
+
+export type SummaryItem = { label: string; value: ReactNode; mono?: boolean; tone?: Tone };
+
+/** Rounded grey box of 3-column label/value pairs under the title. */
+export function SummaryBox({ items }: { items: SummaryItem[] }) {
+    return (
+        <div className="mt-3 grid grid-cols-3 gap-x-6 gap-y-2.5 rounded-xl border border-gray-200 bg-[#f8fafc] px-5 py-3.5">
+            {items.map((it) => (
+                <div key={it.label}>
+                    <p className="text-[11px] text-gray-500">{it.label}</p>
+                    <p className={`text-[12px] font-bold ${it.mono ? 'font-mono' : ''}`} style={it.tone ? { color: TONE[it.tone] } : undefined}><bdi>{it.value}</bdi></p>
                 </div>
-                <p className="text-[36px] font-black uppercase leading-none tracking-[0.22em]">{title}</p>
-            </div>
-            <div className="h-1" style={{ background: BLUE }} />
-            <div className="mx-[14mm] mt-5 grid overflow-hidden rounded-lg border border-gray-300" style={{ gridTemplateColumns: `repeat(${meta.length}, minmax(0, 1fr))` }}>
-                {meta.map((m, i) => (
-                    <div key={m.label} className={`px-3.5 py-2 ${i ? 'border-s border-gray-300' : ''}`}>
-                        <p className="text-[8.5px] font-black uppercase tracking-[0.15em] text-gray-400">{m.label}</p>
-                        <p className={`text-[12px] font-bold ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</p>
-                    </div>
-                ))}
-            </div>
-            <div className="mx-[14mm] mt-2.5 flex items-center justify-between gap-4">
-                <p className="text-[10px] text-gray-500">{COMPANY.city[lang]} · <span dir="ltr">{COMPANY.phone}</span> · {COMPANY.email} · {COMPANY.website}</p>
-                {badges && <div className="flex shrink-0 gap-1.5">{badges}</div>}
-            </div>
-        </header>
+            ))}
+        </div>
     );
 }
 
-/** Receipt: centred voucher heading. */
-export function ReceiptHeader({ lang, title, meta, badges }: {
-    lang: DocLang; title: string; meta: Meta; badges?: ReactNode;
-}) {
+export function Section({ title, accent, children, className = '' }: { title: string; accent: string; children: ReactNode; className?: string }) {
     return (
-        <header className="text-center">
-            <Logo className="mx-auto h-12 w-12" />
-            <p className="mt-2 text-[18px] font-black leading-tight">Taxi Bahrain <span style={{ color: GREEN }}>to Dammam</span></p>
-            <p className="mt-0.5 text-[10px] text-gray-500">{COMPANY.city[lang]} · <span dir="ltr">{COMPANY.phone}</span> · {COMPANY.website}</p>
-            <div className="mt-5 flex items-center gap-4">
-                <span className="h-px flex-1 border-t-2 border-dashed border-gray-200" />
-                <p className="text-[14px] font-black uppercase tracking-[0.42em]" style={{ color: GREEN }}>{title}</p>
-                <span className="h-px flex-1 border-t-2 border-dashed border-gray-200" />
-            </div>
-            <div className="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-1 text-[10.5px] text-gray-500">
-                {meta.map((m) => (
-                    <span key={m.label}>{m.label} <b className={`text-[#0d0d0d] ${m.mono ? 'font-mono' : ''}`} dir="ltr">{m.value}</b></span>
-                ))}
-            </div>
-            {badges && <div className="mt-2.5 flex justify-center gap-1.5">{badges}</div>}
-        </header>
+        <section className={className}>
+            <h2 className="mb-2 border-b-[1.5px] pb-0.5 text-[10.5px] font-black uppercase tracking-[0.2em]" style={{ color: accent, borderColor: `${accent}99` }}>
+                {title}
+            </h2>
+            {children}
+        </section>
     );
 }
 
-export function Badge({ children, tone = 'gray' }: { children: ReactNode; tone?: 'green' | 'red' | 'amber' | 'blue' | 'gray' }) {
-    const tones = {
-        green: 'border-green-200 bg-green-50 text-green-700',
-        red: 'border-red-200 bg-red-50 text-red-700',
-        amber: 'border-amber-200 bg-amber-50 text-amber-700',
-        blue: 'border-blue-200 bg-blue-50 text-blue-700',
-        gray: 'border-gray-200 bg-gray-50 text-gray-600',
-    }[tone];
-    return <span className={`whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider ${tones}`}>{children}</span>;
-}
-
-export function SectionLabel({ children }: { children: ReactNode }) {
-    return <p className="mb-2 text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{children}</p>;
-}
-
-export function PartyBlock({ label, name, phone, email }: { label: string; name: string; phone?: string; email?: string }) {
+/** One label/value row with a faint divider. */
+export function KV({ label, value, labelWidth = '38%', tone }: { label: string; value: ReactNode; labelWidth?: string; tone?: Tone }) {
     return (
-        <div>
-            <SectionLabel>{label}</SectionLabel>
-            <p className="text-[15px] font-bold">{name || '—'}</p>
-            <div className="mt-1 space-y-0.5 text-[11px] text-gray-600">
-                {phone && <p dir="ltr" className="text-start">{phone}</p>}
-                {email && <p>{email}</p>}
-            </div>
+        <div className="grid gap-3 border-b border-gray-100 py-[3px] text-[11.5px]" style={{ gridTemplateColumns: `${labelWidth} 1fr` }}>
+            <span className="text-gray-500">{label}</span>
+            <span className="font-bold" style={tone ? { color: TONE[tone] } : undefined}><bdi>{value}</bdi></span>
+        </div>
+    );
+}
+
+export function PartyLines({ name, phone, email }: { name: string; phone?: string; email?: string }) {
+    return (
+        <div className="text-[11.5px] leading-[1.6]">
+            <p className="text-[13px] font-bold"><bdi>{name || '—'}</bdi></p>
+            {phone && <p className="text-gray-600" dir="ltr" style={{ textAlign: 'start' }}>{phone}</p>}
+            {email && <p className="text-gray-600">{email}</p>}
         </div>
     );
 }
 
 export interface TripStop { time: string; location: string }
 
-export function TripDetails({ lang, date, time, vehicle, passengers, luggage, pickup, destination, stops = [], roundTrip, returnTo }: {
-    lang: DocLang; date: string; time: string; vehicle: string; passengers?: number; luggage?: number;
-    pickup: string; destination: string; stops?: TripStop[]; roundTrip?: boolean; returnTo?: string;
+/** Pickup → stops → drop-off (→ return) as label/value rows. */
+export function RouteRows({ lang, pickup, destination, stops = [], roundTrip, returnTo, formatTime }: {
+    lang: DocLang; pickup: string; destination: string; stops?: TripStop[]; roundTrip?: boolean; returnTo?: string;
+    formatTime: (t: string) => string;
 }) {
     const c = COMMON[lang];
-    const points = [
-        { label: `${c.pickup} · ${formatTime12h(time)}`, place: pickup, color: '#1e7f4f' },
-        ...stops.filter((s) => s.location.trim()).map((s, i) => ({
-            label: `${c.stop} ${i + 1}${s.time ? ` · ${formatTime12h(s.time)}` : ''}`, place: s.location, color: '#d97706',
-        })),
-        { label: c.dropoff, place: destination, color: '#b3261e' },
-        ...(roundTrip ? [{ label: c.returnTo, place: returnTo || pickup, color: BLUE }] : []),
-    ];
     return (
-        <div className="grid grid-cols-[1fr_1.35fr] gap-6">
-            <div>
-                <SectionLabel>{c.tripDetails}</SectionLabel>
-                <dl className="space-y-1.5 text-[11.5px]">
-                    {[
-                        [c.date, formatDocDate(date)],
-                        [c.time, formatTime12h(time)],
-                        [c.vehicle, vehicle || '—'],
-                        [c.passengers, `${passengers ?? 1} ${c.pax}${luggage !== undefined ? ` · ${luggage} ${c.bags}` : ''}`],
-                        [c.route, roundTrip ? c.roundTrip : c.oneWay],
-                    ].map(([k, v]) => (
-                        <div key={k} className="flex justify-between gap-3 border-b border-dashed border-gray-100 pb-1.5">
-                            <dt className="text-gray-500">{k}</dt>
-                            <dd className="text-end font-semibold"><bdi>{v}</bdi></dd>
-                        </div>
-                    ))}
-                </dl>
-            </div>
-            <div>
-                <SectionLabel>{c.route}</SectionLabel>
-                <ol className="relative space-y-2.5">
-                    {points.map((p, i) => (
-                        <li key={i} className="relative flex gap-3">
-                            <div className="flex flex-col items-center">
-                                <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ring-[3px] ring-white" style={{ background: p.color, boxShadow: `0 0 0 1px ${p.color}` }} />
-                                {i < points.length - 1 && <span className="mt-1 w-px flex-1 border-s border-dashed border-gray-300" />}
-                            </div>
-                            <div className="min-w-0 pb-0.5">
-                                <p className="text-[9.5px] font-bold uppercase tracking-wider" style={{ color: p.color }}><bdi>{p.label}</bdi></p>
-                                <p className="break-words text-[12px] font-semibold leading-snug">{p.place || '—'}</p>
-                            </div>
-                        </li>
-                    ))}
-                </ol>
-            </div>
+        <div>
+            <KV labelWidth="20%" label={c.pickup} value={pickup} />
+            {stops.filter((s) => s.location.trim()).map((s, i) => (
+                <KV key={i} labelWidth="20%" label={`${c.stop} ${i + 1}${s.time ? ` · ${formatTime(s.time)}` : ''}`} value={s.location} />
+            ))}
+            <KV labelWidth="20%" label={c.dropoff} value={destination} />
+            {roundTrip && <KV labelWidth="20%" label={c.returnTo} value={returnTo || pickup} />}
         </div>
     );
 }
 
-export function LineItems({ lang, rows }: {
-    lang: DocLang; rows: { title: string; detail?: ReactNode; amount: string }[];
+export function ChargesTable({ lang, rows }: {
+    lang: DocLang; rows: { title: string; sub?: string; detail?: ReactNode; unit: string; amount: string }[];
 }) {
     const c = COMMON[lang];
     return (
-        <table className="w-full overflow-hidden rounded-lg text-[11.5px]">
+        <table className="w-full text-[11.5px]">
             <thead>
-                <tr className="text-white" style={{ background: INK }}>
-                    <th className="w-8 px-3 py-2.5 text-start text-[9.5px] font-bold uppercase tracking-wider">#</th>
-                    <th className="px-3 py-2.5 text-start text-[9.5px] font-bold uppercase tracking-wider">{c.description}</th>
-                    <th className="w-12 px-3 py-2.5 text-center text-[9.5px] font-bold uppercase tracking-wider">{c.qty}</th>
-                    <th className="w-36 px-3 py-2.5 text-end text-[9.5px] font-bold uppercase tracking-wider">{c.amount}</th>
+                <tr className="text-white" style={{ background: NAVY }}>
+                    <th className="px-2.5 py-2 text-start font-bold">{c.description}</th>
+                    <th className="w-14 px-2.5 py-2 text-center font-bold">{c.qty}</th>
+                    <th className="w-32 px-2.5 py-2 text-end font-bold">{c.unitPrice}</th>
+                    <th className="w-32 px-2.5 py-2 text-end font-bold">{c.amount}</th>
                 </tr>
             </thead>
             <tbody>
                 {rows.map((r, i) => (
-                    <tr key={i} className="border-b border-gray-100 align-top">
-                        <td className="px-3 py-2.5 text-gray-400">{i + 1}</td>
-                        <td className="px-3 py-2.5">
+                    <tr key={i} className="border-b border-gray-200 align-top">
+                        <td className="px-2.5 py-2.5">
                             <p className="font-bold">{r.title}</p>
-                            {r.detail && <div className="mt-0.5 text-[10.5px] leading-snug text-gray-500">{r.detail}</div>}
+                            {r.sub && <p className="text-gray-600"><bdi>{r.sub}</bdi></p>}
+                            {r.detail && <div className="text-[10.5px] text-gray-500">{r.detail}</div>}
                         </td>
-                        <td className="px-3 py-2.5 text-center">1</td>
-                        <td className="px-3 py-2.5 text-end font-bold" dir="ltr">{r.amount}</td>
+                        <td className="px-2.5 py-2.5 text-center">1</td>
+                        <td className="px-2.5 py-2.5 text-end" dir="ltr">{r.unit}</td>
+                        <td className="px-2.5 py-2.5 text-end font-bold" dir="ltr">{r.amount}</td>
                     </tr>
                 ))}
             </tbody>
@@ -396,179 +320,95 @@ export function LineItems({ lang, rows }: {
     );
 }
 
-export function Totals({ rows, grand, words, wordsLabel, accent = INK }: {
-    rows: { label: string; value: string; tone?: 'green' | 'red' }[];
+/** Totals card: plain rows, a navy grand-total band, then follow-up rows. */
+export function TotalsBox({ before = [], grand, after = [] }: {
+    before?: { label: string; value: string; tone?: Tone }[];
     grand: { label: string; value: string };
-    words?: string; wordsLabel?: string; accent?: string;
+    after?: { label: string; value: string; tone?: Tone; strong?: boolean }[];
 }) {
+    const row = (r: { label: string; value: string; tone?: Tone; strong?: boolean }) => (
+        <div key={r.label} className={`flex items-center justify-between gap-3 border-b border-gray-100 px-3.5 py-1.5 last:border-b-0 ${r.strong ? 'text-[12.5px] font-bold' : 'text-[11.5px]'}`}>
+            <span className={r.strong ? '' : 'text-gray-600'}>{r.label}</span>
+            <span className="font-bold" style={r.tone ? { color: TONE[r.tone] } : undefined} dir="ltr">{r.value}</span>
+        </div>
+    );
     return (
-        <div className="flex items-end justify-between gap-6">
-            <div className="max-w-[55%] text-[10.5px] text-gray-500">
-                {words && (
-                    <>
-                        <p className="text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{wordsLabel}</p>
-                        <p className="mt-1 font-semibold italic text-gray-700">{words}</p>
-                    </>
-                )}
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+            {before.map(row)}
+            <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-white" style={{ background: NAVY }}>
+                <span className="text-[11px] font-bold uppercase leading-tight">{grand.label}</span>
+                <span className="whitespace-nowrap text-[17px] font-black" dir="ltr">{grand.value}</span>
             </div>
-            <div className="w-[260px] shrink-0 text-[11.5px]">
-                {rows.map((r) => (
-                    <div key={r.label} className="flex justify-between border-b border-gray-100 py-1.5">
-                        <span className="text-gray-500">{r.label}</span>
-                        <span className={`font-bold ${r.tone === 'green' ? 'text-green-700' : r.tone === 'red' ? 'text-red-700' : ''}`} dir="ltr">{r.value}</span>
-                    </div>
+            {after.map(row)}
+        </div>
+    );
+}
+
+export function Banner({ tone = 'green', children }: { tone?: Tone; children: ReactNode }) {
+    const color = TONE[tone];
+    return (
+        <div className="rounded-lg border px-4 py-2.5 text-[11.5px] font-bold" style={{ color, borderColor: `${color}55`, background: `${color}10` }}>
+            {children}
+        </div>
+    );
+}
+
+export function TermsSection({ lang, accent, terms, className = '' }: { lang: DocLang; accent: string; terms: string[]; className?: string }) {
+    return (
+        <Section title={COMMON[lang].terms} accent={accent} className={className}>
+            {/* Numbered by hand: list-decimal markers land on the wrong side in RTL PDFs. */}
+            <ol className="list-none space-y-px text-[10px] leading-snug text-gray-600">
+                {terms.map((t, i) => (
+                    <li key={t} className="flex gap-1.5"><span className="shrink-0">{i + 1}.</span><span>{t}</span></li>
                 ))}
-                <div className="mt-2 flex items-center justify-between rounded-lg px-3.5 py-2.5 text-white" style={{ background: accent }}>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">{grand.label}</span>
-                    <span className="text-[16px] font-black" dir="ltr">{grand.value}</span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export function NoteBox({ label, children }: { label: string; children: ReactNode }) {
-    return (
-        <div className="rounded-lg border-s-[3px] bg-gray-50 px-3.5 py-2.5" style={{ borderColor: BLUE }}>
-            <p className="text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{label}</p>
-            <p className="mt-0.5 whitespace-pre-wrap text-[11.5px] leading-relaxed text-gray-700">{children}</p>
-        </div>
-    );
-}
-
-export function Stamp({ kind, label, size = 92 }: { kind: DocKind; label: string; size?: number }) {
-    const color = kind === 'receipt' ? GREEN : BLUE;
-    return (
-        <svg viewBox="0 0 120 120" className="shrink-0 -rotate-6 opacity-90" style={{ width: size, height: size }}>
-            <defs>
-                {/* Top arc runs left→right over the top; glyphs sit outside it (r 40–46). */}
-                <path id={`top-${kind}`} d="M 20,60 a 40,40 0 1,1 80,0" />
-                {/* Bottom arc runs left→right under the bottom so text reads upright; glyphs sit inside it (r 46→40). */}
-                <path id={`bot-${kind}`} d="M 14,60 a 46,46 0 0,0 92,0" />
-            </defs>
-            <circle cx="60" cy="60" r="56" fill="none" stroke={color} strokeWidth="2.5" />
-            <circle cx="60" cy="60" r="49" fill="none" stroke={color} strokeWidth="0.8" />
-            <text fill={color} fontSize="7" fontWeight="900" letterSpacing="0.5" fontFamily="Arial, sans-serif">
-                <textPath href={`#top-${kind}`} startOffset="50%" textAnchor="middle">TAXI BAHRAIN TO DAMMAM</textPath>
-            </text>
-            <text fill={color} fontSize="7" fontWeight="700" letterSpacing="1.2" fontFamily="Arial, sans-serif">
-                <textPath href={`#bot-${kind}`} startOffset="50%" textAnchor="middle">★ MANAMA · BAHRAIN ★</textPath>
-            </text>
-            <rect x="26" y="50" width="68" height="20" rx="3" fill={color} />
-            <text x="60" y="64" fill="#fff" fontSize="10" fontWeight="900" textAnchor="middle" letterSpacing="1.5" fontFamily="Arial, sans-serif">{label}</text>
-        </svg>
+            </ol>
+        </Section>
     );
 }
 
 /** Fahed Irshad's signature: script name with a pen flourish, in blue ink. */
-export function Signature({ width = 170 }: { width?: number }) {
+export function Signature({ width = 150 }: { width?: number }) {
     return (
-        <div className="relative" style={{ width, height: 54 }} dir="ltr" aria-label={`Signed: ${COMPANY.director}`}>
-            <span className={`${signatureFont.className} absolute start-1 top-0 whitespace-nowrap leading-none`}
-                style={{ color: SIGNATURE_INK, fontSize: 44, transform: 'rotate(-5deg)', transformOrigin: 'left bottom' }}>
+        <div className="relative" style={{ width, height: 44 }} dir="ltr" aria-label={`Signed: ${COMPANY.director}`}>
+            <span className={`${signatureFont.className} absolute start-2 top-0 whitespace-nowrap leading-none`}
+                style={{ color: SIGNATURE_INK, fontSize: 36, transform: 'rotate(-4deg)', transformOrigin: 'left bottom' }}>
                 Fahed Irshad
             </span>
-            <svg viewBox="0 0 170 22" className="absolute bottom-0 start-0" style={{ width, height: 18 }}>
-                <path d="M6 15 C 38 6, 70 20, 104 11 S 150 4, 166 9" stroke={SIGNATURE_INK} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                <path d="M120 17 C 132 13, 146 13, 158 15" stroke={SIGNATURE_INK} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.7" />
+            <svg viewBox="0 0 150 18" className="absolute bottom-0 start-0" style={{ width, height: 14 }}>
+                <path d="M8 12 C 36 5, 64 16, 94 9 S 134 4, 146 7" stroke={SIGNATURE_INK} strokeWidth="1.3" fill="none" strokeLinecap="round" />
             </svg>
         </div>
     );
 }
 
-function SignatureBlock({ lang, caption }: { lang: DocLang; caption?: string }) {
-    const c = COMMON[lang];
+/** Terms on the left, company signature on the right, in one row. */
+export function TermsAndSignature({ lang, accent, terms }: { lang: DocLang; accent: string; terms: string[] }) {
     return (
-        <div className="text-center">
+        <div className="mb-3 mt-4 grid grid-cols-[1fr_auto] items-end gap-6">
+            <TermsSection lang={lang} accent={accent} terms={terms} />
+            <SignatureBlock lang={lang} />
+        </div>
+    );
+}
+
+/** Company signature block, aligned to the end of the row. */
+export function SignatureBlock({ lang, caption }: { lang: DocLang; caption?: string }) {
+    return (
+        <div className="w-[200px] text-center">
             <div className="flex justify-center"><Signature /></div>
-            <div className="mx-auto mt-0.5 w-44 border-t border-gray-400 pt-1">
-                <p className="text-[11px] font-bold">{COMPANY.director}</p>
-                <p className="text-[9.5px] text-gray-500">{caption || `${c.director} · ${c.authorizedSignature}`}</p>
+            <div className="mt-0.5 border-t border-gray-400 pt-1">
+                <p className="text-[12px] font-bold">{COMPANY.director}</p>
+                <p className="text-[10.5px] text-gray-500">{caption || `${COMMON[lang].director}, ${COMPANY.name}`}</p>
             </div>
         </div>
     );
 }
 
-function TermsList({ lang, terms, center, columns }: { lang: DocLang; terms: string[]; center?: boolean; columns?: boolean }) {
-    const c = COMMON[lang];
+export function DocFooter({ lang, thanks }: { lang: DocLang; thanks: string }) {
     return (
-        <div>
-            <SectionLabel>{c.terms}</SectionLabel>
-            {/* Numbered by hand: list-decimal markers land on the wrong side in RTL PDFs. */}
-            <ol className={`list-none text-[9.5px] leading-relaxed text-gray-500 ${columns ? 'grid grid-cols-2 gap-x-8 gap-y-0.5' : 'space-y-0.5'}`}>
-                {terms.map((t, i) => (
-                    <li key={t} className={center ? '' : 'flex gap-1.5'}>
-                        {!center && <span className="shrink-0">{i + 1}.</span>}<span>{t}</span>
-                    </li>
-                ))}
-            </ol>
-        </div>
-    );
-}
-
-/** Invoice footer: terms beside stamp + signature, black reference bar. */
-export function DocFooter({ lang, kind, terms, stampLabel, refLine }: {
-    lang: DocLang; kind: DocKind; terms: string[]; stampLabel: string; refLine: string;
-}) {
-    return (
-        <footer className="mt-auto pt-4">
-            <div className="flex items-end justify-between gap-8 border-t border-gray-200 pt-4">
-                <div className="max-w-[55%]"><TermsList lang={lang} terms={terms} /></div>
-                <div className="flex items-end gap-3">
-                    <Stamp kind={kind} label={stampLabel} />
-                    <SignatureBlock lang={lang} />
-                </div>
-            </div>
-            <div className="-mx-[14mm] -mb-[8mm] mt-5 flex items-center justify-between gap-4 px-[14mm] py-3 text-[9.5px]" style={{ background: INK, color: 'rgba(255,255,255,0.8)' }}>
-                <span className="font-mono tracking-wide" dir="ltr">{refLine}</span>
-                <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail} · {COMPANY.phone}</span>
-            </div>
-        </footer>
-    );
-}
-
-/** Quotation footer: company signs, client countersigns to accept. */
-export function QuoteFooter({ lang, terms, stampLabel, refLine, acceptLabel, acceptCaption }: {
-    lang: DocLang; terms: string[]; stampLabel: string; refLine: string; acceptLabel: string; acceptCaption: string;
-}) {
-    return (
-        <footer className="mt-auto pt-4">
-            <TermsList lang={lang} terms={terms} columns />
-            <div className="mt-3 grid grid-cols-2 gap-6 border-t border-gray-200 pt-3">
-                <div className="flex items-end gap-5">
-                    <Stamp kind="quotation" label={stampLabel} />
-                    <SignatureBlock lang={lang} />
-                </div>
-                <div className="flex flex-col justify-end text-center">
-                    <p className="mb-auto text-[9.5px] font-black uppercase tracking-[0.18em] text-gray-400">{acceptLabel}</p>
-                    <div className="mx-auto mt-12 w-52 border-t border-gray-400 pt-1">
-                        <p className="text-[9.5px] text-gray-500">{acceptCaption}</p>
-                    </div>
-                </div>
-            </div>
-            <div className="-mx-[14mm] -mb-[8mm] mt-5 flex items-center justify-between gap-4 px-[14mm] py-3 text-[9.5px] text-white" style={{ background: BLUE }}>
-                <span className="font-mono tracking-wide" dir="ltr">{refLine}</span>
-                <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail} · {COMPANY.phone}</span>
-            </div>
-        </footer>
-    );
-}
-
-/** Receipt footer: centred stamp and signature with a thank-you line. */
-export function ReceiptFooter({ lang, terms, stampLabel, refLine, thanks }: {
-    lang: DocLang; terms: string[]; stampLabel: string; refLine: string; thanks: string;
-}) {
-    return (
-        <footer className="mt-auto pt-4 text-center">
-            <div className="flex items-center justify-center gap-10">
-                <Stamp kind="receipt" label={stampLabel} size={112} />
-                <SignatureBlock lang={lang} />
-            </div>
-            <p className="mt-4 text-[13px] font-bold" style={{ color: GREEN }}>{thanks}</p>
-            <div className="mx-auto mt-3 max-w-[80%]"><TermsList lang={lang} terms={terms} center /></div>
-            <div className="mt-4 border-t-2 border-dashed border-gray-200 pt-2.5 text-[9.5px] text-gray-500">
-                <span className="font-mono" dir="ltr">{refLine}</span> · <span dir="ltr">{COMPANY.website} · {COMPANY.bookingEmail}</span>
-            </div>
+        <footer className="mt-auto border-t border-gray-200 pt-2 text-center text-[10px] leading-relaxed text-gray-500">
+            <p>{COMPANY.name} | {COMPANY.city[lang]} | <span dir="ltr">{COMPANY.phone}</span> | {COMPANY.email} | {COMPANY.website}</p>
+            <p className="italic">{thanks}</p>
         </footer>
     );
 }
